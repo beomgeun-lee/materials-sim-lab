@@ -87,9 +87,12 @@ def reference_entries(elements: list[str]) -> list:
     return out
 
 
-def uhull(elements: list[str], model: str, log: Callable[[str], None] = lambda s: None) -> tuple[PhaseDiagram, list[str]]:
-    """자기일관 hull — 경쟁 상을 모두 같은 uMLIP 로 이완 (MP2020 보정)."""
+def uhull(elements: list[str], model: str, log: Callable[[str], None] = lambda s: None,
+          exclude: Composition | None = None) -> tuple[PhaseDiagram, list[str]]:
+    """자기일관 hull — 경쟁 상을 모두 같은 uMLIP 로 이완 (MP2020 보정). exclude: 이 조성은 경쟁 상에서 뺀다 (모르는 척 평가)."""
     refs = reference_entries(elements)
+    if exclude is not None:
+        refs = [e for e in refs if not e.composition.reduced_composition.almost_equals(exclude.reduced_composition)]
     entries, notes = [], []
     t0 = time.time()
     for i, e in enumerate(refs):

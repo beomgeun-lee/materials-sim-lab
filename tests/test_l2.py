@@ -134,3 +134,31 @@ def test_phonon_mgo_stable() -> None:
     assert p["dynamically_stable"]
     e = props.elastic(s.get_primitive_structure(), "mace-mpa-0")
     assert 130 < e["K_vrh"] < 170 and e["mechanically_stable"]  # MP DFT 151 GPa
+
+
+def test_f1_score_counts() -> None:
+    from msl.bench.l2_f1 import score
+
+    rows = [{"truth": -0.02, "pred": -0.01, "given": -0.03}, {"truth": 0.1, "pred": 0.02, "given": 0.08},
+            {"truth": -0.01, "pred": 0.03, "given": -0.01}, {"formula": "X", "skipped": "후보 없음"}]
+    sc = score(rows)
+    assert sc["n"] == 3 and sc["skipped"] == 1
+    assert (sc["main"]["tp"], sc["main"]["fn"], sc["main"]["tn"]) == (1, 1, 1) and sc["main"]["f1"] == pytest.approx(2 / 3, abs=1e-3)
+    assert sc["product_rule"]["recall"] == 1.0 and sc["given_structure"]["f1"] == 1.0
+
+
+def test_uhull_exclude_drops_target(monkeypatch) -> None:
+    from pymatgen.core import Composition
+
+    from msl import l2
+
+    refs = l2.reference_entries(["Li", "Co", "O"])
+    assert any(e.composition.reduced_formula == "LiCoO2" for e in refs)
+    seen = {}
+    monkeypatch.setattr(l2, "_cached_relax", lambda s, k, m: seen.setdefault(k, None) or {"structure": s, "energy": -1.0 * len(s)})
+    monkeypatch.setattr(l2.umlip, "mp_entry", lambda s, e, entry_id=None: None)
+    with pytest.raises(ValueError):  # 보정 엔트리가 없어 상태도는 못 만든다 — 어떤 상을 이완하려 했는지만 본다
+        l2.uhull(["Li", "Co", "O"], "orb-v3", exclude=Composition("LiCoO2"))
+    assert seen
+    ids = {str(e.entry_id) for e in refs if e.composition.reduced_formula == "LiCoO2"}
+    assert not ids & set(seen)

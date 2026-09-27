@@ -1,0 +1,8 @@
+# 양극재 후보 캠페인 — 목표 추천 상위 조성 중 다음에 L2(uMLIP)로 확인할 것을 고른다 (가장 안정한 쪽으로)
+id: camp-li-mn-o-cathode
+name: Li–Mn(–Ni/Co)–O 양극재 — 다음 L2 확인 대상
+description: goal-li-mn-o-cathode 의 추천 상위 300개가 후보. 측정값은 L2 hull 거리(두 모델 평균)
+goal: goal-li-mn-o-cathode
+pool: 300
+target: {prop: ehull, direction: min}
+batch: 5

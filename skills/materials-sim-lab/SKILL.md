@@ -55,3 +55,5 @@ assays: auto                                              # 또는 [S0, A4, A5]
 | `recommend(goal_yaml)` | 원소·조건·정렬을 주면 조성 후보 순위. 예: `required: [Li, Mn, O]`, `constraints: [{prop: ehull, max: 0.05}]` |
 | `l2_result(화학식)` | 이미 계산한 uMLIP 안정성·포논·DFT 승격 판단. 새 계산은 사용자가 웹이나 `msl l2` 로 돌린다 |
 | `list_reports` | 저장된 리포트 목록 |
+| `list_campaigns` · `suggest_next(파일)` | 베이지안 최적화 — 지금까지 잰 값을 보고 다음에 L2·DFT·실험으로 잴 조성 제안 (평균±표준편차) |
+| `add_measurement(파일, 화학식, 값, 출처)` | 사용자가 실제로 잰 값만 넣는다. 추정·예측값을 측정값으로 넣지 않는다. 출처: L2·DFT·실험·기타 |

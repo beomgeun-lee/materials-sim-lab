@@ -38,6 +38,9 @@ l2 = [
     "orb-models>=0.7.0",
     "phonopy>=4.7.1",
 ]
+bo = [
+    "baybe>=0.15.0",
+]
 
 [dependency-groups]
 dev = ["pytest>=8"]

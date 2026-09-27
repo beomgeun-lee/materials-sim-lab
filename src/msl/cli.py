@@ -287,6 +287,43 @@ def bench_umlip(
         typer.echo(f"저장: {save}")
 
 
+@bench_app.command("suggest")
+def bench_suggest(
+    rounds: Annotated[int, typer.Option("--rounds")] = 8,
+    batch: Annotated[int, typer.Option("--batch")] = 5,
+    seeds: Annotated[int, typer.Option("--seeds")] = 3,
+    save: Annotated[Path | None, typer.Option("--save", help="결과 JSON")] = None,
+) -> None:
+    """제안(BayBE) 되돌아보기 — MP 조성을 안 잰 후보로 두고 안정 조성을 무작위보다 빨리 찾는지 (D25)."""
+    import json
+
+    from msl.bench import suggest as bs
+
+    res = bs.run(rounds, batch, seeds, log=typer.echo)
+    f = res["found_fraction"]
+    typer.echo(f"\n회차별 안정 조성 찾은 비율 — BayBE {f['bo']} · 무작위 {f['random']}")
+    if save:
+        save.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {save}")
+
+
+@bench_app.command("l2-f1")
+def bench_l2_f1(
+    n: Annotated[int, typer.Option("--n", help="안정·불안정 각각 개수")] = 15,
+    save: Annotated[Path, typer.Option("--save", help="결과 JSON (이어 쓰기)")] = Path("kb/validation/l2_f1.json"),
+) -> None:
+    """L2 안정성 판정 F1 — MP 조성을 모른다고 치고 판정해 MP 와 비교 (4단계 완료 기준 F1 ≥ 0.85, D24). 몇 시간 걸림."""
+    from msl.bench import l2_f1
+
+    res = l2_f1.bench(save, n_pos=n, n_neg=n, log=typer.echo)
+    sc = res["score"]
+    typer.echo(f"\n{sc['n']}개 (건너뜀 {sc['skipped']}) · 주 기준 F1 {sc['main']['f1']:.3f} "
+               f"(정밀 {sc['main']['precision']:.2f} · 재현 {sc['main']['recall']:.2f}) · 기준 0.85 → "
+               f"{'충족' if sc['main']['f1'] >= 0.85 else '미달'}")
+    typer.echo(f"제품 규칙(예측 ≤ 0.05) F1 {sc['product_rule']['f1']:.3f} · MP 구조 준 경우 F1 {sc['given_structure']['f1']:.3f} · "
+               f"MAE 예측 {sc['mae_pred']:.3f} / MP 구조 {sc['mae_given']:.3f} eV/atom")
+
+
 @bench_app.command("l2")
 def bench_l2(
     formulas: Annotated[str, typer.Option("--formulas", help="쉼표로")] = "LiMn2O4,LiCoO2,Li2MnO3,LiFeO2,Mg2SiO4,ZnFe2O4,BaTiO3",
@@ -583,3 +620,82 @@ def recipe_check(paths: list[Path], kb: KbOption = KB_DIR) -> None:
         typer.secho(f"✓ {path}  [{recipe.id}] {refs}", fg=typer.colors.GREEN)
     if failed:
         raise typer.Exit(1)
+
+
+# ── 다음에 시험할 조합 (BayBE) ─────────────────────────────────────────────
+
+suggest_app = typer.Typer(help="다음에 시험할 조합 — 잰 값을 보고 다음 조성을 고른다 (BayBE, 선택 설치 bo)", no_args_is_help=True)
+app.add_typer(suggest_app, name="suggest")
+
+
+def _campaign(path: Path):
+    from msl.suggest import load_campaign
+
+    try:
+        return load_campaign(path)
+    except Exception as exc:
+        typer.secho(f"캠페인 파일 오류: {exc}", fg=typer.colors.RED)
+        raise typer.Exit(1) from exc
+
+
+@suggest_app.command("next")
+def suggest_next(
+    campaign: Annotated[Path, typer.Argument(help="캠페인 YAML (examples/campaigns)")],
+    batch: Annotated[int | None, typer.Option("--batch", help="제안 개수 (기본: 파일의 batch)")] = None,
+) -> None:
+    """다음에 잴 조성을 제안한다. 처음엔 고르게, 측정값이 쌓이면 대리모델로."""
+    from msl.suggest import suggest
+
+    spec = _campaign(campaign)
+    res = suggest(spec, batch)
+    typer.echo(f"{spec.name} · 목표 {res['target']} · 후보 {res['n_candidates']}개 · 잰 것 {res['n_measured']}개")
+    if res["best_measured"]:
+        b = res["best_measured"]
+        typer.echo(f"지금까지 가장 좋은 값: {b['formula']} {b['value']:+.4g} ({b['source']})")
+    for i, s in enumerate(res["suggestions"], 1):
+        pri = "—" if s["prior"] is None else f"{s['prior']:+.3f} ({s['prior_source']})"
+        post = f" · 대리모델 {s['mean']:+.3f} ± {s['std']:.3f}" if "mean" in s else ""
+        typer.echo(f"  {i}. {s['formula']:16} 사전값 {pri}{post}")
+    for n in res["notes"]:
+        typer.secho(f"  ※ {n}", fg=typer.colors.YELLOW)
+
+
+@suggest_app.command("add")
+def suggest_add(
+    campaign: Annotated[Path, typer.Argument()],
+    formula: Annotated[str, typer.Argument()],
+    value: Annotated[float, typer.Argument(help="잰 값 (목표 물성의 단위)")],
+    source: Annotated[str, typer.Option("--source", help="L2 · DFT · 실험 · 기타")] = "실험",
+    note: Annotated[str, typer.Option("--note")] = "",
+) -> None:
+    """측정값 하나를 더한다 (data/campaigns/{id}.csv)."""
+    from msl.suggest import add_measurement
+
+    if source not in ("L2", "DFT", "실험", "기타"):
+        typer.secho("--source 는 L2 · DFT · 실험 · 기타 중 하나", fg=typer.colors.RED)
+        raise typer.Exit(1)
+    row = add_measurement(_campaign(campaign), formula, value, source, note)  # type: ignore[arg-type]
+    typer.echo(f"더함: {row['formula']} = {row['value']:g} ({row['source']})")
+
+
+@suggest_app.command("import-l2")
+def suggest_import_l2(
+    campaign: Annotated[Path, typer.Argument()],
+    formulas: Annotated[list[str], typer.Argument(help="조성들 (msl l2 로 계산해 둔 것)")],
+) -> None:
+    """저장된 L2 결과를 측정값으로 가져온다 (목표가 hull 거리일 때)."""
+    from msl.suggest import import_l2
+
+    added = import_l2(_campaign(campaign), formulas)
+    typer.echo(f"가져옴 {len(added)}개" + "".join(f"\n  {r['formula']} {r['value']:+.4f}" for r in added))
+
+
+@suggest_app.command("show")
+def suggest_show(campaign: Annotated[Path, typer.Argument()]) -> None:
+    """측정값 목록."""
+    from msl.suggest import measurements
+
+    rows = measurements(_campaign(campaign))
+    typer.echo(f"측정값 {len(rows)}개")
+    for r in rows:
+        typer.echo(f"  {r['formula']:16} {r['value']:+.4g}  {r['source']:3} {r['added']}  {r['note']}")

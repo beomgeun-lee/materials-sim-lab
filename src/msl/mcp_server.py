@@ -30,7 +30,8 @@ INSTRUCTIONS = """materials-sim-lab — 물질 조합(레시피)을 가상 시�
 흐름: search_substance 로 성분 확인 → check_recipe 로 레시피 YAML 검증 → run_recipe 로 실행(리포트 id 반환) → get_report.
 레시피 형식은 get_recipe 로 예제를 한 번 읽어 보면 된다. 결과마다 충실도(L0 DB 조회, L1 예측, L2 uMLIP, T 평형)와
 출처·라이선스가 붙는다. S0 가 위험을 찾으면 다른 시험보다 먼저 알린다 — 사용자에게 반드시 전달할 것.
-새 조성의 물성은 predict_properties(L1, 80% 구간), 목표로 조성 찾기는 recommend."""
+새 조성의 물성은 predict_properties(L1, 80% 구간), 목표로 조성 찾기는 recommend,
+평가 비용이 큰 단계(L2·DFT·실험)에서 다음에 잴 조성은 suggest_next (측정값은 add_measurement)."""
 
 mcp = MCPServer("materials-sim-lab", instructions=INSTRUCTIONS)
 
@@ -244,6 +245,62 @@ def l2_result(formula: str) -> dict[str, Any] | None:
     from msl import l2
 
     return l2.saved(formula)
+
+
+CAMPAIGNS = [wb.ROOT / "examples" / "campaigns", wb.ROOT / "campaigns"]
+
+
+def _campaign(file: str):
+    from msl.suggest import load_campaign
+
+    for folder in CAMPAIGNS:
+        path = folder / file
+        if re.fullmatch(r"[A-Za-z0-9._\-]+\.yaml", file) and path.exists():
+            return load_campaign(path)
+    raise ToolError(f"캠페인 파일이 없음: {file} (examples/campaigns · campaigns)")
+
+
+@mcp.tool(annotations=READ)
+def list_campaigns() -> list[dict[str, Any]]:
+    """베이지안 최적화 캠페인 목록 — 파일 이름, 목표, 측정값 개수."""
+    from msl.suggest import load_campaign, measurements
+
+    out = []
+    for folder in CAMPAIGNS:
+        for p in sorted(folder.glob("*.yaml")):
+            try:
+                c = load_campaign(p)
+            except Exception:
+                continue
+            out.append({"file": p.name, "id": c.id, "name": c.name, "target": c.target.text(), "n_measured": len(measurements(c))})
+    return out
+
+
+@mcp.tool(annotations=COMPUTE)
+def suggest_next(campaign_file: str, batch: int | None = None) -> dict[str, Any]:
+    """다음에 잴(L2·DFT·실험) 조성 제안 — BayBE 베이지안 최적화. 측정값이 없으면 고르게, 쌓이면 대리모델 평균±표준편차와 함께.
+    notes 의 경고(측정 출처 섞임 등)는 사용자에게 전할 것. 선택 설치 bo 가 필요하다."""
+    try:
+        from msl.suggest import suggest
+    except ImportError as exc:
+        raise ToolError("BayBE 가 없음 — uv sync --extra bo") from exc
+    try:
+        return suggest(_campaign(campaign_file), batch)
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False))
+def add_measurement(campaign_file: str, formula: str, value: float, source: str, note: str = "") -> dict[str, Any]:
+    """캠페인에 측정값 하나를 더한다. source: L2 · DFT · 실험 · 기타. 사용자가 준 값만 넣을 것 — 추정값을 넣지 않는다."""
+    from msl.suggest import add_measurement as _add
+
+    if source not in ("L2", "DFT", "실험", "기타"):
+        raise ToolError("source 는 L2 · DFT · 실험 · 기타 중 하나")
+    try:
+        return _add(_campaign(campaign_file), formula, value, source, note)  # type: ignore[arg-type]
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
 
 
 def main() -> None:

@@ -57,7 +57,7 @@ def test_lists_minimal_tools() -> None:
 
     tools = asyncio.run(go())
     assert {"search_substance", "check_recipe", "run_recipe", "get_report", "list_reports", "list_assays",
-            "predict_properties", "recommend", "l2_result"} <= set(tools)
+            "predict_properties", "recommend", "l2_result", "suggest_next", "add_measurement", "list_campaigns"} <= set(tools)
     assert tools["get_report"].annotations.read_only_hint is True
     assert tools["save_recipe"].annotations.read_only_hint is False
 
@@ -121,3 +121,17 @@ def test_predict_properties() -> None:
         pytest.skip("L1 모델 없음 (msl ml train)")
     r = data(call("predict_properties", {"formulas": ["LiCoO2", "염산"]}))
     assert r[0]["formula"] == "LiCoO2" and "error" not in r[0]
+
+
+def test_campaign_tools(tmp_path, monkeypatch) -> None:
+    pytest.importorskip("baybe")
+    from msl import suggest as sg
+
+    monkeypatch.setattr(sg, "STORE", tmp_path / "campaigns")
+    assert "li-mn-o-cathode.yaml" in {c["file"] for c in data(call("list_campaigns"))}
+    with pytest.raises(ToolFailed, match="source"):
+        call("add_measurement", {"campaign_file": "li-mn-o-cathode.yaml", "formula": "LiMnO2", "value": 0.0, "source": "추정"})
+    with pytest.raises(ToolFailed, match="캠페인 파일이 없음"):
+        call("suggest_next", {"campaign_file": "../../.env"})
+    assert data(call("add_measurement", {"campaign_file": "li-mn-o-cathode.yaml", "formula": "LiMnO2", "value": 0.0,
+                                         "source": "L2"}))["formula"] == "LiMnO2"
