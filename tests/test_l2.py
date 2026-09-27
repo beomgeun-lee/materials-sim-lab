@@ -77,3 +77,38 @@ def test_l2_web_saved_results(tmp_path, monkeypatch) -> None:
         web.l2_start(web.L2Request(formula="Xx9"))
     with pytest.raises(HTTPException):
         web.l2_status("없는작업")
+
+
+@pytest.mark.parametrize(("formula", "expect"), [
+    ("Li6MnNi3O10", {"Li": 1, "Mn": 3.5, "Ni": 3.5, "O": -2}),  # Ni 는 ICSD 에 +1~+4 → 가변 (pymatgen 추정은 Mn⁷⁺ 를 고름)
+    ("LiCoO2", {"Li": 1, "Co": 3, "O": -2}), ("Mg2SiO4", {"Mg": 2, "Si": 4, "O": -2}), ("Li2MnO3", {"Li": 1, "Mn": 4, "O": -2}),
+])
+def test_charges(formula: str, expect: dict) -> None:
+    q = l2.charges(Composition(formula))
+    assert q == pytest.approx(expect)
+    assert sum(Composition(formula)[e] * v for e, v in q.items()) == pytest.approx(0)
+
+
+def test_ewald_orderings_rocksalt() -> None:
+    t = Composition("Li6MnNi3O10")
+    out = l2.ewald_orderings(rocksalt(), t, 4, 40)
+    assert 1 <= len(out) <= 4 and all(len(s) == 20 for s in out)
+    assert all(s.composition.reduced_composition.almost_equals(t.reduced_composition) for s in out)
+    assert all(type(site.specie).__name__ == "Element" for s in out for site in s)  # 산화수 표시는 지운다
+    li_sets = {frozenset(tuple(np.round(site.frac_coords, 3)) for site in s if str(site.specie) == "Li") for s in out}
+    assert len(li_sets) == len(out)  # 서로 다른 배치 (Ewald 변환은 원자 순서를 원소별로 정렬해 돌려준다)
+
+
+@pytest.mark.skipif(not (l2.mp.CACHE / "entries_Li-Mn-Ni-O_GGA_GGA+U.pkl").exists(), reason="MP Li-Mn-Ni-O 캐시 없음")
+def test_candidates_mix() -> None:
+    labels = [lb for lb, _ in l2.candidates(Composition("Li6MnNi3O10"), use_prototypes=False)]
+    assert any("Ewald" in lb for lb in labels) and any("무작위" in lb for lb in labels)
+    assert not any("Li6MnNi3O10" in lb.split("(")[0] for lb in labels)
+
+
+@pytest.mark.skipif(not (l2.mp.CACHE / "proto_AB2C4_O.pkl").exists(), reason="원형 캐시 없음 (MP 조회 필요)")
+def test_prototypes_spinel() -> None:
+    """LiMn2O4 를 모른다고 치면 다른 화학계의 스피넬(AB2O4)을 Li·Mn 으로 장식한다."""
+    got = l2.prototypes(Composition("LiMn2O4"), exclude_chemsys="Li-Mn-O")
+    assert got and all(s.composition.reduced_composition.almost_equals(Composition("LiMn2O4").reduced_composition) for _, s in got)
+    assert all("Li-Mn-O" not in lb for lb, _ in got)

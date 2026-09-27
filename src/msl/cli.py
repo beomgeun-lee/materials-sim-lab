@@ -279,6 +279,41 @@ def bench_umlip(
         typer.echo(f"저장: {save}")
 
 
+@bench_app.command("l2")
+def bench_l2(
+    formulas: Annotated[str, typer.Option("--formulas", help="쉼표로")] = "LiMn2O4,LiCoO2,Li2MnO3,LiFeO2,Mg2SiO4,ZnFe2O4,BaTiO3",
+    methods: Annotated[str, typer.Option("--methods", help="v1(무작위) · v2(Ewald+원형)")] = "v1,v2",
+    save: Annotated[Path | None, typer.Option("--save", help="결과 JSON")] = None,
+) -> None:
+    """L2 재발견 시험 — DB 물질을 모른다고 치고 구조를 생성해 DB 구조와의 에너지 차이를 잰다 (후보 생성 방식 비교)."""
+    import json
+    import statistics
+
+    from msl import l2
+
+    rows = []
+    for f in formulas.split(","):
+        for m in methods.split(","):
+            try:
+                rows.append(l2.rediscover(f, method=m, log=typer.echo))
+            except Exception as exc:
+                typer.secho(f"  {f} {m}: 실패 — {exc}", fg=typer.colors.RED)
+    typer.echo(f"\n{'조성':10} {'방식':4} {'후보':>4} {'ORB 차이':>9} {'MACE 차이':>10}  최선 후보 (ORB)")
+    for r in rows:
+        o, m_ = r["models"].get("orb-v3", {}), r["models"].get("mace-mpa-0", {})
+        typer.echo(f"{r['formula']:10} {r['method']:4} {r['n_candidates']:>4} {o.get('gap', float('nan')):+9.3f} {m_.get('gap', float('nan')):+10.3f}  {o.get('best', '')}")
+    for m in methods.split(","):
+        mine = [r for r in rows if r["method"] == m and "orb-v3" in r["models"]]
+        gaps = [r["models"]["orb-v3"]["gap"] for r in mine if r["n_candidates"]]
+        none = sum(1 for r in mine if not r["n_candidates"])
+        if mine:
+            typer.echo(f"{m}: ORB 차이 중앙값 {statistics.median(gaps) if gaps else float('nan'):+.3f} · "
+                       f"0.01 이내 재발견 {sum(g <= 0.01 for g in gaps)}/{len(mine)}" + (f" · 후보를 못 만듦 {none}" if none else ""))
+    if save:
+        save.write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {save}")
+
+
 @bench_app.command("phreeqc")
 def bench_phreeqc(
     dist: Annotated[Path, typer.Option("--dist", help="USGS PHREEQC 배포본 폴더 (phreeqc-3.8.6-17100)")],
@@ -426,7 +461,7 @@ def recommend_cmd(
 def l2_cmd(
     formula: Annotated[str, typer.Argument(help="화학식 (예: Li6MnNi3O10, LiCoO2)")],
     models: Annotated[str, typer.Option("--models", help="쉼표로 (mace-mpa-0, orb-v3)")] = "mace-mpa-0,orb-v3",
-    orderings: Annotated[int, typer.Option("--orderings", help="모체마다 무작위 배치 수")] = 6,
+    orderings: Annotated[int, typer.Option("--orderings", help="모체마다 Ewald 순위 배치 수 (무작위 2개는 별도)")] = 4,
     max_atoms: Annotated[int, typer.Option("--max-atoms", help="후보 구조 원자 수 상한")] = 40,
     json_out: Annotated[Path | None, typer.Option("--json", help="결과 JSON")] = None,
 ) -> None:
