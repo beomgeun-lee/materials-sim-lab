@@ -1,5 +1,5 @@
 {
- "created": "2026-09-27T22:19:55",
+ "created": "2026-09-27T20:57:56",
  "criteria": "분해 에너지 ≤ 0 (정답·예측), 대상 조성 제외 hull",
  "rows": [
   {
@@ -10,22 +10,22 @@
    "sites": 4,
    "label": true,
    "truth": -0.0241,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
-     "pred": -0.0175,
+     "pred": -0.0174,
      "given": -0.0175,
-     "best": "원형 LiCrO2(mp-18793)"
+     "best": "Li2CoO3(mp-1173879-GGA+U) Ewald 4"
     },
     "mace-mpa-0": {
-     "pred": -0.0278,
+     "pred": -0.0336,
      "given": -0.0278,
-     "best": "Li2CoO3(mp-1173879-GGA+U) Ewald 4"
+     "best": "원형 LiVO2(mp-1176523)"
     }
    },
-   "pred": -0.0226,
+   "pred": -0.0255,
    "given": -0.0226,
-   "seconds": 32.4
+   "seconds": 36.7
   },
   {
    "formula": "BaTiO3",
@@ -35,7 +35,7 @@
    "sites": 5,
    "label": true,
    "truth": -0.0222,
-   "n_candidates": 11,
+   "n_candidates": 9,
    "models": {
     "orb-v3": {
      "pred": -0.0215,
@@ -50,7 +50,7 @@
    },
    "pred": -0.0216,
    "given": -0.0217,
-   "seconds": 57.7
+   "seconds": 28.0
   },
   {
    "formula": "LiMnO2",
@@ -60,7 +60,7 @@
    "sites": 8,
    "label": true,
    "truth": -0.0285,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
      "pred": -0.0265,
@@ -75,7 +75,7 @@
    },
    "pred": -0.0227,
    "given": -0.0181,
-   "seconds": 19.9
+   "seconds": 23.1
   },
   {
    "formula": "LiTiO2",
@@ -85,7 +85,7 @@
    "sites": 8,
    "label": true,
    "truth": -0.0159,
-   "n_candidates": 24,
+   "n_candidates": 22,
    "models": {
     "orb-v3": {
      "pred": -0.0037,
@@ -100,7 +100,7 @@
    },
    "pred": -0.0033,
    "given": -0.0064,
-   "seconds": 14.9
+   "seconds": 4.6
   },
   {
    "formula": "Ca3SiO",
@@ -110,12 +110,12 @@
    "sites": 10,
    "label": true,
    "truth": -0.0298,
-   "n_candidates": 3,
+   "n_candidates": 4,
    "models": {
     "orb-v3": {
-     "pred": -0.0128,
+     "pred": -0.0138,
      "given": -0.0133,
-     "best": "원형 Sr3SiO(mp-30949)"
+     "best": "원형 Ca3GeO(mp-17193)"
     },
     "mace-mpa-0": {
      "pred": -0.0194,
@@ -123,9 +123,9 @@
      "best": "원형 Sr3SiO(mp-30949)"
     }
    },
-   "pred": -0.0161,
+   "pred": -0.0166,
    "given": -0.0159,
-   "seconds": 7.8
+   "seconds": 1.6
   },
   {
    "formula": "MgTiO3",
@@ -135,7 +135,7 @@
    "sites": 10,
    "label": true,
    "truth": -0.0101,
-   "n_candidates": 17,
+   "n_candidates": 15,
    "models": {
     "orb-v3": {
      "pred": -0.0096,
@@ -145,12 +145,12 @@
     "mace-mpa-0": {
      "pred": -0.0144,
      "given": -0.0144,
-     "best": "Ti2O3(mp-458-GGA) Ewald 3"
+     "best": "원형 TiMnO3(mp-19082)"
     }
    },
    "pred": -0.012,
    "given": -0.012,
-   "seconds": 74.0
+   "seconds": 32.2
   },
   {
    "formula": "Li2NiO3",
@@ -160,7 +160,7 @@
    "sites": 12,
    "label": true,
    "truth": -0.0274,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
      "pred": -0.0236,
@@ -170,12 +170,12 @@
     "mace-mpa-0": {
      "pred": -0.0175,
      "given": -0.0175,
-     "best": "원형 Li2TiO3(mp-2931)"
+     "best": "원형 Li2CoO3(mp-1173879)"
     }
    },
    "pred": -0.0205,
    "given": -0.0205,
-   "seconds": 18.7
+   "seconds": 7.8
   },
   {
    "formula": "Li2SiO3",
@@ -185,22 +185,22 @@
    "sites": 12,
    "label": true,
    "truth": -0.0375,
-   "n_candidates": 12,
+   "n_candidates": 13,
    "models": {
     "orb-v3": {
-     "pred": -0.0372,
+     "pred": 0.0543,
      "given": -0.0374,
-     "best": "원형 Li2GeO3(mp-15349)"
+     "best": "원형 Li2NiO3(mp-674420)"
     },
     "mace-mpa-0": {
-     "pred": -0.0376,
+     "pred": 0.0604,
      "given": -0.0378,
-     "best": "원형 Li2GeO3(mp-15349)"
+     "best": "원형 Li2NiO3(mp-674420)"
     }
    },
-   "pred": -0.0374,
+   "pred": 0.0573,
    "given": -0.0376,
-   "seconds": 0.9
+   "seconds": 6.8
   },
   {
    "formula": "Na2SiO3",
@@ -210,7 +210,7 @@
    "sites": 12,
    "label": true,
    "truth": -0.0448,
-   "n_candidates": 12,
+   "n_candidates": 15,
    "models": {
     "orb-v3": {
      "pred": -0.0526,
@@ -225,7 +225,7 @@
    },
    "pred": -0.0518,
    "given": -0.052,
-   "seconds": 131.0
+   "seconds": 0.8
   },
   {
    "formula": "Ca2Ti3O8",
@@ -235,7 +235,7 @@
    "sites": 13,
    "label": true,
    "truth": -0.0073,
-   "n_candidates": 18,
+   "n_candidates": 16,
    "models": {
     "orb-v3": {
      "pred": -0.0073,
@@ -250,7 +250,7 @@
    },
    "pred": -0.008,
    "given": -0.008,
-   "seconds": 85.0
+   "seconds": 0.4
   },
   {
    "formula": "K3AlO3",
@@ -260,7 +260,7 @@
    "sites": 14,
    "label": true,
    "truth": -0.0466,
-   "n_candidates": 6,
+   "n_candidates": 4,
    "models": {
     "orb-v3": {
      "pred": -0.0674,
@@ -268,14 +268,14 @@
      "best": "원형 Rb3AlO3(mp-14951)"
     },
     "mace-mpa-0": {
-     "pred": -0.0694,
+     "pred": -0.0687,
      "given": -0.0689,
-     "best": "원형 Rb3FeO3(mp-756020)"
+     "best": "원형 Rb3AlO3(mp-14951)"
     }
    },
-   "pred": -0.0684,
+   "pred": -0.068,
    "given": -0.0683,
-   "seconds": 79.2
+   "seconds": 1.7
   },
   {
    "formula": "MgAl2O4",
@@ -285,7 +285,7 @@
    "sites": 14,
    "label": true,
    "truth": -0.0433,
-   "n_candidates": 6,
+   "n_candidates": 10,
    "models": {
     "orb-v3": {
      "pred": -0.0586,
@@ -300,7 +300,7 @@
    },
    "pred": -0.0569,
    "given": -0.0568,
-   "seconds": 82.4
+   "seconds": 1.2
   },
   {
    "formula": "Zn(FeO2)2",
@@ -310,22 +310,22 @@
    "sites": 14,
    "label": true,
    "truth": -0.014,
-   "n_candidates": 18,
+   "n_candidates": 16,
    "models": {
     "orb-v3": {
      "pred": -0.0705,
      "given": -0.0705,
-     "best": "ZnFe5O8(mp-35033-GGA+U) Ewald 1"
+     "best": "원형 MgTi2O4(mp-27872)"
     },
     "mace-mpa-0": {
-     "pred": -0.0916,
+     "pred": -0.0917,
      "given": -0.0917,
-     "best": "원형 MgTi2O4(mp-1194382)"
+     "best": "원형 MgTi2O4(mp-27872)"
     }
    },
-   "pred": -0.081,
+   "pred": -0.0811,
    "given": -0.0811,
-   "seconds": 81.8
+   "seconds": 0.4
   },
   {
    "formula": "LiAlO2",
@@ -335,7 +335,7 @@
    "sites": 16,
    "label": true,
    "truth": -0.0883,
-   "n_candidates": 9,
+   "n_candidates": 10,
    "models": {
     "orb-v3": {
      "pred": -0.0751,
@@ -350,7 +350,7 @@
    },
    "pred": -0.0741,
    "given": -0.089,
-   "seconds": 10.3
+   "seconds": 7.9
   },
   {
    "formula": "LiFeO2",
@@ -360,22 +360,22 @@
    "sites": 16,
    "label": true,
    "truth": -0.0704,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
-     "pred": -0.0745,
+     "pred": -0.0743,
      "given": -0.0595,
-     "best": "원형 LiVO2(mp-19340)"
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 3"
     },
     "mace-mpa-0": {
-     "pred": -0.0567,
+     "pred": -0.0564,
      "given": -0.0409,
-     "best": "원형 LiVO2(mp-19340)"
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 3"
     }
    },
-   "pred": -0.0656,
+   "pred": -0.0654,
    "given": -0.0502,
-   "seconds": 200.2
+   "seconds": 7.5
   },
   {
    "formula": "Li2CoO2",
@@ -385,7 +385,7 @@
    "sites": 5,
    "label": false,
    "truth": 0.0257,
-   "n_candidates": 24,
+   "n_candidates": 22,
    "models": {
     "orb-v3": {
      "pred": 0.0112,
@@ -393,14 +393,14 @@
      "best": "원형 Li2FeO2(mp-755094)"
     },
     "mace-mpa-0": {
-     "pred": -0.0171,
+     "pred": -0.0172,
      "given": 0.0077,
-     "best": "원형 Li2CuO2(mp-4711)"
+     "best": "원형 Li2PdO2(mp-7608)"
     }
    },
    "pred": -0.003,
    "given": 0.0179,
-   "seconds": 26.3
+   "seconds": 0.5
   },
   {
    "formula": "Li2MnO2",
@@ -410,22 +410,22 @@
    "sites": 5,
    "label": false,
    "truth": 0.0096,
-   "n_candidates": 18,
+   "n_candidates": 16,
    "models": {
     "orb-v3": {
-     "pred": -0.0002,
+     "pred": 0.0376,
      "given": -0.0006,
-     "best": "원형 Li2NiO2(mp-19308)"
+     "best": "Li5MnO4(mp-774621-GGA+U) Ewald 2"
     },
     "mace-mpa-0": {
-     "pred": -0.0042,
+     "pred": 0.0333,
      "given": -0.0042,
-     "best": "원형 Li2NiO2(mp-19308)"
+     "best": "Li5MnO4(mp-774621-GGA+U) Ewald 2"
     }
    },
-   "pred": -0.0022,
+   "pred": 0.0355,
    "given": -0.0024,
-   "seconds": 22.3
+   "seconds": 0.6
   },
   {
    "formula": "Li2NiO2",
@@ -435,7 +435,7 @@
    "sites": 5,
    "label": false,
    "truth": 0.0025,
-   "n_candidates": 12,
+   "n_candidates": 10,
    "models": {
     "orb-v3": {
      "pred": 0.0674,
@@ -443,14 +443,14 @@
      "best": "Li5NiO4(mp-774500-GGA+U) Ewald 1"
     },
     "mace-mpa-0": {
-     "pred": 0.0497,
+     "pred": 0.0468,
      "given": -0.01,
-     "best": "Li5NiO4(mp-774500-GGA+U) Ewald 1"
+     "best": "원형 Li2PdO2(mp-7608)"
     }
    },
-   "pred": 0.0586,
+   "pred": 0.0571,
    "given": -0.0108,
-   "seconds": 33.8
+   "seconds": 0.4
   },
   {
    "formula": "Ca2TiO4",
@@ -460,22 +460,22 @@
    "sites": 7,
    "label": false,
    "truth": 0.0361,
-   "n_candidates": 16,
+   "n_candidates": 14,
    "models": {
     "orb-v3": {
-     "pred": -0.0481,
+     "pred": 0.0104,
      "given": 0.0343,
-     "best": "원형 Ca2GeO4(mp-560647)"
+     "best": "원형 Ca2SnO4(mp-4747)"
     },
     "mace-mpa-0": {
-     "pred": -0.0428,
+     "pred": 0.0215,
      "given": 0.0365,
-     "best": "원형 Ca2GeO4(mp-560647)"
+     "best": "원형 Ca2MnO4(mp-19050)"
     }
    },
-   "pred": -0.0454,
+   "pred": 0.0159,
    "given": 0.0354,
-   "seconds": 33.8
+   "seconds": 0.4
   },
   {
    "formula": "LiTi3O6",
@@ -485,7 +485,7 @@
    "sites": 10,
    "label": false,
    "truth": 0.0313,
-   "n_candidates": 15,
+   "n_candidates": 13,
    "models": {
     "orb-v3": {
      "pred": 0.0264,
@@ -500,7 +500,7 @@
    },
    "pred": 0.02,
    "given": 0.0321,
-   "seconds": 30.6
+   "seconds": 0.4
   },
   {
    "formula": "Ba3Ti2O7",
@@ -510,22 +510,22 @@
    "sites": 12,
    "label": false,
    "truth": 0.0319,
-   "n_candidates": 21,
+   "n_candidates": 22,
    "models": {
     "orb-v3": {
-     "pred": 0.028,
+     "pred": 0.0279,
      "given": 0.0278,
-     "best": "원형 Ba3Sn2O7(mp-2205007)"
+     "best": "원형 Ba3Zr2O7(mp-755895)"
     },
     "mace-mpa-0": {
-     "pred": 0.0349,
+     "pred": 0.0348,
      "given": 0.029,
-     "best": "원형 Sr3Ti2O7(mp-3349)"
+     "best": "원형 Ba3Zr2O7(mp-755895)"
     }
    },
    "pred": 0.0314,
    "given": 0.0284,
-   "seconds": 16.8
+   "seconds": 0.4
   },
   {
    "formula": "LiFe2O3",
@@ -535,22 +535,22 @@
    "sites": 12,
    "label": false,
    "truth": 0.0273,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
-     "pred": 0.0155,
+     "pred": 0.0068,
      "given": 0.0331,
-     "best": "Li5Fe7O12(mp-756856-GGA+U) Ewald 4"
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 4"
     },
     "mace-mpa-0": {
-     "pred": -0.0159,
+     "pred": -0.0137,
      "given": 0.0079,
-     "best": "원형 LiNi2O3(mp-757063)"
+     "best": "Li2FeO3(mp-887724-GGA+U) 무작위 1"
     }
    },
-   "pred": -0.0002,
+   "pred": -0.0035,
    "given": 0.0205,
-   "seconds": 145.6
+   "seconds": 0.5
   },
   {
    "formula": "KAlO3",
@@ -560,22 +560,22 @@
    "sites": 5,
    "label": false,
    "truth": 0.2711,
-   "n_candidates": 11,
+   "n_candidates": 9,
    "models": {
     "orb-v3": {
-     "pred": 0.2439,
+     "pred": 0.2109,
      "given": 0.2656,
-     "best": "원형 BaMnO3(mp-18840)"
+     "best": "원형 BaRuO3(mp-3597)"
     },
     "mace-mpa-0": {
-     "pred": 0.2581,
+     "pred": 0.2445,
      "given": 0.2761,
-     "best": "Al2O3(mp-1143-GGA) 무작위 1"
+     "best": "원형 BaRuO3(mp-3597)"
     }
    },
-   "pred": 0.251,
+   "pred": 0.2277,
    "given": 0.2709,
-   "seconds": 29.2
+   "seconds": 0.4
   },
   {
    "formula": "NaAlO3",
@@ -585,7 +585,7 @@
    "sites": 5,
    "label": false,
    "truth": 0.217,
-   "n_candidates": 11,
+   "n_candidates": 9,
    "models": {
     "orb-v3": {
      "pred": 0.213,
@@ -593,14 +593,14 @@
      "best": "원형 NaOsO3(mp-998624)"
     },
     "mace-mpa-0": {
-     "pred": 0.2467,
+     "pred": 0.2472,
      "given": 0.2468,
-     "best": "원형 NaPuO3(mp-976952)"
+     "best": "원형 NaOsO3(mp-998624)"
     }
    },
-   "pred": 0.2298,
+   "pred": 0.2301,
    "given": 0.2299,
-   "seconds": 65.7
+   "seconds": 4.0
   },
   {
    "formula": "NaSiO3",
@@ -610,7 +610,7 @@
    "sites": 5,
    "label": false,
    "truth": 0.2551,
-   "n_candidates": 6,
+   "n_candidates": 4,
    "models": {
     "orb-v3": {
      "pred": 0.1675,
@@ -625,7 +625,7 @@
    },
    "pred": 0.1693,
    "given": 0.272,
-   "seconds": 59.3
+   "seconds": 0.8
   },
   {
    "formula": "LiCo2O3",
@@ -635,22 +635,22 @@
    "sites": 6,
    "label": false,
    "truth": 0.1279,
-   "n_candidates": 21,
+   "n_candidates": 19,
    "models": {
     "orb-v3": {
-     "pred": 0.0462,
+     "pred": 0.0455,
      "given": 0.0631,
-     "best": "원형 LiNi2O3(mp-757063)"
+     "best": "원형 LiNi2O3(mp-1644676)"
     },
     "mace-mpa-0": {
-     "pred": 0.0183,
+     "pred": 0.0202,
      "given": 0.0193,
-     "best": "Li2CoO3(mp-1173879-GGA+U) Ewald 2"
+     "best": "원형 LiNi2O3(mp-1644676)"
     }
    },
-   "pred": 0.0323,
+   "pred": 0.0328,
    "given": 0.0412,
-   "seconds": 58.0
+   "seconds": 0.5
   },
   {
    "formula": "LiTi3O4",
@@ -660,22 +660,22 @@
    "sites": 8,
    "label": false,
    "truth": 0.0665,
-   "n_candidates": 22,
+   "n_candidates": 20,
    "models": {
     "orb-v3": {
-     "pred": 0.0689,
+     "pred": 0.0759,
      "given": 0.0688,
-     "best": "원형 LiV3O4(mp-754378)"
+     "best": "Li2TiO3(mp-36864-GGA) 무작위 1"
     },
     "mace-mpa-0": {
-     "pred": 0.0292,
+     "pred": 0.0269,
      "given": 0.0235,
-     "best": "Li2TiO3(mp-36864-GGA) 무작위 1"
+     "best": "Li2TiO3(mp-36864-GGA) Ewald 2"
     }
    },
-   "pred": 0.0491,
+   "pred": 0.0514,
    "given": 0.0461,
-   "seconds": 46.2
+   "seconds": 0.5
   },
   {
    "formula": "Mg3TiO4",
@@ -685,7 +685,7 @@
    "sites": 8,
    "label": false,
    "truth": 0.2011,
-   "n_candidates": 15,
+   "n_candidates": 13,
    "models": {
     "orb-v3": {
      "pred": 0.0875,
@@ -700,7 +700,7 @@
    },
    "pred": 0.0728,
    "given": 0.1898,
-   "seconds": 4.0
+   "seconds": 0.4
   },
   {
    "formula": "ZnFeO3",
@@ -710,7 +710,7 @@
    "sites": 10,
    "label": false,
    "truth": 0.1137,
-   "n_candidates": 11,
+   "n_candidates": 9,
    "models": {
     "orb-v3": {
      "pred": 0.1053,
@@ -725,7 +725,7 @@
    },
    "pred": 0.1095,
    "given": 0.1095,
-   "seconds": 36.0
+   "seconds": 0.4
   },
   {
    "formula": "Li5MnO5",
@@ -735,7 +735,7 @@
    "sites": 11,
    "label": false,
    "truth": 0.0643,
-   "n_candidates": 2,
+   "n_candidates": 4,
    "models": {
     "orb-v3": {
      "pred": 0.0459,
@@ -750,31 +750,31 @@
    },
    "pred": 0.0314,
    "given": 0.0435,
-   "seconds": 0.6
+   "seconds": 0.8
   }
  ],
  "score": {
   "n": 30,
   "skipped": 0,
   "main": {
-   "f1": 0.882,
-   "precision": 0.789,
-   "recall": 1.0,
-   "accuracy": 0.867,
-   "tp": 15,
-   "fp": 4,
-   "fn": 0,
-   "tn": 11
+   "f1": 0.903,
+   "precision": 0.875,
+   "recall": 0.933,
+   "accuracy": 0.9,
+   "tp": 14,
+   "fp": 2,
+   "fn": 1,
+   "tn": 13
   },
   "product_rule": {
-   "f1": 0.769,
-   "precision": 0.625,
-   "recall": 1.0,
+   "f1": 0.757,
+   "precision": 0.636,
+   "recall": 0.933,
    "accuracy": 0.7,
-   "tp": 15,
-   "fp": 9,
-   "fn": 0,
-   "tn": 6
+   "tp": 14,
+   "fp": 8,
+   "fn": 1,
+   "tn": 7
   },
   "given_structure": {
    "f1": 0.938,
@@ -786,8 +786,8 @@
    "fn": 0,
    "tn": 13
   },
-  "mae_pred": 0.0262,
+  "mae_pred": 0.0285,
   "mae_given": 0.0131,
-  "search_gap_median": -0.0
+  "search_gap_median": 0.0
  }
 }

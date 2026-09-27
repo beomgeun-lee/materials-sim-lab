@@ -170,3 +170,30 @@ def test_reference_entries_keep_large_stable_phases() -> None:
 
     refs = {e.composition.reduced_formula: len(e.structure) for e in l2.reference_entries(["K", "Al", "O"])}
     assert refs.get("KAlO2", 0) > l2.REF_MAX_SITES
+
+
+def test_peroxide_parents_are_excluded() -> None:
+    """Li2O2 처럼 O²⁻ 로 전하를 맞출 수 없는 조성은 모체에서 뺀다 — MP oxide_type 은 'oxide' 로 적기도 한다 (D26)."""
+    from pymatgen.core import Composition
+
+    from msl import l2
+
+    names = [p.composition.reduced_formula for p, _ in l2.parents(Composition("Li2SiO3"), exclude_same=True)]
+    assert "Li2O2" not in names and "Li3SiO4" not in names
+
+
+def test_prototypes_are_diverse_and_include_chain_silicate_type() -> None:
+    """원형은 구조형이 서로 달라야 하고, Li2SiO3 에는 같은 사슬 구조형(Li2GeO3, Cmc2₁)이 들어가야 한다 (D26)."""
+    from pymatgen.core import Composition
+
+    from msl import l2
+
+    labels = [lb for lb, _ in l2.prototypes(Composition("Li2SiO3"), exclude_chemsys="Li-O-Si")]
+    assert any("Li2GeO3" in lb for lb in labels)
+    assert len(labels) == len(set(labels))
+
+
+def test_prototype_mapping_rejects_charge_mismatch() -> None:
+    from msl import l2
+
+    assert l2._ionic_radius(__import__("pymatgen.core", fromlist=["Element"]).Element("Si"), 4) < 0.6

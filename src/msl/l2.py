@@ -115,6 +115,18 @@ def _anion(comp: Composition):
     return max(comp.elements, key=lambda e: e.X if e.X == e.X else 0.0)
 
 
+def _oxide_type(entry) -> str:
+    """산화물 여부 — MP data 의 oxide_type 이 'oxide' 가 아니거나, 양이온의 최대 산화수를 다 더해도 O²⁻ 를 맞출 수 없으면
+    (Li2O2·LiO2 처럼 O–O 결합이 있어야 하는 조성) 산화물이 아니다. MP 의 oxide_type 은 과산화물을 'oxide' 로 적기도 한다."""
+    t = entry.data.get("oxide_type")
+    if t and str(t) != "oxide":
+        return str(t)
+    c = entry.composition
+    top = sum(c[e] * max((s for s in (*e.common_oxidation_states, *e.icsd_oxidation_states) if s > 0), default=0)
+              for e in c.elements if str(e) != "O")
+    return "oxide" if top + 1e-6 >= 2 * c["O"] else "peroxide"
+
+
 def parents(target: Composition, limit: int = 3, exclude_same: bool = False) -> list[tuple[Any, Structure]]:
     """대상과 음이온이 같고 음이온:양이온 비가 같은 알려진 구조 (MP hull 가까운 순) — (엔트리, 기본 셀)."""
     an = _anion(target)
@@ -128,7 +140,7 @@ def parents(target: Composition, limit: int = 3, exclude_same: bool = False) -> 
             continue
         if exclude_same and c.reduced_composition.almost_equals(target.reduced_composition):
             continue  # 재발견 시험 — 정답 구조는 모체로 쓰지 않는다
-        if str(an) == "O" and e.data.get("oxide_type", "oxide") != "oxide":
+        if str(an) == "O" and _oxide_type(e) != "oxide":
             continue  # 과산화물·초산화물(O–O 결합) 구조에 양이온을 치환하면 화학적으로 다른 물질
         r = Fraction(c[an]).limit_denominator(100) / Fraction(c.num_atoms - c[an]).limit_denominator(100)
         if r == ratio:
@@ -242,11 +254,30 @@ def ewald_orderings(parent: Structure, target: Composition, n: int, max_atoms: i
     return []
 
 
-def prototypes(target: Composition, limit: int = 4, max_sites: int = 40, exclude_chemsys: str | None = None) -> list[tuple[str, Structure]]:
+def _ionic_radius(el, q: float) -> float:
+    """산화수에 맞는 이온 반지름 (Shannon, 없으면 평균 이온 반지름 → 원자 반지름)."""
+    import warnings
+
+    from pymatgen.core import Species
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            r = Species(str(el), int(round(q))).ionic_radius
+        if r:
+            return float(r)
+    except Exception:
+        pass
+    return float(el.average_ionic_radius or el.atomic_radius or 1.0)
+
+
+def prototypes(target: Composition, limit: int = 6, max_sites: int = 40, exclude_chemsys: str | None = None) -> list[tuple[str, Structure]]:
     """다른 화학계의 같은 조성 패턴(익명 화학식) 안정 구조를 대상 원소로 장식한 구조.
 
-    음이온은 음이온에, 나머지는 원자 수가 같은 원소끼리 대응시키되 원자 수가 같은 원소가 여럿이면
-    평균 이온 반지름 차이가 가장 작은 배정을 고른다. MP 조회 결과는 캐시한다.
+    음이온은 음이온에, 나머지는 원자 수가 같은 원소끼리 대응시킨다. 배정 비용 = 산화수별 이온 반지름의 상대 차이
+    + 형식 전하 차이의 절반, 전하가 2 이상 다른 배정은 버린다. 같은 구조형(원소를 지운 골격이 같음)은 하나만 남겨
+    서로 다른 구조형을 limit 개까지 고른다 — 반지름만으로 고르면 한 구조형(예: Li2RuO3 층상)으로 몰려
+    Li2SiO3 의 사슬 구조(Na2SiO3 형)를 놓쳤다 (D26). MP 조회 결과는 캐시한다.
     """
     import itertools
     import pickle
@@ -265,7 +296,7 @@ def prototypes(target: Composition, limit: int = 4, max_sites: int = 40, exclude
         mp.CACHE.mkdir(parents=True, exist_ok=True)
         path.write_bytes(pickle.dumps(docs))
     tgt_counts = {e: target.get_el_amt_dict()[str(e)] for e in target.elements}
-    rad = lambda e: e.average_ionic_radius or e.atomic_radius or 1.0
+    q_t = charges(target)
     scored = []
     for mid, f, chemsys, eh, st in docs:
         if exclude_chemsys and chemsys == exclude_chemsys:
@@ -275,24 +306,41 @@ def prototypes(target: Composition, limit: int = 4, max_sites: int = 40, exclude
         if str(p_an) != str(an):
             continue
         pcounts = pc.get_el_amt_dict()
+        try:
+            q_p = charges(pc)
+        except Exception:
+            continue
         best = None
         others_t = [e for e in target.elements if e != an]
         others_p = [e for e in pc.elements if e != p_an]
         for perm in itertools.permutations(others_t):
             if any(abs(pcounts[str(pe)] - tgt_counts[te]) > 1e-6 for pe, te in zip(others_p, perm)):
                 continue
-            cost = sum(abs(float(rad(pe)) - float(rad(te))) for pe, te in zip(others_p, perm))
+            dq = [abs(q_p[str(pe)] - q_t[str(te)]) for pe, te in zip(others_p, perm)]
+            if max(dq) > 1.01:
+                continue  # 형식 전하가 2 이상 다른 자리 (예: H⁺ 자리에 Si⁴⁺)
+            cost = sum(abs(_ionic_radius(pe, q_p[str(pe)]) - _ionic_radius(te, q_t[str(te)])) / _ionic_radius(te, q_t[str(te)])
+                       + 0.5 * d for pe, te, d in zip(others_p, perm, dq))
             if best is None or cost < best[0]:
                 best = (cost, dict(zip(map(str, others_p), map(str, perm))))
         if best is None:
             continue
         scored.append((best[0], eh, mid, f, st, best[1]))
     scored.sort(key=lambda x: (x[0], x[1]))
-    out = []
-    for cost, eh, mid, f, st, mapping in scored[:limit]:
+    from pymatgen.analysis.structure_matcher import StructureMatcher
+
+    sm = StructureMatcher(ltol=0.3, stol=0.5, angle_tol=10, primitive_cell=True, scale=True)
+    out: list[tuple[str, Structure]] = []
+    kept: list[Structure] = []
+    for cost, eh, mid, f, st, mapping in scored:
         s = st.copy()
         s.replace_species({**mapping, str(an): str(an)})
+        if any(len(k) == len(s) and sm.fit(k, s) for k in kept):
+            continue  # 같은 구조형 — 이미 고른 원형과 원소까지 같게 장식됨
+        kept.append(s)
         out.append((f"원형 {f}({mid})", s))
+        if len(out) >= limit:
+            break
     return out
 
 
