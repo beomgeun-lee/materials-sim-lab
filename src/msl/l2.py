@@ -71,7 +71,10 @@ def _cached_relax(structure: Structure, key: str, model: str) -> dict[str, Any]:
 
 
 def reference_entries(elements: list[str]) -> list:
-    """경쟁 상 — 조성마다 MP 바닥 엔트리 (MP hull ≤ 0.05, 원자 ≤ 40). 원소 바닥 상태는 항상 넣는다."""
+    """경쟁 상 — 조성마다 MP 바닥 엔트리. MP hull 위(안정) 상은 크기와 관계없이 항상, 준안정(≤ 0.05)은 원자 ≤ 40 만.
+
+    안정 상을 크기로 빼면 hull 이 실제보다 높아져 새 조성이 과하게 안정해 보인다
+    (K–Al–O 의 KAlO2 64원자, Li–Al–O 의 LiAl5O8·Li5AlO4 가 빠져 0.1~0.2 eV/atom 과대평가, D24)."""
     ents = mp.entries_in_chemsys(elements)
     pd = PhaseDiagram(ents)
     best: dict[str, Any] = {}
@@ -82,7 +85,8 @@ def reference_entries(elements: list[str]) -> list:
     out = []
     for f, e in best.items():
         is_element = len(e.composition.elements) == 1
-        if is_element or (pd.get_e_above_hull(e) <= REF_MAX_EHULL and len(e.structure) <= REF_MAX_SITES):
+        eh = pd.get_e_above_hull(e)
+        if is_element or eh <= 1e-6 or (eh <= REF_MAX_EHULL and len(e.structure) <= REF_MAX_SITES):
             out.append(e)
     return out
 

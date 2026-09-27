@@ -1,0 +1,793 @@
+{
+ "created": "2026-09-27T20:54:05",
+ "criteria": "분해 에너지 ≤ 0 (정답·예측), 대상 조성 제외 hull",
+ "rows": [
+  {
+   "formula": "LiCoO2",
+   "chemsys": "Li-Co-O",
+   "mp_id": "mp-22526-GGA+U",
+   "mp_ehull": 0.0,
+   "sites": 4,
+   "label": true,
+   "truth": -0.0241,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0174,
+     "given": -0.0175,
+     "best": "Li2CoO3(mp-1173879-GGA+U) Ewald 4"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0336,
+     "given": -0.0278,
+     "best": "원형 LiVO2(mp-1176523)"
+    }
+   },
+   "pred": -0.0255,
+   "given": -0.0226,
+   "seconds": 0.6
+  },
+  {
+   "formula": "BaTiO3",
+   "chemsys": "Ba-O-Ti",
+   "mp_id": "mp-5020-GGA",
+   "mp_ehull": 0.0,
+   "sites": 5,
+   "label": true,
+   "truth": -0.0222,
+   "n_candidates": 9,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0215,
+     "given": -0.0216,
+     "best": "Ti2O3(mp-458-GGA) Ewald 1"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0218,
+     "given": -0.0219,
+     "best": "Ti2O3(mp-458-GGA) Ewald 1"
+    }
+   },
+   "pred": -0.0216,
+   "given": -0.0217,
+   "seconds": 0.4
+  },
+  {
+   "formula": "LiMnO2",
+   "chemsys": "Li-Mn-O",
+   "mp_id": "mp-754656-GGA+U",
+   "mp_ehull": 0.0,
+   "sites": 8,
+   "label": true,
+   "truth": -0.0285,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0265,
+     "given": -0.0211,
+     "best": "Li2MnO3(mp-18988-GGA+U) Ewald 1"
+    },
+    "mace-mpa-0": {
+     "pred": -0.019,
+     "given": -0.0152,
+     "best": "Li2MnO3(mp-18988-GGA+U) Ewald 1"
+    }
+   },
+   "pred": -0.0227,
+   "given": -0.0181,
+   "seconds": 313.1
+  },
+  {
+   "formula": "LiTiO2",
+   "chemsys": "Li-O-Ti",
+   "mp_id": "mp-38280-GGA",
+   "mp_ehull": 0.0,
+   "sites": 8,
+   "label": true,
+   "truth": -0.0159,
+   "n_candidates": 22,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0037,
+     "given": -0.0073,
+     "best": "Li2TiO3(mp-36864-GGA) Ewald 2"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0028,
+     "given": -0.0055,
+     "best": "Li2TiO3(mp-36864-GGA) 무작위 1"
+    }
+   },
+   "pred": -0.0033,
+   "given": -0.0064,
+   "seconds": 312.1
+  },
+  {
+   "formula": "Ca3SiO",
+   "chemsys": "Ca-O-Si",
+   "mp_id": "mp-1205330-GGA",
+   "mp_ehull": 0.0,
+   "sites": 10,
+   "label": true,
+   "truth": -0.0298,
+   "n_candidates": 4,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0138,
+     "given": -0.0133,
+     "best": "원형 Ca3GeO(mp-17193)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0194,
+     "given": -0.0186,
+     "best": "원형 Sr3SiO(mp-30949)"
+    }
+   },
+   "pred": -0.0166,
+   "given": -0.0159,
+   "seconds": 11.1
+  },
+  {
+   "formula": "MgTiO3",
+   "chemsys": "Mg-O-Ti",
+   "mp_id": "mp-3771-GGA",
+   "mp_ehull": 0.0,
+   "sites": 10,
+   "label": true,
+   "truth": -0.0101,
+   "n_candidates": 15,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0096,
+     "given": -0.0096,
+     "best": "Ti2O3(mp-458-GGA) Ewald 3"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0144,
+     "given": -0.0144,
+     "best": "원형 TiMnO3(mp-19082)"
+    }
+   },
+   "pred": -0.012,
+   "given": -0.012,
+   "seconds": 165.6
+  },
+  {
+   "formula": "Li2NiO3",
+   "chemsys": "Li-Ni-O",
+   "mp_id": "mp-556550-GGA+U",
+   "mp_ehull": 0.0,
+   "sites": 12,
+   "label": true,
+   "truth": -0.0274,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0236,
+     "given": -0.0236,
+     "best": "원형 Li2CoO3(mp-1173879)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0175,
+     "given": -0.0175,
+     "best": "원형 Li2CoO3(mp-1173879)"
+    }
+   },
+   "pred": -0.0205,
+   "given": -0.0205,
+   "seconds": 244.4
+  },
+  {
+   "formula": "Li2SiO3",
+   "chemsys": "Li-O-Si",
+   "mp_id": "mp-5012-GGA",
+   "mp_ehull": 0.0,
+   "sites": 12,
+   "label": true,
+   "truth": -0.0375,
+   "n_candidates": 13,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0543,
+     "given": -0.0374,
+     "best": "원형 Li2NiO3(mp-674420)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0604,
+     "given": -0.0378,
+     "best": "원형 Li2NiO3(mp-674420)"
+    }
+   },
+   "pred": 0.0573,
+   "given": -0.0376,
+   "seconds": 654.9
+  },
+  {
+   "formula": "Na2SiO3",
+   "chemsys": "Na-O-Si",
+   "mp_id": "mp-4533-GGA",
+   "mp_ehull": 0.0,
+   "sites": 12,
+   "label": true,
+   "truth": -0.0448,
+   "n_candidates": 15,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0526,
+     "given": -0.0529,
+     "best": "원형 Na2CoO3(mp-777786)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0509,
+     "given": -0.0511,
+     "best": "원형 Na2CoO3(mp-777786)"
+    }
+   },
+   "pred": -0.0518,
+   "given": -0.052,
+   "seconds": 647.5
+  },
+  {
+   "formula": "Ca2Ti3O8",
+   "chemsys": "Ca-O-Ti",
+   "mp_id": "mp-1397126-GGA",
+   "mp_ehull": 0.0,
+   "sites": 13,
+   "label": true,
+   "truth": -0.0073,
+   "n_candidates": 16,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0073,
+     "given": -0.0073,
+     "best": "원형 Ca2V3O8(mp-1284741)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0086,
+     "given": -0.0086,
+     "best": "원형 Ca2V3O8(mp-1284741)"
+    }
+   },
+   "pred": -0.008,
+   "given": -0.008,
+   "seconds": 647.5
+  },
+  {
+   "formula": "K3AlO3",
+   "chemsys": "Al-K-O",
+   "mp_id": "mp-9157-GGA",
+   "mp_ehull": 0.0,
+   "sites": 14,
+   "label": true,
+   "truth": -0.0466,
+   "n_candidates": 4,
+   "models": {
+    "orb-v3": {
+     "pred": -0.2446,
+     "given": -0.2448,
+     "best": "원형 Rb3AlO3(mp-14951)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.2458,
+     "given": -0.2459,
+     "best": "원형 Rb3AlO3(mp-14951)"
+    }
+   },
+   "pred": -0.2452,
+   "given": -0.2454,
+   "seconds": 35.9
+  },
+  {
+   "formula": "MgAl2O4",
+   "chemsys": "Al-Mg-O",
+   "mp_id": "mp-3536-GGA",
+   "mp_ehull": 0.0,
+   "sites": 14,
+   "label": true,
+   "truth": -0.0433,
+   "n_candidates": 10,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0586,
+     "given": -0.0586,
+     "best": "원형 Al2ZnO4(mp-2908)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0552,
+     "given": -0.0551,
+     "best": "원형 Al2ZnO4(mp-2908)"
+    }
+   },
+   "pred": -0.0569,
+   "given": -0.0568,
+   "seconds": 130.9
+  },
+  {
+   "formula": "Zn(FeO2)2",
+   "chemsys": "Fe-O-Zn",
+   "mp_id": "mp-19313-GGA+U",
+   "mp_ehull": 0.0,
+   "sites": 14,
+   "label": true,
+   "truth": -0.014,
+   "n_candidates": 16,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0705,
+     "given": -0.0705,
+     "best": "원형 MgTi2O4(mp-27872)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0917,
+     "given": -0.0917,
+     "best": "원형 MgTi2O4(mp-27872)"
+    }
+   },
+   "pred": -0.0811,
+   "given": -0.0811,
+   "seconds": 0.4
+  },
+  {
+   "formula": "LiAlO2",
+   "chemsys": "Al-Li-O",
+   "mp_id": "mp-3427-GGA",
+   "mp_ehull": 0.0,
+   "sites": 16,
+   "label": true,
+   "truth": -0.0883,
+   "n_candidates": 10,
+   "models": {
+    "orb-v3": {
+     "pred": -0.1585,
+     "given": -0.1702,
+     "best": "AlO(mp-8023-GGA) Ewald 1"
+    },
+    "mace-mpa-0": {
+     "pred": -0.1548,
+     "given": -0.1729,
+     "best": "AlO(mp-8023-GGA) Ewald 1"
+    }
+   },
+   "pred": -0.1567,
+   "given": -0.1715,
+   "seconds": 116.4
+  },
+  {
+   "formula": "LiFeO2",
+   "chemsys": "Fe-Li-O",
+   "mp_id": "mp-757614-GGA+U",
+   "mp_ehull": 0.0,
+   "sites": 16,
+   "label": true,
+   "truth": -0.0704,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0743,
+     "given": -0.0595,
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 3"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0564,
+     "given": -0.0409,
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 3"
+    }
+   },
+   "pred": -0.0654,
+   "given": -0.0502,
+   "seconds": 0.5
+  },
+  {
+   "formula": "Li2CoO2",
+   "chemsys": "Li-Co-O",
+   "mp_id": "mp-755297-GGA+U",
+   "mp_ehull": 0.0257,
+   "sites": 5,
+   "label": false,
+   "truth": 0.0257,
+   "n_candidates": 22,
+   "models": {
+    "orb-v3": {
+     "pred": -0.0006,
+     "given": 0.0162,
+     "best": "원형 Li2FeO2(mp-755094)"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0234,
+     "given": 0.0015,
+     "best": "원형 Li2PdO2(mp-7608)"
+    }
+   },
+   "pred": -0.012,
+   "given": 0.0089,
+   "seconds": 312.8
+  },
+  {
+   "formula": "Li2MnO2",
+   "chemsys": "Li-Mn-O",
+   "mp_id": "mp-19279-GGA+U",
+   "mp_ehull": 0.0096,
+   "sites": 5,
+   "label": false,
+   "truth": 0.0096,
+   "n_candidates": 16,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0316,
+     "given": -0.0066,
+     "best": "Li5MnO4(mp-774621-GGA+U) Ewald 2"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0272,
+     "given": -0.0102,
+     "best": "Li5MnO4(mp-774621-GGA+U) Ewald 2"
+    }
+   },
+   "pred": 0.0294,
+   "given": -0.0084,
+   "seconds": 200.8
+  },
+  {
+   "formula": "Li2NiO2",
+   "chemsys": "Li-Ni-O",
+   "mp_id": "mp-19308-GGA+U",
+   "mp_ehull": 0.0025,
+   "sites": 5,
+   "label": false,
+   "truth": 0.0025,
+   "n_candidates": 10,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0674,
+     "given": -0.0116,
+     "best": "Li5NiO4(mp-774500-GGA+U) Ewald 1"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0468,
+     "given": -0.01,
+     "best": "원형 Li2PdO2(mp-7608)"
+    }
+   },
+   "pred": 0.0571,
+   "given": -0.0108,
+   "seconds": 105.8
+  },
+  {
+   "formula": "Ca2TiO4",
+   "chemsys": "Ca-O-Ti",
+   "mp_id": "mp-1096860-GGA",
+   "mp_ehull": 0.0361,
+   "sites": 7,
+   "label": false,
+   "truth": 0.0361,
+   "n_candidates": 14,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0104,
+     "given": 0.0343,
+     "best": "원형 Ca2SnO4(mp-4747)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0215,
+     "given": 0.0365,
+     "best": "원형 Ca2MnO4(mp-19050)"
+    }
+   },
+   "pred": 0.0159,
+   "given": 0.0354,
+   "seconds": 426.8
+  },
+  {
+   "formula": "LiTi3O6",
+   "chemsys": "Li-O-Ti",
+   "mp_id": "mp-754937-GGA",
+   "mp_ehull": 0.0313,
+   "sites": 10,
+   "label": false,
+   "truth": 0.0313,
+   "n_candidates": 13,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0264,
+     "given": 0.0313,
+     "best": "Li2Ti4O9(mp-772151-GGA) Ewald 1"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0136,
+     "given": 0.033,
+     "best": "Li2Ti4O9(mp-772151-GGA) Ewald 1"
+    }
+   },
+   "pred": 0.02,
+   "given": 0.0321,
+   "seconds": 247.2
+  },
+  {
+   "formula": "Ba3Ti2O7",
+   "chemsys": "Ba-O-Ti",
+   "mp_id": "mp-770118-GGA",
+   "mp_ehull": 0.0319,
+   "sites": 12,
+   "label": false,
+   "truth": 0.0319,
+   "n_candidates": 22,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0279,
+     "given": 0.0278,
+     "best": "원형 Ba3Zr2O7(mp-755895)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0348,
+     "given": 0.029,
+     "best": "원형 Ba3Zr2O7(mp-755895)"
+    }
+   },
+   "pred": 0.0314,
+   "given": 0.0284,
+   "seconds": 1431.9
+  },
+  {
+   "formula": "LiFe2O3",
+   "chemsys": "Fe-Li-O",
+   "mp_id": "mp-1298536-GGA+U",
+   "mp_ehull": 0.0273,
+   "sites": 12,
+   "label": false,
+   "truth": 0.0273,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0068,
+     "given": 0.0331,
+     "best": "Li2FeO3(mp-887724-GGA+U) Ewald 4"
+    },
+    "mace-mpa-0": {
+     "pred": -0.0137,
+     "given": 0.0079,
+     "best": "Li2FeO3(mp-887724-GGA+U) 무작위 1"
+    }
+   },
+   "pred": -0.0035,
+   "given": 0.0205,
+   "seconds": 229.4
+  },
+  {
+   "formula": "KAlO3",
+   "chemsys": "Al-K-O",
+   "mp_id": "mp-1184936-GGA",
+   "mp_ehull": 0.2711,
+   "sites": 5,
+   "label": false,
+   "truth": 0.2711,
+   "n_candidates": 9,
+   "models": {
+    "orb-v3": {
+     "pred": 0.1463,
+     "given": 0.201,
+     "best": "원형 BaRuO3(mp-3597)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.1621,
+     "given": 0.1937,
+     "best": "원형 BaRuO3(mp-3597)"
+    }
+   },
+   "pred": 0.1542,
+   "given": 0.1974,
+   "seconds": 214.8
+  },
+  {
+   "formula": "NaAlO3",
+   "chemsys": "Al-Na-O",
+   "mp_id": "mp-1186097-GGA",
+   "mp_ehull": 0.217,
+   "sites": 5,
+   "label": false,
+   "truth": 0.217,
+   "n_candidates": 9,
+   "models": {
+    "orb-v3": {
+     "pred": 0.213,
+     "given": 0.2131,
+     "best": "원형 NaOsO3(mp-998624)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.2472,
+     "given": 0.2468,
+     "best": "원형 NaOsO3(mp-998624)"
+    }
+   },
+   "pred": 0.2301,
+   "given": 0.2299,
+   "seconds": 67.5
+  },
+  {
+   "formula": "NaSiO3",
+   "chemsys": "Na-O-Si",
+   "mp_id": "mp-1186167-GGA",
+   "mp_ehull": 0.2551,
+   "sites": 5,
+   "label": false,
+   "truth": 0.2551,
+   "n_candidates": 4,
+   "models": {
+    "orb-v3": {
+     "pred": 0.1675,
+     "given": 0.26,
+     "best": "원형 CaSiO3(mp-4429)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.1711,
+     "given": 0.2839,
+     "best": "원형 CaSiO3(mp-4429)"
+    }
+   },
+   "pred": 0.1693,
+   "given": 0.272,
+   "seconds": 131.3
+  },
+  {
+   "formula": "LiCo2O3",
+   "chemsys": "Li-Co-O",
+   "mp_id": "mp-1222543-GGA+U",
+   "mp_ehull": 0.1279,
+   "sites": 6,
+   "label": false,
+   "truth": 0.1279,
+   "n_candidates": 19,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0455,
+     "given": 0.0631,
+     "best": "원형 LiNi2O3(mp-1644676)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0202,
+     "given": 0.0193,
+     "best": "원형 LiNi2O3(mp-1644676)"
+    }
+   },
+   "pred": 0.0328,
+   "given": 0.0412,
+   "seconds": 180.0
+  },
+  {
+   "formula": "LiTi3O4",
+   "chemsys": "Li-O-Ti",
+   "mp_id": "mp-1235293-GGA",
+   "mp_ehull": 0.0665,
+   "sites": 8,
+   "label": false,
+   "truth": 0.0665,
+   "n_candidates": 20,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0759,
+     "given": 0.0688,
+     "best": "Li2TiO3(mp-36864-GGA) 무작위 1"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0269,
+     "given": 0.0235,
+     "best": "Li2TiO3(mp-36864-GGA) Ewald 2"
+    }
+   },
+   "pred": 0.0514,
+   "given": 0.0461,
+   "seconds": 312.0
+  },
+  {
+   "formula": "Mg3TiO4",
+   "chemsys": "Mg-O-Ti",
+   "mp_id": "mp-1030636-GGA",
+   "mp_ehull": 0.2011,
+   "sites": 8,
+   "label": false,
+   "truth": 0.2011,
+   "n_candidates": 13,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0875,
+     "given": 0.2039,
+     "best": "원형 Mg3FeO4(mp-1222155)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0581,
+     "given": 0.1756,
+     "best": "원형 Mg3FeO4(mp-1222155)"
+    }
+   },
+   "pred": 0.0728,
+   "given": 0.1898,
+   "seconds": 184.6
+  },
+  {
+   "formula": "ZnFeO3",
+   "chemsys": "Fe-O-Zn",
+   "mp_id": "mp-755099-GGA+U",
+   "mp_ehull": 0.1137,
+   "sites": 10,
+   "label": false,
+   "truth": 0.1137,
+   "n_candidates": 9,
+   "models": {
+    "orb-v3": {
+     "pred": 0.1053,
+     "given": 0.1054,
+     "best": "Fe2O3(mp-19770-GGA+U) 무작위 2"
+    },
+    "mace-mpa-0": {
+     "pred": 0.1137,
+     "given": 0.1136,
+     "best": "Fe2O3(mp-19770-GGA+U) 무작위 2"
+    }
+   },
+   "pred": 0.1095,
+   "given": 0.1095,
+   "seconds": 83.0
+  },
+  {
+   "formula": "Li5MnO5",
+   "chemsys": "Li-Mn-O",
+   "mp_id": "mp-770101-GGA+U",
+   "mp_ehull": 0.0643,
+   "sites": 11,
+   "label": false,
+   "truth": 0.0643,
+   "n_candidates": 4,
+   "models": {
+    "orb-v3": {
+     "pred": 0.0459,
+     "given": 0.057,
+     "best": "원형 Li5NbO5(mp-770799)"
+    },
+    "mace-mpa-0": {
+     "pred": 0.0168,
+     "given": 0.03,
+     "best": "원형 Li5NbO5(mp-770799)"
+    }
+   },
+   "pred": 0.0314,
+   "given": 0.0435,
+   "seconds": 32.7
+  }
+ ],
+ "score": {
+  "n": 30,
+  "skipped": 0,
+  "main": {
+   "f1": 0.903,
+   "precision": 0.875,
+   "recall": 0.933,
+   "accuracy": 0.9,
+   "tp": 14,
+   "fp": 2,
+   "fn": 1,
+   "tn": 13
+  },
+  "product_rule": {
+   "f1": 0.757,
+   "precision": 0.636,
+   "recall": 0.933,
+   "accuracy": 0.7,
+   "tp": 14,
+   "fp": 8,
+   "fn": 1,
+   "tn": 7
+  },
+  "given_structure": {
+   "f1": 0.938,
+   "precision": 0.882,
+   "recall": 1.0,
+   "accuracy": 0.933,
+   "tp": 15,
+   "fp": 2,
+   "fn": 0,
+   "tn": 13
+  },
+  "mae_pred": 0.0388,
+  "mae_given": 0.0247,
+  "search_gap_median": 0.0
+ }
+}

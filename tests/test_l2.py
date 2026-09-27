@@ -162,3 +162,11 @@ def test_uhull_exclude_drops_target(monkeypatch) -> None:
     assert seen
     ids = {str(e.entry_id) for e in refs if e.composition.reduced_formula == "LiCoO2"}
     assert not ids & set(seen)
+
+
+def test_reference_entries_keep_large_stable_phases() -> None:
+    """MP 안정 상은 원자 수가 많아도 경쟁 상에 들어가야 한다 (KAlO2 64원자 — 빠지면 K3AlO3 가 0.2 eV/atom 과대평가, D24)."""
+    from msl import l2
+
+    refs = {e.composition.reduced_formula: len(e.structure) for e in l2.reference_entries(["K", "Al", "O"])}
+    assert refs.get("KAlO2", 0) > l2.REF_MAX_SITES
