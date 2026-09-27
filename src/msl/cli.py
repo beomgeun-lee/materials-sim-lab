@@ -88,6 +88,14 @@ def run(
         typer.echo(f"리포트: {report_out}")
 
 
+@app.command("mcp")
+def mcp_server() -> None:
+    """MCP 서버를 stdio 로 띄운다 — Claude Code 등록: claude mcp add msl -- uv --directory <이 폴더> run msl mcp"""
+    from msl.mcp_server import main
+
+    main()
+
+
 @app.command("serve")
 def serve(port: Annotated[int, typer.Option(help="포트")] = 8000) -> None:
     """웹 화면을 띄운다 (http://127.0.0.1:포트)."""

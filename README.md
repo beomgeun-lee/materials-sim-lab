@@ -16,10 +16,11 @@
 | 웹 작업대 | 성분 검색(국문 관용명 포함)·시약 선반·양/조건/시험 편집·YAML 편집 → 실행·저장, 조합 공간 편집기 — [사용 안내](docs/08-사용-안내.md) |
 | 물성 예측 (L1) | 화학식만으로 형성에너지(MAE 0.07 eV/atom, 80% 구간)·안정성(판정 73%)·밴드갭·밀도 — `msl predict`, 웹 `/predict`, MP 에 없는 성분은 A1·A7 이 자동 사용 |
 | 목표 기반 추천 | 원소·조건(hull 거리·밴드갭·밀도 등)·정렬을 주면 조성 후보를 전수 평가해 순위 (DB 는 DFT, 새 조성은 L1) — `msl recommend`, 웹 `/recommend` |
+| MCP 서버 | 다른 AI 도구에서 성분 검색·레시피 검증/실행·리포트 조회·예측·추천 (도구 12개, stdio) — `msl mcp`, [사용 안내 9절](docs/08-사용-안내.md) |
 | L2 안정성 확인 | uMLIP(MACE-MPA-0·ORB v3) — Ewald 배치·구조 원형으로 후보 구조 생성 → 이완 → 자기일관 hull, 두 모델 평균·차이. 재발견 시험 7/7 — `msl l2`, 웹 [L2 확인] |
 | 적재 데이터 | 15개 소스 · 277,479행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 · 수용액 이온 362 |
 | 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·국문 관용명·KE 번호 — 99.5% |
-| 테스트 | 341개 통과 |
+| 테스트 | 395개 통과 |
 
 ### 실행
 
@@ -27,6 +28,7 @@
 uv sync                                               # 환경 설치 (Python 3.12)
 uv run msl db load all                                # 데이터 적재 (원본은 msl db fetch 로 받음)
 uv run msl db status                                  # 적재 현황
+uv run msl mcp                                        # MCP 서버 (stdio) — claude mcp add msl -- uv --directory <폴더> run msl mcp
 uv run msl serve                                      # 웹 작업대 → http://127.0.0.1:8000 (레시피 만들기·고치기·실행·저장)
 uv run msl run examples/recipes/mgo-alumina.yaml      # 터미널에서 레시피 하나 실행
 uv run msl run examples/recipes/cu-ni-alloy.yaml --report out.html   # 리포트 파일 (.html/.md)
