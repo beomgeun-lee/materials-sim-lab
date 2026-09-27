@@ -297,3 +297,63 @@ def space_save(req: YamlRequest) -> dict[str, Any]:
     if err:
         raise HTTPException(409, err)
     return {"file": path.name, "path": wb.shown(path)}
+
+
+# ── 물성 예측 (L1 조성 대리모델) ──────────────────────────────────────────
+
+
+@app.get("/predict", response_class=HTMLResponse)
+def predict_page() -> str:
+    from msl.report.space import page
+
+    return page("물성 예측", (STATIC / "predict.html").read_text(encoding="utf-8"))
+
+
+@app.get("/api/predict/info")
+def predict_info() -> dict[str, Any]:
+    from msl.ml.predict import ModelMissing, info
+
+    try:
+        return info()
+    except ModelMissing as exc:
+        return {"error": str(exc)}
+
+
+class PredictRequest(BaseModel):
+    texts: list[str]
+
+
+def _formula_of(text: str) -> str:
+    """화학식이면 그대로, 아니면 해석기로 화학식을 찾는다 (이름·CAS·광물명)."""
+    from pymatgen.core import Composition
+
+    t = text.strip()
+    if wb.FORMULA_RE.match(t):
+        Composition(t)
+        return t
+    from msl.resolve import resolve
+    from msl.schema.recipe import Component
+
+    r = resolve(Component.model_validate({"ref": wb.guess_ref(t)}))
+    if not r.formula:
+        raise ValueError(f"화학식을 찾지 못함 — {r.error or t}")
+    return r.formula
+
+
+@app.post("/api/predict")
+def predict_api(req: PredictRequest) -> dict[str, Any]:
+    from msl.ml.predict import ModelMissing, predict
+
+    if len(req.texts) > 50:
+        raise HTTPException(422, "한 번에 50개까지")
+    results = []
+    for text in req.texts:
+        try:
+            p = predict(_formula_of(text))
+            p["input"] = text
+            results.append(p)
+        except ModelMissing as exc:
+            raise HTTPException(503, str(exc)) from exc
+        except Exception as exc:
+            results.append({"input": text, "error": str(exc)})
+    return {"results": results}

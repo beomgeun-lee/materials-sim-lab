@@ -298,6 +298,63 @@ def bench_phreeqc(
         typer.echo(f"저장: {save}")
 
 
+ml_app = typer.Typer(help="L1 조성 대리모델 (4단계 선행)", no_args_is_help=True)
+app.add_typer(ml_app, name="ml")
+
+
+@ml_app.command("train")
+def ml_train(
+    stability_n: Annotated[int, typer.Option("--stability-n", help="안정성 점검에 쓸 시험 조성 수")] = 1500,
+) -> None:
+    """MP 바닥 다형으로 조성 → 형성에너지·밴드갭·금속 여부·부피 모델을 학습하고 평가한다."""
+    from msl.ml.train import train
+
+    train(log=typer.echo, stability_n=stability_n)
+
+
+@app.command("predict")
+def predict_cmd(
+    formulas: Annotated[list[str], typer.Argument(help="화학식 (예: Li1.2Ni0.6Mn0.2O2 LiFePO4)")],
+    json_out: Annotated[Path | None, typer.Option("--json", help="결과를 JSON 으로 저장")] = None,
+) -> None:
+    """조성만으로 물성을 예측한다 (L1 대리모델 — 형성에너지·안정성·밴드갭·밀도)."""
+    import json
+
+    from msl.ml.predict import ModelMissing, info, predict
+
+    try:
+        meta = info()
+    except ModelMissing as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    r, g = meta["metrics"]["random"], meta["metrics"]["chemsys"]
+    typer.echo(f"L1 조성 모델 {meta['version']} · MP {meta['data']['version']} {meta['data']['n']:,}개 조성으로 학습")
+    typer.echo(f"  형성에너지 MAE {r['ef_mae']:.3f} (새 화학계 {g['ef_mae']:.3f}) eV/atom · "
+               f"안정성 판정 정확도 {r['stability_accuracy']:.0%} (hull 거리 MAE {r['ehull_mae']:.3f})\n")
+    out = []
+    for f in formulas:
+        try:
+            p = predict(f)
+        except Exception as exc:
+            typer.secho(f"✗ {f}: {exc}", fg=typer.colors.RED)
+            continue
+        out.append(p)
+        lo, hi = p["ef_interval"]
+        typer.secho(f"{p['formula']}" + ("" if p["in_domain"] else "  ⚠ 학습 범위 밖 — 신뢰 낮음"), bold=True)
+        typer.echo(f"  형성에너지 {p['ef']:+.3f} eV/atom (80% 구간 {lo:+.3f} ~ {hi:+.3f})")
+        if p["ehull"] is not None:
+            dec = " + ".join(p["decomposition"]) if p["decomposition"] else ""
+            typer.echo(f"  hull 거리 {p['ehull']:+.3f} eV/atom → {p['stability']}" + (f" [분해: {dec}]" if p["ehull"] > 0 and dec else ""))
+        typer.echo(f"  밴드갭 {p['gap']:.2f} eV (금속일 확률 {p['p_metal']:.0%}) · 밀도 {p['density']} g/cm³")
+        if p["known"]:
+            k = p["known"]
+            typer.secho(f"  DB 에 있음 {k['material_id']}: 형성에너지 {k['ef']:+.3f}, hull {k['ehull']:.3f}, 밴드갭 {k['gap']:.2f} — DFT 값을 쓰는 것이 낫다", fg=typer.colors.CYAN)
+        typer.echo("  비슷한 알려진 물질: " + ", ".join(f"{n['formula']} ({n['ef']:+.2f})" for n in p["nearest"]))
+    if json_out:
+        json_out.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {json_out}")
+
+
 @app.command("resolve-check")
 def resolve_check(
     path: Annotated[Path, typer.Option("--list", help="시험 목록")] = KB_DIR / "validation" / "resolver_v1.yaml",

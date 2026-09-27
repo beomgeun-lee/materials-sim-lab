@@ -14,6 +14,7 @@
 | 실제 계산 시험 | **11종 모두** — S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A5 수계 부식(Pourbaix) · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
 | 조합 공간 | 혼합비 격자 · 양 스윕 · 부분집합 열거 → 표·곡선·쌍별 행렬 — `msl space`, 웹 `/spaces` |
 | 웹 작업대 | 성분 검색(국문 관용명 포함)·시약 선반·양/조건/시험 편집·YAML 편집 → 실행·저장, 조합 공간 편집기 — [사용 안내](docs/08-사용-안내.md) |
+| 물성 예측 (L1) | 화학식만으로 형성에너지(MAE 0.07 eV/atom, 80% 구간)·안정성(판정 73%)·밴드갭·밀도 — `msl predict`, 웹 `/predict`, MP 에 없는 성분은 A1·A7 이 자동 사용 |
 | 적재 데이터 | 15개 소스 · 277,479행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 · 수용액 이온 362 |
 | 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·국문 관용명·KE 번호 — 99.5% |
 | 테스트 | 341개 통과 |
@@ -28,6 +29,8 @@ uv run msl serve                                      # 웹 작업대 → http:/
 uv run msl run examples/recipes/mgo-alumina.yaml      # 터미널에서 레시피 하나 실행
 uv run msl run examples/recipes/cu-ni-alloy.yaml --report out.html   # 리포트 파일 (.html/.md)
 uv run msl validate                                   # 검증 세트 채점
+uv run msl ml train                                   # L1 조성 모델 학습 (처음 한 번, 약 15분)
+uv run msl predict Li1.2Ni0.6Mn0.2O2 LiFePO4          # 조성 → 물성 예측 (웹: /predict)
 uv run msl space run examples/spaces/cu-ni-composition.yaml --report out.html   # 조합 공간 (웹: /spaces)
 uv run msl bench phreeqc --dist <배포본> --binary <phreeqc>   # PHREEQC 공식 예제 재현
 uv run msl resolve-check                              # 해석기 시험 목록 (기준 95%)
@@ -108,5 +111,6 @@ IMA PDF 적재에는 시스템의 `pdftotext`(poppler)가 필요합니다. USGS 
 ## 다음
 
 1. Reaktoro 이중화 — 고온·고압 수계 (conda 환경 필요 → 설치 확인 대기)
-2. 4단계 — uMLIP 처리량 실측, A1 L2(치환 구조 → uMLIP 이완), 조합 추천(BayBE)
-3. SGTE 부록 라이선스 확인 → A6 배포 가능 여부
+2. 목표 기반 추천 — 조합 공간 + L1 예측으로 목표에 맞는 후보 순위, 이후 BayBE
+3. 4단계 — uMLIP 처리량 실측, A1 L2(치환 구조 → uMLIP 이완)
+4. SGTE 부록 라이선스 확인 → A6 배포 가능 여부

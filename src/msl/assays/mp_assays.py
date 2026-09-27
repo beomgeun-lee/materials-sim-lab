@@ -36,6 +36,32 @@ def _phase_diagram(ctx: Context, elements: list[str]) -> tuple[list, PhaseDiagra
     return ctx.shared[key]
 
 
+def _l1(formula: str) -> dict[str, Any] | None:
+    """MP 에 없는 조성의 L1 대리모델 예측 (모델이 없거나 실패하면 None)."""
+    try:
+        from msl.ml.predict import predict
+
+        return predict(formula)
+    except Exception:
+        return None
+
+
+def _l1_version() -> str:
+    from msl.ml.predict import info
+
+    i = info()
+    return f"{i['version']} (MP {i['data']['version']}, {i['data']['license']})"
+
+
+def _l1_caveat() -> str:
+    from msl.ml.predict import info
+
+    m = info()["metrics"]
+    return (f"L1 예측은 조성만 보는 대리모델({info()['version']}) — 형성에너지 MAE {m['random']['ef_mae']:.3f} "
+            f"(새 화학계 {m['chemsys']['ef_mae']:.3f}) eV/atom, 안정성 판정 정확도 {m['random']['stability_accuracy']:.0%}. "
+            "hull 거리는 로컬 DB(MP 혼합 기준) 대비라 위 MP2020 값과 기준이 다름")
+
+
 def _polymorph(entries: list, mp_id: str | None):
     """광물이 가리키는 MP 다형 엔트리 (GGA/GGA+U 엔트리 중 같은 material_id)."""
     target = mp_int(mp_id)
@@ -91,12 +117,19 @@ def a1(ctx: Context) -> Outcome:
         summary = f"{'-'.join(elements)} 계에서 안정 화합물 {n_stable}개, L2 재확인 후보 {len(near)}개" + (
             " (표에는 가까운 8개)" if len(near) > 8 else "")
     else:
-        parts, poly_notes = [], []
+        parts, poly_notes, l1_used = [], [], []
         for c in ctx.comps:
             poly = _polymorph(entries, getattr(c, "mp_id", None))
             e = poly or _best(pd, entries, c.formula)
             if e is None:
-                parts.append(f"{c.formula}: MP 에 없음")
+                p = _l1(c.formula)
+                if p is None or p["ehull"] is None:
+                    parts.append(f"{c.formula}: MP 에 없음")
+                    continue
+                l1_used.append(p)
+                parts.append(f"{c.formula}: MP 에 없음 → L1 예측 hull {p['ehull'] * 1000:+.0f} meV/atom")
+                rows.append([c.formula, "L1 예측", p["ef"], round(p["ehull"] * 1000, 1), p["stability"].split(" — ")[0]])
+                values.append(val(f"{c.formula} E_hull (L1 예측)", round(p["ehull"] * 1000, 1), "meV/atom", kind=ValueKind.ENERGY))
                 continue
             eh = pd.get_e_above_hull(e) * 1000
             if poly is not None:  # 광물: 그 광물의 다형 구조로 평가 (예: 석영 ≠ SiO2 바닥 다형)
@@ -111,13 +144,14 @@ def a1(ctx: Context) -> Outcome:
             values.append(val(label, round(eh, 1), "meV/atom", kind=ValueKind.ENERGY))
         summary = "반응물 안정성 — " + ", ".join(parts)
 
+    l1_used = [] if ctx.recipe.mode is Mode.SYSTEM else l1_used
     return Outcome(
-        status=Status.OK, fidelity=Fidelity.L0, engine="pymatgen", engine_version=_pmg(),
+        status=Status.OK, fidelity=Fidelity.L1 if l1_used else Fidelity.L0, engine="pymatgen", engine_version=_pmg(),
         conditions_basis="0 K DFT", energy_reference=mp.ENERGY_REFERENCE, values=values,
-        sources=[MP_SRC], summary=summary,
+        sources=[MP_SRC], summary=summary, model_weights=_l1_version() if l1_used else None,
         caveats=["0 K 계산 — 고온에서만 안정한 다형은 hull 위로 나올 수 있음",
                  "구조 탐색은 MP 에 이미 있는 구조로 한정 — 새 구조는 L2(uMLIP) 단계에서",
-                 *([] if ctx.recipe.mode is Mode.SYSTEM else poly_notes)],
+                 *([] if ctx.recipe.mode is Mode.SYSTEM else poly_notes), *([_l1_caveat()] if l1_used else [])],
         data={"table": {"columns": ["상", "MP ID", "형성에너지 (eV/atom)", "E_hull (meV/atom)", "판정"], "rows": rows}},
     )
 
@@ -382,7 +416,9 @@ def a7(ctx: Context) -> Outcome:
     if ctx.recipe.mode is Mode.SYSTEM:
         targets = [e for e in pd.stable_entries if len(e.composition.elements) > 1]
     else:
-        targets = [e for e in (_best(pd, entries, c.formula) for c in ctx.comps) if e is not None]
+        found = [(c, _best(pd, entries, c.formula)) for c in ctx.comps]
+        targets = [e for _, e in found if e is not None]
+        missing = [c for c, e in found if e is None]
     ids = [str(e.entry_id).split("-GGA")[0] for e in targets]
     docs = mp.summaries(ids, FIELDS)
     rows = []
@@ -391,6 +427,15 @@ def a7(ctx: Context) -> Outcome:
         rows.append([d.get("formula_pretty"), mid, _r(d.get("density"), 3), _r(d.get("band_gap"), 2),
                      _r(d.get("formation_energy_per_atom"), 3)])
     values = [val("조회한 상 수", float(len(rows)))]
+    l1_used = []
+    for c in ([] if ctx.recipe.mode is Mode.SYSTEM else missing):
+        p = _l1(c.formula)
+        if p is None:
+            continue
+        l1_used.append(p)
+        rows.append([c.formula, "L1 예측", p["density"], p["gap"], p["ef"]])
+        values += [val(f"{c.formula} 밀도 (L1 예측)", p["density"], "g/cm³"), val(f"{c.formula} 밴드갭 (L1 예측)", p["gap"], "eV"),
+                   val(f"{c.formula} 금속일 확률 (L1)", p["p_metal"])]
 
     comps = ctx.comps
     if ctx.recipe.mode is Mode.MIXTURE and all(c.ref.namespace.value == "element" for c in comps):
@@ -402,11 +447,13 @@ def a7(ctx: Context) -> Outcome:
             values.append(val("합금 밀도 추정 (몰부피 가산)", round(rho, 3), "g/cm³"))
 
     return Outcome(
-        status=Status.OK, fidelity=Fidelity.L0, engine="mp-api", engine_version=mp.engine_version(),
+        status=Status.OK, fidelity=Fidelity.L1 if l1_used else Fidelity.L0, engine="mp-api", engine_version=mp.engine_version(),
         conditions_basis="0 K DFT (PBE/PBE+U)", energy_reference=mp.ENERGY_REFERENCE, values=values,
-        sources=[MP_SRC], summary=f"MP 요약 물성 {len(rows)}개 상 조회",
+        sources=[MP_SRC], model_weights=_l1_version() if l1_used else None,
+        summary=f"MP 요약 물성 {len(rows) - len(l1_used)}개 상 조회" + (f" + MP 에 없는 {len(l1_used)}개 조성은 L1 예측" if l1_used else ""),
         caveats=["PBE 밴드갭은 실측보다 약 40% 작게 나오는 경향",
-                 "MP 요약 구조에는 r²SCAN 재계산분이 섞여 있어 밀도가 실측과 몇 % 다를 수 있음 (예: Cu 9.22 vs 실측 8.96 g/cm³)"],
+                 "MP 요약 구조에는 r²SCAN 재계산분이 섞여 있어 밀도가 실측과 몇 % 다를 수 있음 (예: Cu 9.22 vs 실측 8.96 g/cm³)",
+                 *([_l1_caveat()] if l1_used else [])],
         data={"table": {"columns": ["상", "MP ID", "밀도 (g/cm³)", "밴드갭 (eV)", "형성에너지 (eV/atom)"], "rows": rows}},
     )
 

@@ -2156,6 +2156,43 @@
   checked: 2026-09-26
 
 # ── 공급·경제성 ──────────────────────────────────────────────────────────
+- id: scikit-learn
+  name: scikit-learn
+  kind: library
+  category: 물성 예측 ML
+  assays: [A1, A7]
+  fidelity: [L1]
+  version: "1.9.1"
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: L1 조성 대리모델의 학습기 (HistGradientBoosting 회귀·분위수·분류, 최근접 이웃)
+  checked: 2026-09-27
+
+- id: msl-l1-composition
+  name: L1 조성 대리모델 (자체 학습, Magpie 방식 특성 112개 + 그래디언트 부스팅)
+  kind: model
+  category: 물성 예측 ML
+  assays: [A1, A7]
+  fidelity: [L1]
+  version: l1-composition-v1
+  code_license: Apache-2.0
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: none
+  compute: [laptop]
+  fit: 중
+  role: 화학식만으로 형성에너지(80% 구간)·hull 거리·밴드갭·금속 확률·밀도 추정. MP 에 없는 조성의 1차 거르기 (msl predict, 웹 /predict, A1·A7 대체값)
+  caveats: 학습 데이터 MP(CC BY 4.0, GNoME 제외) 파생 → 가중치에 출처 표기. 조성만 보므로 다형 구분 불가. 안정성 판정은 경계 부근에서 자주 틀림(Bartel 2020) — 지표는 data/models/l1-composition-v1.json
+  refs:
+    - https://doi.org/10.1038/npjcompumats.2016.28
+    - https://doi.org/10.1038/s41524-020-00362-y
+  checked: 2026-09-27
+
 - id: msl-kr-regulation
   name: 국내 화학물질 규제 조회 (자체 구현, data.go.kr 클라이언트)
   kind: in-house

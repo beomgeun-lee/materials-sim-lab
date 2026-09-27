@@ -16,7 +16,7 @@
   question: 이 조성·구조는 안정한가? 무엇으로 분해되는가?
   applies_to: [원소→화합물, 반응 생성물]
   fidelity: [L0, L1, L2, L3]
-  engines: [pymatgen, smact, orb-v3, sevennet-omni, mace-mpa-0, torchsim]
+  engines: [pymatgen, smact, msl-l1-composition, orb-v3, sevennet-omni, mace-mpa-0, torchsim]
   sources: [materials-project, cod, oqmd, alexandria]
   stage: 2
   note: 2단계는 L0(공공 DB hull), 4단계에 L2(uMLIP 자기일관 hull) 추가
@@ -74,7 +74,7 @@
   question: 밀도·밴드갭·탄성률 등은?
   applies_to: [결정상]
   fidelity: [L0, L1, L2]
-  engines: [pymatgen, matminer, alignn, matcalc, phonopy]
+  engines: [pymatgen, msl-l1-composition, matminer, alignn, matcalc, phonopy]
   sources: [materials-project, jarvis-dft]
   stage: 4
 

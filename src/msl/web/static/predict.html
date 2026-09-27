@@ -1,0 +1,102 @@
+<p class="eyebrow"><a href="/">← 가상 조합 실험실</a> · <a href="/spaces">조합 공간</a></p>
+<h1>물성 예측 (L1)</h1>
+<p class="sub">화학식만 넣으면 학습된 대리모델이 형성에너지·안정성·밴드갭·밀도를 몇 초 안에 추정합니다. DB 에 없는 새 조성을 빠르게 걸러 볼 때 씁니다.</p>
+<div class="pd-model" id="pd-model">모델 정보를 읽는 중…</div>
+
+<section class="pd-input">
+  <label for="pd-text" class="sub">한 줄에 하나씩 — 화학식(권장) 또는 이름</label>
+  <textarea id="pd-text" spellcheck="false">Li1.2Ni0.6Mn0.2O2
+LiFePO4
+CsPbI3
+Fe2O3</textarea>
+  <div class="run-row">
+    <button class="run" type="button" id="pd-run">예측</button>
+    <span class="sub">예시:</span>
+    <span class="shelf" id="pd-ex"></span>
+    <span class="busy" id="pd-busy" aria-live="polite"></span>
+  </div>
+</section>
+<div class="errbox" id="pd-errors" hidden></div>
+<div class="pd-cards" id="pd-out"></div>
+
+<style>
+.pd-model { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px; display: grid; gap: 4px; }
+.pd-model .warn { color: var(--warn); }
+.pd-input { display: grid; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+#pd-text { width: 100%; min-height: 110px; font-family: var(--font-mono); font-size: 13px; }
+.pd-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+.pd-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.pd-card h3 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.pd-card .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.pd-card .b { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--idle-soft); color: var(--idle); }
+.pd-card .b.known { background: var(--accent-soft); color: var(--accent); }
+.pd-card .b.out { background: var(--warn-soft); color: var(--warn); }
+.pd-card .b.stable { background: var(--ok-soft); color: var(--ok); }
+.pd-card .b.unstable { background: var(--bad-soft); color: var(--bad); }
+.pd-card dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 13px; }
+.pd-card dt { color: var(--muted); }
+.pd-card dd { margin: 0; font-family: var(--font-mono); font-size: 12.5px; }
+.pd-card dd .dft { color: var(--accent); }
+.pd-card .near { font-size: 12.5px; color: var(--muted); }
+.pd-card .near b { color: var(--ink); font-weight: 600; }
+.pd-card .intv { color: var(--muted); }
+.pd-note { font-size: 12.5px; color: var(--muted); display: grid; gap: 2px; }
+.pd-note span::before { content: "한계 · "; color: var(--warn); font-weight: 600; }
+</style>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const sub = (f) => esc(f).replace(/(\d+(?:\.\d+)?)/g, "<sub>$1</sub>");
+  const sgn = (v, n = 3) => (v > 0 ? "+" : "") + Number(v).toFixed(n);
+  const EX = ["Li1.2Ni0.6Mn0.2O2", "LiFePO4", "CsPbI3", "Li2MnSiO4", "Cu3Au", "MgB2", "BaTiO3", "NaCl", "Fe2O3", "염산"];
+  $("pd-ex").innerHTML = EX.map(x => `<button type="button">${esc(x)}</button>`).join("");
+  $("pd-ex").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const t = $("pd-text"); t.value = (t.value.trim() ? t.value.trim() + "\n" : "") + b.textContent; });
+
+  fetch("/api/predict/info").then(r => r.json()).then(m => {
+    if (m.error) { $("pd-model").innerHTML = `<span class="warn">${esc(m.error)}</span>`; $("pd-run").disabled = true; return; }
+    const r = m.metrics.random, g = m.metrics.chemsys;
+    $("pd-model").innerHTML = `<div><b>${esc(m.version)}</b> · Materials Project ${esc(m.data.version)} 의 ${m.data.n.toLocaleString()}개 조성(각 조성의 바닥 다형)으로 학습 · ${esc(m.data.license)} · 학습 ${esc(m.created.slice(0, 10))}</div>
+      <div>시험 오차 — 형성에너지 MAE <b>${r.ef_mae.toFixed(3)}</b> eV/atom (학습에 없던 화학계 ${g.ef_mae.toFixed(3)}) · 밴드갭 MAE ${r.gap_mae.toFixed(2)} eV (${g.gap_mae.toFixed(2)}) · 금속 판별 ${(r.metal_accuracy * 100).toFixed(0)}% (${(g.metal_accuracy * 100).toFixed(0)}%) · 원자 부피 MAE ${r.vpa_mae.toFixed(2)} Å³</div>
+      <div class="warn">안정성(hull 거리) 판정 정확도 ${(r.stability_accuracy * 100).toFixed(0)}% · hull 거리 MAE ${r.ehull_mae.toFixed(3)} eV/atom — 조성 모델은 안정/불안정 경계 가까이에서 자주 틀립니다. 후보를 거르는 용도로만 쓰세요.</div>`;
+  });
+
+  function card(p) {
+    if (p.error) return `<article class="pd-card"><h3>${esc(p.input)}</h3><div class="errbox"><span>${esc(p.error)}</span></div></article>`;
+    const k = p.known, st = p.ehull === null ? "" : p.ehull <= 0 ? "stable" : p.ehull <= 0.05 ? "" : "unstable";
+    const badges = [k ? `<span class="b known">DB 에 있음 · ${esc(k.material_id)}</span>` : `<span class="b">DB 에 없는 조성</span>`,
+      p.in_domain ? "" : `<span class="b out">학습 범위 밖 — 신뢰 낮음</span>`,
+      p.stability ? `<span class="b ${st}">${esc(p.stability.split(" — ")[0])}</span>` : ""].join("");
+    const dft = (v, u = "") => k && v !== null && v !== undefined ? ` <span class="dft">· DFT ${v}${u}</span>` : "";
+    const dec = p.decomposition ? Object.entries(p.decomposition).map(([f, x]) => `${sub(f)} ${(x * 100).toFixed(0)}%`).join(" + ") : "";
+    return `<article class="pd-card"><h3>${sub(p.formula)}</h3><div class="badges">${badges}</div>
+      <dl>
+        <dt>형성에너지</dt><dd>${sgn(p.ef)} eV/atom <span class="intv">(80% ${sgn(p.ef_interval[0])} ~ ${sgn(p.ef_interval[1])})</span>${dft(k && sgn(k.ef))}</dd>
+        ${p.ehull !== null ? `<dt>hull 거리</dt><dd>${sgn(p.ehull)} eV/atom — ${esc(p.stability)}${dft(k && k.ehull.toFixed(3))}</dd>` : ""}
+        ${dec && p.ehull > 0 ? `<dt>분해되면</dt><dd>${dec}</dd>` : ""}
+        <dt>밴드갭</dt><dd>${p.gap.toFixed(2)} eV <span class="intv">(80% ${p.gap_interval[0].toFixed(2)} ~ ${p.gap_interval[1].toFixed(2)} · 금속일 확률 ${(p.p_metal * 100).toFixed(0)}%)</span>${dft(k && k.gap.toFixed(2), " eV")}</dd>
+        <dt>밀도</dt><dd>${p.density ?? "—"} g/cm³ <span class="intv">(원자당 ${p.vpa} Å³)</span>${dft(k && k.density, " g/cm³")}</dd>
+      </dl>
+      <div class="near">비슷한 알려진 물질 (특성 거리 ${p.nn_distance}): ${p.nearest.map(n => `<b>${sub(n.formula)}</b> 형성 ${sgn(n.ef, 2)} · 갭 ${n.gap} · hull ${n.ehull}`).join(" / ")}</div>
+      ${k ? `<div class="near">이 조성은 DB 에 DFT 계산값이 있습니다 — 예측보다 DFT 값을 쓰세요 (작업대의 A1·A7).</div>` : ""}
+    </article>`;
+  }
+
+  $("pd-run").addEventListener("click", async () => {
+    const texts = $("pd-text").value.split("\n").map(s => s.trim()).filter(Boolean);
+    if (!texts.length) return;
+    $("pd-errors").hidden = true; $("pd-run").disabled = true; $("pd-busy").textContent = "예측 중…";
+    const t0 = Date.now();
+    try {
+      const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texts }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(body.detail || body));
+      $("pd-out").innerHTML = body.results.map(card).join("")
+        + `<div class="pd-note"><span>조성만 보고 추정하므로 같은 조성의 다형(예: 방해석/아라고나이트)을 구분하지 못합니다</span><span>PBE 기준 밴드갭은 실측보다 약 40% 작게 나오는 경향이 있고, 모델은 그 PBE 값을 배웠습니다</span><span>hull 거리는 로컬 DB 의 알려진 상(자기 자신 제외)과 비교한 값입니다</span></div>`;
+      $("pd-busy").textContent = `완료 · ${body.results.length}개 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
+    } catch (e) {
+      $("pd-errors").innerHTML = `<span>${esc(e.message)}</span>`; $("pd-errors").hidden = false; $("pd-busy").textContent = "";
+    } finally { $("pd-run").disabled = false; }
+  });
+})();
+</script>

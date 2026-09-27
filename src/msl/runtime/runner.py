@@ -63,15 +63,18 @@ def _code_hash() -> str:
     """시험·엔진·규칙 코드가 바뀌면 캐시가 무효가 되도록 소스와 kb 규칙 파일을 해시한다."""
     pkg = Path(__file__).resolve().parents[1]
     files = sorted([*pkg.glob("assays/*.py"), *pkg.glob("engines/*.py"), *pkg.glob("resolve/*.py"),
-                    *KB_DIR.glob("*.yaml")])
-    return canonical_hash({f.name: f.read_text(encoding="utf-8") for f in files})
+                    *pkg.glob("recipe/*.py"), *pkg.glob("ml/*.py"), *KB_DIR.glob("*.yaml")])
+    return canonical_hash({str(f.relative_to(f.parents[1])): f.read_text(encoding="utf-8") for f in files})  # 폴더/파일 (같은 이름 __init__.py 구분)
 
 
 def _data_fingerprint() -> str:
     """적재 데이터(테이블·소스·버전·행 수)가 바뀌면 캐시가 무효가 되도록 한다. 매 실행 계산 (가볍다)."""
     from msl.db import status
 
-    return canonical_hash([(s.table, s.source, s.version, s.rows) for s in status()])
+    from msl.ml.train import MODEL_DIR
+
+    models = sorted((p.name, p.read_text(encoding="utf-8")) for p in MODEL_DIR.glob("*.json")) if MODEL_DIR.exists() else []
+    return canonical_hash([[(s.table, s.source, s.version, s.rows) for s in status()], models])  # 학습 모델(L1)이 바뀌어도 무효
 
 
 def _cite(reg: Registry, sid: str, ver: str | None) -> SourceCitation:
