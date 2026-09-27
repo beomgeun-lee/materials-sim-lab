@@ -39,7 +39,7 @@
   name: mp-api (Materials Project 공식 Python 클라이언트)
   kind: library
   category: 데이터 접근
-  assays: [A1, A2, A7]
+  assays: [A1, A2, A5, A7]
   fidelity: [L0]
   version: "0.46.5"
   released: 2026-08-18

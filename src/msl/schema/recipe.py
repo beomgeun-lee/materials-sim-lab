@@ -74,6 +74,7 @@ class Conditions(_Model):
     P: Quantity | None = None
     atmosphere: str | None = None
     pH: float | None = Field(default=None, ge=-2, le=16)
+    Eh: float | None = Field(default=None, ge=-3, le=3, description="전극 전위 V (표준수소전극 기준, A5)")
     time: Quantity | None = None
 
     @model_validator(mode="after")

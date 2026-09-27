@@ -43,6 +43,16 @@
   assay: S0
   recipe: {id: rcp-v-s0-8, name: 석회석+석영, components: [{ref: "mineral:calcite", amount: 1 mol, state: solid}, {ref: "mineral:quartz", amount: 1 mol, state: solid}]}
   checks: [{verdict_in: [규칙 해당 없음, 판정 불가]}]
+- id: s0-aluminum-naoh
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-9, name: 알루미늄+수산화나트륨, components: [{ref: "element:Al", amount: 1 g, state: solid}, {ref: "cas:1310-73-2", amount: 0.1 mol, state: aqueous}]}
+  checks: [{verdict_in: [부적합]}, {summary_contains: "H₂"}]
+- id: s0-iron-hcl
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-10, name: 철+염산, components: [{ref: "element:Fe", amount: 1 g, state: solid}, {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}]}
+  checks: [{verdict_in: [부적합]}]
 
 # ── A1 조성 안정성 ───────────────────────────────────────────────────────
 - id: a1-corundum-stable
@@ -104,6 +114,54 @@
   assay: A4
   recipe: {id: rcp-v-a4-3, name: 소금물, components: [{ref: "cas:7647-14-5", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
   checks: [{value_between: {name: "pH", range: [6.5, 7.5]}}]
+
+# ── A5 수계 안정성·부식 (Pourbaix, 25 °C, 이온 10⁻⁶ mol/kg — Pourbaix 도감 관례) ─────────
+# 판정 기준값: Pourbaix, Atlas of Electrochemical Equilibria (1974) 의 영역 구분
+- id: a5-gold-noble
+  assay: A5
+  recipe: {id: rcp-v-a5-1, name: 금+물(공기), components: [{ref: "element:Au", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 면역"}]
+- id: a5-iron-acid
+  assay: A5
+  recipe: {id: rcp-v-a5-2, name: 철 pH2 0V, components: [{ref: "element:Fe", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 2, Eh: 0}}
+  checks: [{value_contains: {name: "Fe · 지정 전위", text: "부식 — Fe²⁺"}}]
+- id: a5-iron-neutral-aerated
+  assay: A5
+  recipe: {id: rcp-v-a5-3, name: 철 중성(공기), components: [{ref: "element:Fe", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 부동태(Fe₂O₃"}]
+- id: a5-iron-cathodic-protection
+  assay: A5
+  recipe: {id: rcp-v-a5-4, name: 철 음극방식 -0.8V, components: [{ref: "element:Fe", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, Eh: -0.8}}
+  checks: [{value_contains: {name: "Fe · 지정 전위", text: "면역"}}]
+- id: a5-copper-deaerated
+  assay: A5
+  recipe: {id: rcp-v-a5-5, name: 구리 중성(탈기), components: [{ref: "element:Cu", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, atmosphere: N2}}
+  checks: [{summary_contains: "탈기 면역"}]
+- id: a5-copper-acid-aerated
+  assay: A5
+  recipe: {id: rcp-v-a5-6, name: 구리 pH1(공기), components: [{ref: "element:Cu", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 1, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 부식(Cu²⁺"}]
+- id: a5-aluminum-neutral
+  assay: A5
+  recipe: {id: rcp-v-a5-7, name: 알루미늄 중성(공기), components: [{ref: "element:Al", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 부동태"}]
+- id: a5-aluminum-naoh
+  assay: A5
+  recipe: {id: rcp-v-a5-8, name: 알루미늄+0.1M NaOH, components: [{ref: "element:Al", amount: 1 g, state: solid}, {ref: "cas:1310-73-2", amount: 0.1 mol/L, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}]}
+  checks: [{value_between: {name: "pH", range: [12.6, 13.1]}}, {summary_contains: "부식(Al(OH)₄⁻"}]
+- id: a5-zinc-neutral
+  assay: A5
+  recipe: {id: rcp-v-a5-9, name: 아연 중성(공기), components: [{ref: "element:Zn", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 7, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 부식(Zn²⁺"}]
+- id: a5-magnesium-alkaline
+  assay: A5
+  note: Mg(OH)₂ 석출 pH (Ksp 5.6e-12, Mg²⁺ 10⁻⁶ M → pH 11.4) 위 — MP 원본 에너지로는 MgOH⁺ 부식으로 틀린다 (D15)
+  recipe: {id: rcp-v-a5-10, name: 마그네슘 pH12 0V, components: [{ref: "element:Mg", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 12, Eh: 0}}
+  checks: [{value_contains: {name: "Mg · 지정 전위", text: "부동태 — 표면에 Mg(OH)₂"}}]
+- id: a5-hematite-acid
+  assay: A5
+  recipe: {id: rcp-v-a5-11, name: 적철석 pH1(공기), components: [{ref: "formula:Fe2O3", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {pH: 1, atmosphere: air}}
+  checks: [{summary_contains: "공기 포화 용해(Fe³⁺"}]
 
 # ── A8 블렌드 ───────────────────────────────────────────────────────────
 - id: a8-epoxy-glass

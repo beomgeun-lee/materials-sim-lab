@@ -301,6 +301,29 @@
     - https://matsci.org/t/general-availability-of-data-release-v2026-04-13/67236
   checked: 2026-09-26
 
+- id: mp-ion-ref-data
+  name: MP 수용액 이온 기준 데이터 (MPContribs ion_ref_data)
+  layer: C
+  operator: LBNL Materials Project (MPContribs)
+  url: https://contribs.materialsproject.org/projects/ion_ref_data
+  data: [수용액 이온 362종의 실험 생성 자유에너지, 기준 고체와 그 생성 자유에너지, 전하]
+  access: [rest-api]
+  auth: none
+  license: CC-BY-4.0
+  license_note: 프로젝트 메타데이터 license "CCA4"(CC BY 4.0), is_public true. 값의 원출처는 NBS Technical Note 270·Pourbaix 도감 등(출처는 항목마다 reference 로 표기)
+  version: "2022-07-28 (기여 항목 마지막 수정일)"
+  size: 362건
+  python_client: mp-api get_ion_reference_data (MPContribs 클라이언트 필요) → msl 은 REST 로 직접 받음
+  priority: 상
+  status: loaded  # 2026-09-27 msl db load (3단계)
+  country: US
+  uses: [A5]
+  caveats: mp-api 의 MPContribs 클라이언트(extra contribs)는 pint>=0.25 를 요구해 mendeleev(pint<0.25)와 설치 충돌 → 공개 REST 스냅샷을 로컬 기준 데이터로 쓴다. 25 °C 값만 있다
+  refs:
+    - https://contribs-api.materialsproject.org/projects/ion_ref_data
+    - https://doi.org/10.1103/PhysRevB.85.235438
+  checked: 2026-09-27
+
 - id: oqmd
   name: Open Quantum Materials Database (OQMD)
   layer: C
@@ -1314,9 +1337,10 @@
   status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A4]
-  caveats: MVP 적재 대상은 phreeqc.dat·llnl.dat·minteq.v4·pitzer·sit. llnl.dat 는 LLNL thermo.com.V8.R6 파생
+  caveats: MVP 적재 대상은 phreeqc.dat·llnl.dat·minteq.v4·pitzer·sit. llnl.dat 는 LLNL thermo.com.V8.R6 파생. A4 계산은 phreeqpython 동봉 phreeqc.dat(2024-05-22 판)을 명시해 싣는다 — phreeqpython 기본값은 vitens.dat(Stimela 파생)라 2단계까지 출처 표기와 실제 DB 가 달랐음(3단계 수정, 검증 사례 결과는 소수 둘째 자리까지 같음). 공식 예제 재현 — 배포본 3.8.6 소스로 빌드한 phreeqc 와 A4 경로(IPhreeqc)가 비교 가능한 예제 28/28 에서 같은 값 (msl bench phreeqc, kb/validation/phreeqc_examples_3.8.6.json). 동봉 판과 3.8.6 판 DB 차이는 광물 SI 최대 0.35(ex14)
   refs:
     - https://www.usgs.gov/software/phreeqc-version-3
+    - https://water.usgs.gov/water-resources/software/PHREEQC/phreeqc-3.8.6-17100.tar.gz
     - https://github.com/usgs-coupled/phreeqc3/releases
     - https://water.usgs.gov/water-resources/software/PHREEQC/Phreeqc_UserRightsNotice.txt
   checked: 2026-09-26

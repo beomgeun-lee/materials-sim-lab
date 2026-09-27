@@ -11,6 +11,7 @@ from pymatgen.entries.computed_entries import GibbsComputedStructureEntry
 
 from msl.assays.base import Context, Outcome, not_applicable, pending, val
 from msl.engines import mp, nasa
+from msl.engines.mp import mp_int
 from msl.engines import thermo_hybrid as th
 from msl.schema.recipe import Mode, State
 from msl.schema.result import Fidelity, Status, ValueKind
@@ -33,19 +34,6 @@ def _phase_diagram(ctx: Context, elements: list[str]) -> tuple[list, PhaseDiagra
         entries = mp.entries_in_chemsys(elements)
         ctx.shared[key] = (entries, PhaseDiagram(entries))
     return ctx.shared[key]
-
-
-def mp_int(mid: str | None) -> int | None:
-    """MP ID 를 정수로. 새 형식(mp-aaaaafwb, AlphaID)과 옛 형식(mp-3953-GGA+U)이 같은 정수를 가리킨다."""
-    if not mid:
-        return None
-    from emmet.core.mpid import AlphaID
-
-    tail = str(mid).split("-GGA")[0].split("-r2SCAN")[0].split("-")[-1]
-    try:
-        return int(tail) if tail.isdigit() else int(AlphaID(tail))
-    except Exception:
-        return None
 
 
 def _polymorph(entries: list, mp_id: str | None):
@@ -95,12 +83,13 @@ def a1(ctx: Context) -> Outcome:
             if 1e-6 < eh <= NEAR_HULL and len(e.composition.elements) > 1 and f not in {r[0] for r in rows}:
                 if f not in best or eh < best[f][0]:
                     best[f] = (eh, e)
-        near = sorted(best.values(), key=lambda p: p[0])[:8]
-        for eh, e in near:
+        near = sorted(best.values(), key=lambda p: p[0])
+        for eh, e in near[:8]:  # 표에는 hull 에 가까운 8개만
             rows.append([e.composition.reduced_formula, str(e.entry_id).split("-GGA")[0],
                          round(pd.get_form_energy_per_atom(e), 3), round(eh * 1000, 1), "준안정 → L2 재확인 대상"])
         values.append(val("hull 근처 준안정 후보 (≤50 meV/atom)", float(len(near))))
-        summary = f"{'-'.join(elements)} 계에서 안정 화합물 {n_stable}개, L2 재확인 후보 {len(near)}개"
+        summary = f"{'-'.join(elements)} 계에서 안정 화합물 {n_stable}개, L2 재확인 후보 {len(near)}개" + (
+            " (표에는 가까운 8개)" if len(near) > 8 else "")
     else:
         parts, poly_notes = [], []
         for c in ctx.comps:

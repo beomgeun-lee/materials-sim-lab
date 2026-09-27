@@ -1,0 +1,18 @@
+# 양 스윕 (amount) — 0.1 mol 염산에 수산화나트륨을 넣어 가며 pH (적정 곡선). 기대: 0.1 mol 에서 pH 7 근처 급변
+id: spc-hcl-naoh-titration
+name: 염산 적정 (NaOH)
+description: 강산–강염기 적정 곡선 (A4, PHREEQC)
+base:
+  components:
+    - {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous, label: "염산"}   # 염화수소
+    - {ref: "cas:7732-18-5", amount: 1 L, state: liquid, label: "물"}        # 물
+  conditions: {T: 25 °C}
+  assays: [A4]
+generator:
+  kind: amount
+  component: {ref: "cas:1310-73-2", state: aqueous, label: "NaOH"}             # 수산화나트륨
+  start: 0 mol
+  stop: 0.2 mol
+  steps: 21
+collect:
+  - {assay: A4, value: pH, label: pH}

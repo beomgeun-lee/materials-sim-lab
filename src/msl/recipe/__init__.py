@@ -25,6 +25,10 @@ def route(recipe: Recipe, comps: list[Resolved]) -> list[tuple[str, str]]:
     solids = [c for c in comps if not c.props and c.state in (None, State.SOLID) and not c.is_water]
     if water:
         out["A4"] = "물 또는 수용액 성분이 있음"
+        from msl.assays.aqueous import target
+
+        if any(target(c) for c in comps):
+            out["A5"] = "금속·산화물 고체 + 물 → 수계 안정성·부식 (Pourbaix)"
     if gas:
         out["A3"] = "기체 성분이 있음"
     if solids and len(solids) == len(comps):

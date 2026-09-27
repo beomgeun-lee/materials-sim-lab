@@ -39,6 +39,19 @@ def _rester():
     return MPRester(mute_progress_bars=True)
 
 
+def mp_int(mid: str | None) -> int | None:
+    """MP ID 를 정수로. 새 형식(mp-aaaaafwb, AlphaID)과 옛 형식(mp-3953-GGA+U)이 같은 정수를 가리킨다."""
+    if not mid:
+        return None
+    from emmet.core.mpid import AlphaID
+
+    tail = str(mid).split("-GGA")[0].split("-r2SCAN")[0].split("-")[-1]
+    try:
+        return int(tail) if tail.isdigit() else int(AlphaID(tail))
+    except Exception:
+        return None
+
+
 def entries_in_chemsys(elements: list[str]) -> list[ComputedStructureEntry]:
     """화학계의 모든 엔트리(MP2020 보정 적용). 같은 계는 캐시에서 읽는다."""
     chemsys = "-".join(sorted(set(elements)))

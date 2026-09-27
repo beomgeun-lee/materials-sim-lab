@@ -1,0 +1,25 @@
+# 부분집합 열거 (subsets, 1개씩) — 금속 8종을 공기와 닿은 중성 물에 넣으면 (A5 Pourbaix).
+# 기대 (공기 포화 = O₂/H₂O 평형 전위, 열역학 상한): Au 면역 · Cu(CuO)·Fe(Fe₂O₃)·Al(Al(OH)₃) 부동태 · Ag·Ni·Zn·Mg 부식
+id: spc-metals-in-water
+name: 금속 8종 × 중성 물 (공기)
+description: 25 °C, pH 7, 공기 포화 전위에서 금속별 부식 판정 (A5)
+base:
+  components:
+    - {ref: "cas:7732-18-5", amount: 1 L, state: liquid}
+  conditions: {pH: 7, atmosphere: air}
+  assays: [A5]
+generator:
+  kind: subsets
+  size: 1
+  pool:
+    - {ref: "element:Au", amount: 1 g, state: solid}
+    - {ref: "element:Ag", amount: 1 g, state: solid}
+    - {ref: "element:Cu", amount: 1 g, state: solid}
+    - {ref: "element:Ni", amount: 1 g, state: solid}
+    - {ref: "element:Fe", amount: 1 g, state: solid}
+    - {ref: "element:Zn", amount: 1 g, state: solid}
+    - {ref: "element:Al", amount: 1 g, state: solid}
+    - {ref: "element:Mg", amount: 1 g, state: solid}
+collect:
+  - {assay: A5, field: verdict, label: 판정}
+  - {assay: A5, value: "ΔG_pbx", label: ΔG_pbx (eV/atom)}

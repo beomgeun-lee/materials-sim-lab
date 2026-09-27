@@ -82,3 +82,21 @@
   hazards: [격렬한 발열, 화재·폭발]
   gases: []
   note: 수소·금속분말 등 환원제와 산화제는 점화원이 있으면 폭발적으로 반응한다 (검증 세트 v0 에서 빈틈 발견 → 추가)
+
+- id: R9
+  name: 활성 금속 + 비산화성 강산
+  a: {groups: ["Metals, Elemental and Powder, Active"]}
+  b: {groups: ["Acids, Strong Non-oxidizing"]}
+  verdict: incompatible
+  hazards: [가연성 기체 발생, 발열]
+  gases: [수소(H₂)]
+  note: 철·아연·알루미늄·마그네슘 등이 염산·황산(묽은)에 녹으며 수소가 나온다. 분말·고농도일수록 빠르다 (3단계 A5 작업 중 추가)
+
+- id: R10
+  name: 양쪽성 금속 + 강염기
+  a: {groups: ["Metals, Elemental and Powder, Active"], formula: "^(Al|Zn|Sn|Pb|Be|Ga)$"}
+  b: {groups: ["Bases, Strong"]}
+  verdict: incompatible
+  hazards: [가연성 기체 발생, 발열]
+  gases: [수소(H₂)]
+  note: 알루미늄·아연 등은 강염기에 녹아(Al(OH)₄⁻ 등) 수소가 나온다 — 배수관 세정제 + 알루미늄 사고 (3단계 A5 작업 중 추가)

@@ -1,0 +1,16 @@
+# 부분집합 열거 (subsets, 원소계) — Li–M–O 계 4종 (M = Co·Ni·Mn·Fe) 의 안정 화합물 수와 원료 공급 위험 (A1·A9)
+id: spc-li-tm-oxides
+name: Li–전이금속–O 계 탐색
+description: 양극재 후보 원소계 비교 (A1 MP 상태도, A9 공급 위험)
+base:
+  mode: system
+  assays: [A1, A9]
+generator:
+  kind: subsets
+  size: 1
+  pool: ["element:Co", "element:Ni", "element:Mn", "element:Fe"]
+  require: ["element:Li", "element:O"]
+collect:
+  - {assay: A1, value: 안정 화합물 수, label: 안정 화합물 수}
+  - {assay: A1, value: hull 근처 준안정 후보, label: 준안정 후보 수}
+  - {assay: A9, field: summary, label: 공급 위험}

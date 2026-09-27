@@ -1,0 +1,16 @@
+# 혼합비 스윕 (ratio) — Cu–Ni 조성별 고상선·액상선. 기대: Ni 가 늘수록 둘 다 오르는 렌즈형 상태도 (Cu 1,085 °C ↔ Ni 1,455 °C)
+id: spc-cu-ni-composition
+name: Cu–Ni 조성 스윕
+description: 전율 고용체 합금의 조성별 녹는 구간 (A6, pycalphad + SGTE 2원계 — 연구용)
+base:
+  conditions: {P: 1 atm}
+  assays: [A6]
+generator:
+  kind: ratio
+  components: [{ref: "element:Cu", state: solid}, {ref: "element:Ni", state: solid}]
+  step: 0.1
+  unit: at%
+collect:
+  - {assay: A6, value: 고상선, unit: °C, label: 고상선 (°C), chart: 녹는 구간 (°C)}
+  - {assay: A6, value: 액상선, unit: °C, label: 액상선 (°C), chart: 녹는 구간 (°C)}
+  - {assay: A6, value: 응고 구간, label: 응고 구간 (K)}

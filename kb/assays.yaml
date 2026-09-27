@@ -54,9 +54,10 @@
   question: 이 pH·전위에서 금속·산화물이 안정한가?
   applies_to: [금속·산화물+물]
   fidelity: [L0]
-  engines: [pymatgen]
-  sources: [materials-project]
+  engines: [pymatgen, mp-api]
+  sources: [materials-project, mp-ion-ref-data, nasa-cea-thermo]
   stage: 3
+  note: 25 °C, 금속 이온 10⁻⁶ mol/kg. 고체는 실험 ΔGf(NASA·이온 기준 고체) 우선 + MP 앵커, 이온은 실험 ΔGf (D15). pH 는 조건 → A4 → 용액만 PHREEQC → 7, 전위는 Eh → 분위기 → 공기·탈기 두 극단
 
 - code: A6
   name: 합금 상평형

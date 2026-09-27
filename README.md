@@ -9,13 +9,13 @@
 
 | | |
 |---|---|
-| 단계 | 0단계 · v0 · 1단계 · **2단계(조합 시험) 완료** — [2단계 보고](docs/06-2단계-조합-시험.md) |
-| 검증 | 검증 세트 27개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` |
-| 실제 계산 시험 | S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
-| 대기 중 | A5 Pourbaix (3단계) |
-| 적재 데이터 | 14개 소스 · 277,117행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 |
+| 단계 | 0~2단계 완료 · **3단계(평형 트랙) 진행** — [3단계 보고](docs/07-3단계-평형-트랙.md). Reaktoro 만 남음(conda 설치 확인 대기) |
+| 검증 | 검증 세트 40개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` · PHREEQC 공식 예제 28/28 재현 — `msl bench phreeqc` |
+| 실제 계산 시험 | **11종 모두** — S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A5 수계 부식(Pourbaix) · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
+| 조합 공간 | 혼합비 격자 · 양 스윕 · 부분집합 열거 → 표·곡선·쌍별 행렬 — `msl space`, 웹 `/spaces` |
+| 적재 데이터 | 15개 소스 · 277,479행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 · 수용액 이온 362 |
 | 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·KE 번호 — 99.0% |
-| 테스트 | 271개 통과 |
+| 테스트 | 306개 통과 |
 
 ### 실행
 
@@ -27,6 +27,8 @@ uv run msl serve                                      # 웹 화면 → http://12
 uv run msl run examples/recipes/mgo-alumina.yaml      # 터미널에서 레시피 하나 실행
 uv run msl run examples/recipes/cu-ni-alloy.yaml --report out.html   # 리포트 파일 (.html/.md)
 uv run msl validate                                   # 검증 세트 채점
+uv run msl space run examples/spaces/cu-ni-composition.yaml --report out.html   # 조합 공간 (웹: /spaces)
+uv run msl bench phreeqc --dist <배포본> --binary <phreeqc>   # PHREEQC 공식 예제 재현
 uv run msl resolve-check                              # 해석기 시험 목록 (기준 95%)
 uv run pytest                                         # 테스트
 ```
@@ -39,13 +41,15 @@ IMA PDF 적재에는 시스템의 `pdftotext`(poppler)가 필요합니다. USGS 
 | 레시피 | 실제로 계산되는 것 |
 |---|---|
 | 마그네시아 + 알루미나 | MgAl₂O₄(스피넬) 생성 반응에너지 −54 meV/atom(0 K) — 실험값(약 −52)과 일치 |
-| 석회석 + 석영 | MP 근사는 '반응 없음'이지만 NASA 실험 열화학 교차검증이 불일치를 경고 (탄산염 한계를 드러냄) |
+| 석회석 + 석영 | 하이브리드 고온 열역학(NASA + MP 앵커): 1,273 K 에서 −127 meV/atom, CaSiO₃ + CO₂ |
 | 표백제 + 염산 | S0 **부적합** — 염소(Cl₂) 발생. A10: 염화수소 사고대비물질·인체등유해성물질, GHS '위험'. PHREEQC 기본 DB 는 차아염소산을 다루지 못한다고 명시 |
 | 방해석 + 물 | pH 8.21, Ca 0.54 mmol/kgw (대기 CO₂ 평형) |
 | 메탄 + 공기 | 단열 평형 온도 2,225 K |
 | 에폭시 + 유리섬유 | 밀도 1.61 g/cm³, 영률 경계 4.9~24.1 GPa |
-| Li–Co–O 계 | 안정 화합물 11개 + L2 재확인 후보 8개, MP 물성 |
-| Cu–Ni 합금 | 밀도 추정(합금 상평형 A6 는 대기) |
+| Li–Co–O 계 | 안정 화합물 11개 + L2 재확인 후보 33개(표에는 가까운 8개), MP 물성 |
+| Cu–Ni 합금 | 고상선 1,193.6 °C · 액상선 1,239.6 °C · Scheil 응고 종료 (A6, 연구용 TDB) |
+| 철 + 물 (공기) | A5 Pourbaix 도표 — 공기 포화 전위에서 Fe₂O₃ 부동태, pH 5.61(대기 CO₂) |
+| 알루미늄 + NaOH 수용액 | S0 **부적합**(수소 발생) · A5 pH 12.88 에서 Al(OH)₄⁻ 로 부식 |
 
 ---
 
@@ -90,17 +94,17 @@ IMA PDF 적재에는 시스템의 `pdftotext`(poppler)가 필요합니다. USGS 
 | [00 조사 · 플랫폼 벤치마킹](docs/00-조사/03-플랫폼-벤치마킹.md) | 비교 매트릭스, 빈틈 분석, 차용 Top 10, 포지셔닝 |
 | [01 벤치마킹 종합](docs/01-벤치마킹-종합.md) | 조사 결론을 우리 시스템 관점에서 정리 (만들 것·래핑할 것·참고만 할 것) |
 | [02 계획서](docs/02-계획서.md) | 목표·설계·DB 구축·아키텍처·로드맵·검증·리스크·결정 사항 |
-| [03 결정 기록](docs/03-결정-기록.md) | 확정된 결정 D1~D10과 파생 제약 |
+| [03 결정 기록](docs/03-결정-기록.md) | 확정된 결정 D1~D16과 파생 제약 |
 | [04 기관 문의 초안](docs/04-기관-문의-초안.md) | NOAA·KOSHA·국가소재연구데이터센터·KRISS 문의문 |
 | [05 1단계 적재 보고](docs/05-1단계-데이터-코어.md) | 소스별 적재, 완료 기준 점검, 확인된 사실 |
 | [06 2단계 결과 보고](docs/06-2단계-조합-시험.md) | 검증 세트, A2 하이브리드, A6 합금, 광물 다형, 리포트 |
+| [07 3단계 결과 보고](docs/07-3단계-평형-트랙.md) | A5 Pourbaix, 조합 공간 생성기, PHREEQC 공식 예제 재현 |
 | [화면 목업](prototype/virtual-lab-mockup.html) | 교육용 첫 화면 목업 (실제 화면은 `msl serve`) |
 
 ---
 
-## 다음 (3단계)
+## 다음
 
-1. A5 Pourbaix — 금속·산화물의 수계 안정성·부식
-2. Reaktoro 이중화 — 고온·고압 수계
-3. 조합 공간 생성기 — 혼합비 스윕, 원소 부분집합 열거
-4. SGTE 부록 라이선스 확인 → A6 배포 가능 여부
+1. Reaktoro 이중화 — 고온·고압 수계 (conda 환경 필요 → 설치 확인 대기)
+2. 4단계 — uMLIP 처리량 실측, A1 L2(치환 구조 → uMLIP 이완), 조합 추천(BayBE)
+3. SGTE 부록 라이선스 확인 → A6 배포 가능 여부

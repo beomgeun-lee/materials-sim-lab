@@ -170,6 +170,134 @@ def validate(
         raise typer.Exit(1)
 
 
+space_app = typer.Typer(help="조합 공간 생성기 — 레시피 틀에서 여러 레시피를 만들어 한 표로 (3단계)", no_args_is_help=True)
+app.add_typer(space_app, name="space")
+
+
+def _load_space(path: Path):
+    from msl.recipe.space import load_space
+    from msl.schema.recipe import RecipeError
+
+    try:
+        return load_space(path)
+    except RecipeError as exc:
+        typer.secho(f"공간 정의 오류\n{exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+
+
+@space_app.command("expand")
+def space_expand(path: Path) -> None:
+    """공간이 만들 레시피 목록만 보여 준다 (실행하지 않음)."""
+    from msl.recipe.space import expand
+    from msl.report.space import describe
+    from msl.schema.recipe import RecipeError
+
+    space = _load_space(path)
+    try:
+        variants = expand(space)
+    except RecipeError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    typer.secho(f"{space.name}  [{space.id}] — 변형 {len(variants)}개", bold=True)
+    for v in variants:
+        comps = ", ".join(f"{c.ref}{' ' + str(c.amount.value) + ' ' + c.amount.unit if c.amount else ''}" for c in v.recipe.components)
+        typer.echo(f"  {v.recipe.id:34} {v.label:28} {comps}")
+
+
+@space_app.command("run")
+def space_run(
+    path: Path,
+    no_cache: Annotated[bool, typer.Option("--no-cache", help="캐시 없이 다시 계산")] = False,
+    csv_out: Annotated[Path | None, typer.Option("--csv", help="결과 표를 CSV 로 저장")] = None,
+    report_out: Annotated[Path | None, typer.Option("--report", help="리포트 파일 (.html 또는 .md)")] = None,
+    json_out: Annotated[Path | None, typer.Option("--json", help="결과를 JSON 으로 저장")] = None,
+) -> None:
+    """공간의 모든 레시피를 실행하고 collect 값을 한 표로 모은다."""
+    import json
+
+    from msl.recipe.space import run_space
+    from msl.report.space import describe, to_csv, to_html, to_markdown
+    from msl.schema.recipe import RecipeError
+
+    space = _load_space(path)
+    progress = lambda i, n, v: typer.echo(f"\r  {i + 1}/{n} {v.label[:50]:50}", nl=False)
+    try:
+        res = run_space(space, load_registry(), use_cache=not no_cache, progress=progress)
+    except RecipeError as exc:
+        typer.secho(f"\n{exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    typer.echo("\r" + " " * 60 + "\r", nl=False)
+    typer.secho(f"{space.name}  [{space.id}]", bold=True)
+    typer.echo(f"{describe(res)} · 변형 {len(res.rows)}개 · {res.elapsed:.1f}초\n")
+    width = max(len(r["label"]) for r in res.rows) if res.rows else 10
+    typer.echo(f"{'변형':{width}}  " + "  ".join(f"{c[:22]:>22}" for c in res.columns))
+    for r in res.rows:
+        cells = []
+        for c in res.columns:
+            v = r["values"].get(c)
+            v = "—" if v is None else (f"{v:.4g}" if isinstance(v, float) else str(v))
+            cells.append(f"{v[:22]:>22}")
+        typer.echo(f"{r['label']:{width}}  " + "  ".join(cells))
+    for out, text in ((csv_out, to_csv), (json_out, None), (report_out, None)):
+        if out is None:
+            continue
+        out.parent.mkdir(parents=True, exist_ok=True)
+        if out is csv_out:
+            out.write_text(to_csv(res), encoding="utf-8-sig")
+        elif out is json_out:
+            out.write_text(json.dumps(res.to_json(), ensure_ascii=False, indent=1), encoding="utf-8")
+        else:
+            out.write_text(to_markdown(res) if out.suffix.lower() == ".md" else to_html(res), encoding="utf-8")
+        typer.echo(f"저장: {out}")
+
+
+bench_app = typer.Typer(help="엔진 기준 재현 (3단계 완료 기준)", no_args_is_help=True)
+app.add_typer(bench_app, name="bench")
+
+
+@bench_app.command("phreeqc")
+def bench_phreeqc(
+    dist: Annotated[Path, typer.Option("--dist", help="USGS PHREEQC 배포본 폴더 (phreeqc-3.8.6-17100)")],
+    binary: Annotated[Path, typer.Option("--binary", help="같은 배포본으로 빌드한 공식 phreeqc 실행 파일")],
+    only: Annotated[str | None, typer.Option("--only", help="예제 이름 (쉼표로)")] = None,
+    save: Annotated[Path | None, typer.Option("--save", help="공식 실행 결과(기준값)를 JSON 으로 저장")] = None,
+) -> None:
+    """PHREEQC 공식 예제를 공식 실행 파일과 A4 경로(IPhreeqc)로 돌려 비교한다."""
+    import json
+
+    from msl.bench.phreeqc import bench
+
+    res = bench(dist, binary, only.split(",") if only else None,
+                progress=lambda n: typer.echo(f"\r  {n:8}", nl=False))
+    typer.echo("\r" + " " * 20 + "\r", nl=False)
+    ok = n_cmp = 0
+    for name, r in res["examples"].items():
+        if "error" in r:
+            typer.secho(f"✗ {name:6} {r['error']}", fg=typer.colors.RED)
+            continue
+        c, fc = r["compare"], r["files"]
+        ok += r["reproduced"]
+        n_cmp += r["comparable"]
+        mark = (typer.style("✓", fg=typer.colors.GREEN) if r["reproduced"] else
+                typer.style("✗", fg=typer.colors.RED) if r["comparable"] else typer.style("–", fg=typer.colors.YELLOW))
+        eff = r.get("db_version_effect")
+        detail = (f"용액 {c['solutions'][0]:>3}/{c['solutions'][1]:<3} ΔpH {c['max_dpH']:.3f} Δpe {c['max_dpe']:.3f} "
+                  f"ΔI {c['max_rel_dI']:.0e} ΔSI {c['max_dSI']:.2f}" if c["solutions"][0] else "용액 기술 출력 없음")
+        if fc["files"][0]:
+            detail += f" · 파일 {','.join(fc['files'][0])} 값 {fc['cells']}개 최대 상대차 {fc['max_rel']:.0e}"
+        elif not r["comparable"]:
+            detail += " · 선택 출력 파일도 없음 (USER_GRAPH 전용) → 비교 불가"
+        typer.echo(f"{mark} {name:6} {detail}  [{r['db']}]"
+                   + (f"  (3.8.6 DB 와 차이: ΔpH {eff['max_dpH']:.3f}, ΔSI {eff['max_dSI']:.2f})" if eff and eff["compared"] else ""))
+        if r["error_ours"] and not r["reproduced"]:
+            typer.echo(f"        IPhreeqc 오류: {r['error_ours'].strip().splitlines()[-1][:120]}")
+    typer.secho(f"\n재현 {ok}/{n_cmp} (비교 가능한 예제) · 비교 불가 {len(res['examples']) - n_cmp}",
+                fg=typer.colors.GREEN if ok == n_cmp else typer.colors.YELLOW)
+    if save:
+        save.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {save}")
+
+
 @app.command("resolve-check")
 def resolve_check(
     path: Annotated[Path, typer.Option("--list", help="시험 목록")] = KB_DIR / "validation" / "resolver_v1.yaml",

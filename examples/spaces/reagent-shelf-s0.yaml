@@ -1,0 +1,20 @@
+# 부분집합 열거 (subsets) — 시약 선반 7종을 두 개씩 섞으면 어떤 조합이 위험한가 (S0 쌍별 행렬, 21 조합)
+id: spc-reagent-shelf-s0
+name: 시약 선반 혼합 위험 행렬
+description: 가정·실험실 흔한 시약 7종의 쌍별 혼합 안전 판정 (S0)
+base:
+  assays: [S0]
+generator:
+  kind: subsets
+  size: 2
+  pool:
+    - {ref: "cas:7681-52-9", amount: 0.1 mol, state: aqueous, label: "락스(NaOCl)"}   # 차아염소산나트륨 (락스)
+    - {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous, label: "염산"}   # 염산
+    - {ref: "cas:1336-21-6", amount: 0.1 mol, state: aqueous, label: "암모니아수"}   # 암모니아수
+    - {ref: "cas:1310-73-2", amount: 0.1 mol, state: aqueous, label: "NaOH"}   # 수산화나트륨
+    - {ref: "element:Al", amount: 1 g, state: solid, label: "알루미늄"}            # 알루미늄 호일
+    - {ref: "cas:64-17-5", amount: 0.1 mol, state: liquid, label: "에탄올"}      # 에탄올
+    - {ref: "cas:7732-18-5", amount: 0.1 L, state: liquid, label: "물"}      # 물
+collect:
+  - {assay: S0, field: verdict, label: S0 판정}
+  - {assay: S0, field: summary, label: 근거}

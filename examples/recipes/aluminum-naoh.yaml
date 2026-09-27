@@ -1,0 +1,17 @@
+# 수계 부식 데모 (A5) — 알루미늄을 0.1 M 수산화나트륨 용액에. 기대: pH 약 13 에서 Al(OH)4⁻ 로 녹음(부식), S0 는 수소 발생 경고
+id: rcp-aluminum-naoh
+name: 알루미늄 + 수산화나트륨 수용액
+components:
+  - ref: element:Al
+    amount: 1 g
+    state: solid
+  - ref: cas:1310-73-2       # 수산화나트륨
+    amount: 0.1 mol/L
+    state: aqueous
+  - ref: cas:7732-18-5       # 물
+    amount: 1 L
+    state: liquid
+conditions:
+  T: 25 °C
+  P: 1 atm
+assays: auto

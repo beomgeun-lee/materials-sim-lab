@@ -1,0 +1,15 @@
+# 수계 부식 데모 (A5) — 철을 공기와 닿은 물에 담근다. 기대: 공기 포화 전위에서 산화철(부동태), pH 는 대기 CO2 로 약 5.6
+id: rcp-iron-water
+name: 철 + 물 (공기 중 부식)
+components:
+  - ref: element:Fe
+    amount: 10 g
+    state: solid
+  - ref: cas:7732-18-5       # 물
+    amount: 1 L
+    state: liquid
+conditions:
+  T: 25 °C
+  P: 1 atm
+  atmosphere: air
+assays: auto

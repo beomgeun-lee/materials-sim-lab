@@ -1,0 +1,2645 @@
+{
+ "phreeqc": "phreeqc-3.8.6-17100",
+ "binary": "공식 phreeqc (배포본 소스 빌드)",
+ "engine": "phreeqpython IPhreeqc",
+ "examples": {
+  "ex1": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "3906a796f6ae0d096743ba90f6ba67786194d9605bc2ad808b267ee723abec6e",
+   "official": {
+    "solutions": [
+     {
+      "pH": 8.22,
+      "pe": 8.451,
+      "I": 0.6747
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -0.93,
+      "Aragonite": 0.61,
+      "Calcite": 0.75,
+      "Chalcedony": -0.52,
+      "Chrysotile": 3.36,
+      "CO2(g)": -3.39,
+      "Dolomite": 2.39,
+      "Fe(OH)3(a)": 0.18,
+      "Goethite": 6.08,
+      "Gypsum": -0.64,
+      "H2(g)": -41.3,
+      "H2O(g)": -1.51,
+      "Halite": -2.48,
+      "Hausmannite": 1.55,
+      "Hematite": 14.17,
+      "Jarosite-K": -7.57,
+      "Manganite": 2.39,
+      "Melanterite": -19.39,
+      "NH3(g)": -8.86,
+      "O2(g)": -0.7,
+      "Pyrochroite": -8.1,
+      "Pyrolusite": 6.97,
+      "Quartz": -0.09,
+      "Rhodochrosite": -3.3,
+      "Sepiolite": 1.15,
+      "Sepiolite(d)": -1.75,
+      "Siderite": -13.17,
+      "SiO2(a)": -1.35,
+      "Sylvite": -3.54,
+      "Talc": 6.03,
+      "Uraninite": -12.65
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     1,
+     1
+    ],
+    "si_tables": [
+     1,
+     1
+    ],
+    "compared": 1,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     1,
+     1
+    ],
+    "si_tables": [
+     1,
+     1
+    ],
+    "compared": 1,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.00641,
+    "max_dSI": 0.36
+   }
+  },
+  "ex2": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "bff24cafb046ebcb0fd54263f6617fd3bddea1fe21da079d9e13af5ebecdbcc5",
+   "official": null,
+   "compare": {
+    "solutions": [
+     52,
+     52
+    ],
+    "si_tables": [
+     52,
+     52
+    ],
+    "compared": 52,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex2.sel"
+     ],
+     [
+      "ex2.sel"
+     ]
+    ],
+    "cells": 520,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     52,
+     52
+    ],
+    "si_tables": [
+     52,
+     52
+    ],
+    "compared": 52,
+    "max_dpH": 0.001,
+    "max_dpe": 12.163,
+    "max_rel_dI": 0.00368,
+    "max_dSI": 0.01
+   }
+  },
+  "ex2b": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "29f03be2c8245470cc728dbf3ac350410702220f80ba6e1fd8315691ebaa1b98",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": false,
+   "comparable": false,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex3": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "dcdca1d1921f9fdf91d747e39218ea0f3d0b5696f3e377b49e35b9d2a7f37221",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 4.0,
+      "I": 1.007e-07
+     },
+     {
+      "pH": 7.297,
+      "pe": -1.575,
+      "I": 0.004826
+     },
+     {
+      "pH": 8.22,
+      "pe": 8.451,
+      "I": 0.6747
+     },
+     {
+      "pH": 7.349,
+      "pe": -1.99,
+      "I": 0.2088
+     },
+     {
+      "pH": 7.055,
+      "pe": -1.566,
+      "I": 0.2091
+     },
+     {
+      "pH": 7.44,
+      "pe": -1.951,
+      "I": 0.2089
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -22.05,
+      "H2O(g)": -1.5,
+      "O2(g)": -39.19
+     },
+     {
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -22.05,
+      "CO2(g)": -2.0,
+      "H2(g)": -11.49,
+      "H2O(g)": -1.5,
+      "O2(g)": -60.3
+     },
+     {
+      "Anhydrite": -0.93,
+      "Aragonite": 0.61,
+      "Calcite": 0.75,
+      "Chalcedony": -0.52,
+      "Chrysotile": 3.36,
+      "CO2(g)": -3.39,
+      "Dolomite": 2.39,
+      "Gypsum": -0.64,
+      "H2(g)": -33.39,
+      "H2O(g)": -1.51,
+      "Halite": -2.48,
+      "O2(g)": -16.52,
+      "Quartz": -0.09,
+      "Sepiolite": 1.15,
+      "Sepiolite(d)": -1.75,
+      "SiO2(a)": -1.35,
+      "Sylvite": -3.54,
+      "Talc": 6.03
+     },
+     {
+      "Anhydrite": -1.42,
+      "Aragonite": -0.25,
+      "Calcite": -0.1,
+      "CH4(g)": -19.37,
+      "Chalcedony": -1.08,
+      "Chrysotile": -4.3,
+      "CO2(g)": -2.23,
+      "Dolomite": 0.52,
+      "Gypsum": -1.12,
+      "H2(g)": -10.77,
+      "H2O(g)": -1.51,
+      "H2S(g)": -18.72,
+      "Halite": -3.46,
+      "O2(g)": -61.76,
+      "Quartz": -0.65,
+      "Sepiolite": -4.88,
+      "Sepiolite(d)": -7.78,
+      "SiO2(a)": -1.92,
+      "Sulfur": -13.93,
+      "Sylvite": -4.47,
+      "Talc": -2.75
+     },
+     {
+      "Anhydrite": -0.97,
+      "Aragonite": -0.14,
+      "Calcite": -0.0,
+      "CH4(g)": -20.17,
+      "Chalcedony": -1.08,
+      "Chrysotile": -6.9,
+      "CO2(g)": -1.98,
+      "Dolomite": -0.0,
+      "Gypsum": -0.67,
+      "H2(g)": -11.03,
+      "H2O(g)": -1.51,
+      "H2S(g)": -19.16,
+      "Halite": -3.46,
+      "O2(g)": -61.24,
+      "Quartz": -0.65,
+      "Sepiolite": -6.62,
+      "Sepiolite(d)": -9.52,
+      "SiO2(a)": -1.92,
+      "Sulfur": -14.11,
+      "Sylvite": -4.47,
+      "Talc": -5.36
+     },
+     {
+      "Anhydrite": -1.42,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -20.5,
+      "Chalcedony": -1.08,
+      "Chrysotile": -3.75,
+      "CO2(g)": -2.31,
+      "Dolomite": 0.72,
+      "Gypsum": -1.12,
+      "H2(g)": -11.03,
+      "H2O(g)": -1.51,
+      "H2S(g)": -19.94,
+      "Halite": -3.46,
+      "O2(g)": -61.23,
+      "Quartz": -0.65,
+      "Sepiolite": -4.52,
+      "Sepiolite(d)": -7.42,
+      "SiO2(a)": -1.92,
+      "Sulfur": -14.9,
+      "Sylvite": -4.47,
+      "Talc": -2.21
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     6,
+     6
+    ],
+    "si_tables": [
+     6,
+     6
+    ],
+    "compared": 6,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     6,
+     6
+    ],
+    "si_tables": [
+     6,
+     6
+    ],
+    "compared": 6,
+    "max_dpH": 0.022,
+    "max_dpe": 0.508,
+    "max_rel_dI": 0.00967,
+    "max_dSI": 0.16
+   }
+  },
+  "ex4": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "91c391c093576907d13df87fd3e718ab8f6d168d2b9f5df677aa3503455e4bfe",
+   "official": {
+    "solutions": [
+     {
+      "pH": 4.5,
+      "pe": 4.0,
+      "I": 8.839e-05
+     },
+     {
+      "pH": 3.148,
+      "pe": 16.529,
+      "I": 0.001531
+     },
+     {
+      "pH": 3.148,
+      "pe": 16.529,
+      "I": 0.001531
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -5.65,
+      "Aragonite": -9.35,
+      "Calcite": -9.21,
+      "CO2(g)": -3.5,
+      "Dolomite": -19.02,
+      "Gypsum": -5.35,
+      "H2(g)": -17.05,
+      "H2O(g)": -1.5,
+      "Halite": -11.97,
+      "NH3(g)": -11.37,
+      "O2(g)": -49.19,
+      "Sylvite": -12.12
+     },
+     {
+      "Anhydrite": -3.21,
+      "Aragonite": -9.52,
+      "Calcite": -9.37,
+      "CH4(g)": -133.89,
+      "CO2(g)": -2.19,
+      "Dolomite": -19.35,
+      "Gypsum": -2.91,
+      "H2(g)": -39.4,
+      "H2O(g)": -1.5,
+      "H2S(g)": -125.76,
+      "Halite": -9.4,
+      "N2(g)": -0.45,
+      "NH3(g)": -56.35,
+      "O2(g)": -4.48,
+      "Sulfur": -92.33,
+      "Sylvite": -9.55
+     },
+     {
+      "Anhydrite": -3.21,
+      "Aragonite": -9.52,
+      "Calcite": -9.37,
+      "CH4(g)": -133.89,
+      "CO2(g)": -2.19,
+      "Dolomite": -19.35,
+      "Gypsum": -2.91,
+      "H2(g)": -39.4,
+      "H2O(g)": -1.5,
+      "H2S(g)": -125.76,
+      "Halite": -9.4,
+      "N2(g)": -0.45,
+      "NH3(g)": -56.35,
+      "O2(g)": -4.48,
+      "Sulfur": -92.33,
+      "Sylvite": -9.55
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.00131,
+    "max_dSI": 0.01
+   }
+  },
+  "ex5": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "cef249a87c3f0c63b86ec3b2814981a84defeb15d3e70dee745271ff3e406cb9",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 4.0,
+      "I": 1.007e-07
+     },
+     {
+      "pH": 8.279,
+      "pe": -4.943,
+      "I": 0.001463
+     },
+     {
+      "pH": 8.17,
+      "pe": -4.286,
+      "I": 0.003608
+     },
+     {
+      "pH": 7.98,
+      "pe": -3.966,
+      "I": 0.01225
+     },
+     {
+      "pH": 7.881,
+      "pe": -3.812,
+      "I": 0.02254
+     },
+     {
+      "pH": 7.725,
+      "pe": -3.573,
+      "I": 0.06087
+     },
+     {
+      "pH": 7.719,
+      "pe": -3.566,
+      "I": 0.07439
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -22.05,
+      "H2O(g)": -1.5,
+      "O2(g)": -39.19
+     },
+     {
+      "Anhydrite": -6.43,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -4.47,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -4.32,
+      "Goethite": -0.0,
+      "Gypsum": -6.13,
+      "H2(g)": -6.72,
+      "H2O(g)": -1.5,
+      "H2S(g)": -8.93,
+      "Hematite": 2.01,
+      "Mackinawite": -3.59,
+      "Melanterite": -12.98,
+      "O2(g)": -69.84,
+      "Pyrite": 0.0,
+      "Siderite": -2.08,
+      "Sulfur": -8.19
+     },
+     {
+      "Anhydrite": -2.32,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -8.85,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -5.14,
+      "Goethite": -0.0,
+      "Gypsum": -2.01,
+      "H2(g)": -7.82,
+      "H2O(g)": -1.5,
+      "H2S(g)": -9.2,
+      "Halite": -8.23,
+      "Hematite": 2.01,
+      "Mackinawite": -4.41,
+      "Melanterite": -9.42,
+      "O2(g)": -67.65,
+      "Pyrite": 0.0,
+      "Siderite": -2.62,
+      "Sulfur": -7.36
+     },
+     {
+      "Anhydrite": -1.35,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -9.88,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -5.33,
+      "Goethite": 0.0,
+      "Gypsum": -1.05,
+      "H2(g)": -8.08,
+      "H2O(g)": -1.5,
+      "H2S(g)": -9.26,
+      "Halite": -6.88,
+      "Hematite": 2.01,
+      "Mackinawite": -4.6,
+      "Melanterite": -8.59,
+      "O2(g)": -67.14,
+      "Pyrite": -0.0,
+      "Siderite": -2.75,
+      "Sulfur": -7.17
+     },
+     {
+      "Anhydrite": -0.94,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -10.33,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -5.42,
+      "Goethite": -0.0,
+      "Gypsum": -0.64,
+      "H2(g)": -8.19,
+      "H2O(g)": -1.5,
+      "H2S(g)": -9.29,
+      "Halite": -6.3,
+      "Hematite": 2.01,
+      "Mackinawite": -4.68,
+      "Melanterite": -8.23,
+      "O2(g)": -66.91,
+      "Pyrite": 0.0,
+      "Siderite": -2.81,
+      "Sulfur": -7.09
+     },
+     {
+      "Anhydrite": -0.32,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -10.99,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -5.54,
+      "Goethite": 0.0,
+      "Gypsum": -0.01,
+      "H2(g)": -8.35,
+      "H2O(g)": -1.5,
+      "H2S(g)": -9.33,
+      "Halite": -5.41,
+      "Hematite": 2.01,
+      "Mackinawite": -4.81,
+      "Melanterite": -7.69,
+      "O2(g)": -66.58,
+      "Pyrite": 0.0,
+      "Siderite": -2.89,
+      "Sulfur": -6.96
+     },
+     {
+      "Anhydrite": -0.3,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -11.0,
+      "CO2(g)": -3.5,
+      "Fe(OH)3(a)": -5.89,
+      "FeS(ppt)": -5.54,
+      "Goethite": 0.0,
+      "Gypsum": 0.0,
+      "H2(g)": -8.36,
+      "H2O(g)": -1.5,
+      "H2S(g)": -9.33,
+      "Halite": -4.98,
+      "Hematite": 2.01,
+      "Mackinawite": -4.81,
+      "Melanterite": -7.68,
+      "O2(g)": -66.57,
+      "Pyrite": -0.0,
+      "Siderite": -2.89,
+      "Sulfur": -6.96
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     7,
+     7
+    ],
+    "si_tables": [
+     7,
+     7
+    ],
+    "compared": 7,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex5.sel"
+     ],
+     [
+      "ex5.sel"
+     ]
+    ],
+    "cells": 133,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     7,
+     7
+    ],
+    "si_tables": [
+     7,
+     7
+    ],
+    "compared": 7,
+    "max_dpH": 0.01,
+    "max_dpe": 0.01,
+    "max_rel_dI": 0.01399,
+    "max_dSI": 0.06
+   }
+  },
+  "ex6": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "8e44f6a226e3f58cf34456755cde7ace25ce6568f50393bb895d5986339bfef3",
+   "official": null,
+   "compare": {
+    "solutions": [
+     37,
+     37
+    ],
+    "si_tables": [
+     37,
+     37
+    ],
+    "compared": 37,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex6A-B.sel",
+      "ex6C.sel"
+     ],
+     [
+      "ex6A-B.sel",
+      "ex6C.sel"
+     ]
+    ],
+    "cells": 494,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     37,
+     37
+    ],
+    "si_tables": [
+     37,
+     37
+    ],
+    "compared": 37,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex7": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "344fcc89c6fc7d0e0229084528ef06321727b274c7fcc159590cdf9ded09387d",
+   "official": null,
+   "compare": {
+    "solutions": [
+     26,
+     26
+    ],
+    "si_tables": [
+     26,
+     26
+    ],
+    "compared": 26,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex7.sel"
+     ],
+     [
+      "ex7.sel"
+     ]
+    ],
+    "cells": 351,
+    "max_rel": 9.6042e-26,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     26,
+     26
+    ],
+    "si_tables": [
+     26,
+     26
+    ],
+    "compared": 26,
+    "max_dpH": 0.003,
+    "max_dpe": 0.003,
+    "max_rel_dI": 0.00793,
+    "max_dSI": 0.02
+   }
+  },
+  "ex8": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "ce6b8fe24ad0501110798d529de89f878f4dc717a9a606d09d64c5efe548eeb1",
+   "official": null,
+   "compare": {
+    "solutions": [
+     28,
+     28
+    ],
+    "si_tables": [
+     28,
+     28
+    ],
+    "compared": 28,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex8.sel"
+     ],
+     [
+      "ex8.sel"
+     ]
+    ],
+    "cells": 442,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     28,
+     28
+    ],
+    "si_tables": [
+     28,
+     28
+    ],
+    "compared": 28,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex9": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "f945fc3cb4d84f4e30ca21d95bf054dcca7e195ed0516ef0b8d003530b00e98b",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 13.629,
+      "I": 0.0103
+     },
+     {
+      "pH": 6.044,
+      "pe": 14.585,
+      "I": 0.0103
+     },
+     {
+      "pH": 5.807,
+      "pe": 14.823,
+      "I": 0.0103
+     },
+     {
+      "pH": 5.522,
+      "pe": 15.108,
+      "I": 0.01029
+     },
+     {
+      "pH": 5.324,
+      "pe": 15.306,
+      "I": 0.01029
+     },
+     {
+      "pH": 5.194,
+      "pe": 15.435,
+      "I": 0.01029
+     },
+     {
+      "pH": 5.072,
+      "pe": 15.557,
+      "I": 0.01029
+     },
+     {
+      "pH": 4.976,
+      "pe": 15.653,
+      "I": 0.01029
+     },
+     {
+      "pH": 4.881,
+      "pe": 15.748,
+      "I": 0.01028
+     },
+     {
+      "pH": 4.826,
+      "pe": 15.803,
+      "I": 0.01028
+     },
+     {
+      "pH": 4.787,
+      "pe": 15.842,
+      "I": 0.01028
+     },
+     {
+      "pH": 4.758,
+      "pe": 15.872,
+      "I": 0.01028
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.64,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.65,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     },
+     {
+      "Goethite": 6.66,
+      "H2(g)": -41.31,
+      "H2O(g)": -1.5,
+      "Halite": -5.65,
+      "O2(g)": -0.67
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     12,
+     12
+    ],
+    "si_tables": [
+     12,
+     12
+    ],
+    "compared": 12,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex9.sel"
+     ],
+     [
+      "ex9.sel"
+     ]
+    ],
+    "cells": 60,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     12,
+     12
+    ],
+    "si_tables": [
+     12,
+     12
+    ],
+    "compared": 12,
+    "max_dpH": 0.001,
+    "max_dpe": 0.001,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.01
+   }
+  },
+  "ex10": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "cfecffd87e6f18ab2582aea0e73c2ca5ffdd5f3b6dc9c34a5bc3d7b427f53b3e",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.969,
+      "pe": 4.0,
+      "I": 0.01105
+     },
+     {
+      "pH": 6.064,
+      "pe": 11.925,
+      "I": 0.02901
+     }
+    ],
+    "si": [
+     {
+      "Aragonite": 1.17,
+      "Calcite": 1.31,
+      "CH4(g)": -72.35,
+      "CO2(g)": -2.33,
+      "H2(g)": -23.99,
+      "H2O(g)": -1.5,
+      "O2(g)": -35.31
+     },
+     {
+      "Aragonite": 0.0,
+      "Calcite": 0.14,
+      "CH4(g)": -118.21,
+      "CO2(g)": -0.01,
+      "H2(g)": -36.03,
+      "H2O(g)": -1.5,
+      "O2(g)": -11.23
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex10.sel"
+     ],
+     [
+      "ex10.sel"
+     ]
+    ],
+    "cells": 6200,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.006,
+    "max_dpe": 0.023,
+    "max_rel_dI": 0.02557,
+    "max_dSI": 0.02
+   }
+  },
+  "ex11": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "f3779ec4ba83e6c1c4ea5c1cf1b3081d9a19033beb6d877f2ad85d7d81c62ac6",
+   "official": {
+    "solutions": [
+     {
+      "pH": 6.995,
+      "pe": 13.632,
+      "I": 0.0018
+     },
+     {
+      "pH": 6.997,
+      "pe": 13.63,
+      "I": 0.0012
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -41.3,
+      "H2O(g)": -1.5,
+      "O2(g)": -0.68
+     },
+     {
+      "H2(g)": -41.3,
+      "H2O(g)": -1.5,
+      "O2(g)": -0.68
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex11adv.sel",
+      "ex11trn.sel"
+     ],
+     [
+      "ex11adv.sel",
+      "ex11trn.sel"
+     ]
+    ],
+    "cells": 1206,
+    "max_rel": 8.051e-13,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex12": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "a6819e822426bc77281cdb4240de45900578d12e5760bfb9ba99dac241654b79",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex12.sel"
+     ],
+     [
+      "ex12.sel"
+     ]
+    ],
+    "cells": 625,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex12a": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "e133f5ff07d131795c6f6bb57d5d978a52649a391d75bb2b6f8b0fe0e330f672",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex12a.sel"
+     ],
+     [
+      "ex12a.sel"
+     ]
+    ],
+    "cells": 853,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex13a": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "28a0126102eff26c47b0d09ef0858cd9f6434f9750a88643b5de2c80817504e6",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.0015
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "Halite": -7.61,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "N2(g)": -15.99,
+      "NH3(g)": -66.95,
+      "O2(g)": -0.7
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex13a.sel"
+     ],
+     [
+      "ex13a.sel"
+     ]
+    ],
+    "cells": 160,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex13b": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "de5d2199b38d6005f9055d719d627854a3a93be14f0bc47004f715f2e1a42e23",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.0015
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "Halite": -7.61,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "N2(g)": -15.99,
+      "NH3(g)": -66.95,
+      "O2(g)": -0.7
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex13b.sel"
+     ],
+     [
+      "ex13b.sel"
+     ]
+    ],
+    "cells": 160,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex13c": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "149471745bc6c30efebe7e13cf1f562a65e61e6a2bb7677ac209ac8a3e76cac0",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.0015
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     },
+     {
+      "pH": 7.0,
+      "pe": 13.622,
+      "I": 0.001
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "Halite": -7.61,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "O2(g)": -0.7
+     },
+     {
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "N2(g)": -15.99,
+      "NH3(g)": -66.95,
+      "O2(g)": -0.7
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex13c.sel"
+     ],
+     [
+      "ex13c.sel"
+     ]
+    ],
+    "cells": 160,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     3,
+     3
+    ],
+    "si_tables": [
+     3,
+     3
+    ],
+    "compared": 3,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex14": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "9c2092b3a880a54f7eea2ae23162c672f1e58b326b73a1a11ce6325239d6a5f5",
+   "official": {
+    "solutions": [
+     {
+      "pH": 5.713,
+      "pe": 14.962,
+      "I": 7.268
+     },
+     {
+      "pH": 5.885,
+      "pe": 14.789,
+      "I": 7.268
+     },
+     {
+      "pH": 4.6,
+      "pe": 16.022,
+      "I": 0.001037
+     },
+     {
+      "pH": 7.047,
+      "pe": 13.575,
+      "I": 0.009638
+     },
+     {
+      "pH": 7.047,
+      "pe": 13.575,
+      "I": 0.009636
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -0.4,
+      "Aragonite": -0.32,
+      "Calcite": -0.18,
+      "CH4(g)": -141.14,
+      "CO2(g)": -1.68,
+      "Dolomite": -0.36,
+      "Gypsum": -0.31,
+      "H2(g)": -41.4,
+      "H2O(g)": -1.61,
+      "H2S(g)": -139.29,
+      "Halite": 0.08,
+      "O2(g)": -0.7,
+      "Sulfur": -103.87
+     },
+     {
+      "Anhydrite": -0.4,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -141.31,
+      "CO2(g)": -1.85,
+      "Dolomite": 0.0,
+      "Gypsum": -0.31,
+      "H2(g)": -41.4,
+      "H2O(g)": -1.61,
+      "H2S(g)": -139.63,
+      "Halite": 0.08,
+      "O2(g)": -0.7,
+      "Sulfur": -104.22
+     },
+     {
+      "Anhydrite": -3.22,
+      "Aragonite": -7.91,
+      "Calcite": -7.76,
+      "CH4(g)": -142.75,
+      "CO2(g)": -3.5,
+      "Dolomite": -16.13,
+      "Gypsum": -2.92,
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "H2S(g)": -136.24,
+      "Halite": -9.39,
+      "O2(g)": -0.7,
+      "Sulfur": -100.93
+     },
+     {
+      "Anhydrite": -2.56,
+      "Aragonite": -0.14,
+      "Calcite": 0.0,
+      "CH4(g)": -140.75,
+      "CO2(g)": -1.5,
+      "Dolomite": 0.0,
+      "Gypsum": -2.25,
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "H2S(g)": -141.34,
+      "Halite": -9.44,
+      "O2(g)": -0.7,
+      "Sulfur": -106.03
+     },
+     {
+      "Anhydrite": -2.56,
+      "Aragonite": -0.15,
+      "Calcite": -0.0,
+      "CH4(g)": -140.75,
+      "CO2(g)": -1.5,
+      "Dolomite": 0.0,
+      "Gypsum": -2.26,
+      "H2(g)": -41.29,
+      "H2O(g)": -1.5,
+      "H2S(g)": -141.34,
+      "Halite": -9.44,
+      "O2(g)": -0.7,
+      "Sulfur": -106.03
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     5,
+     5
+    ],
+    "si_tables": [
+     5,
+     5
+    ],
+    "compared": 5,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex14.sel"
+     ],
+     [
+      "ex14.sel"
+     ]
+    ],
+    "cells": 1407,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     5,
+     5
+    ],
+    "si_tables": [
+     5,
+     5
+    ],
+    "compared": 5,
+    "max_dpH": 0.165,
+    "max_dpe": 0.166,
+    "max_rel_dI": 0.00114,
+    "max_dSI": 0.35
+   }
+  },
+  "ex15": {
+   "db": "ex15.dat (배포본)",
+   "input_sha256": "278c4a047206e922cce1b8243d1cce64ada6b39c5295f7c479fcecfe99db8a91",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex15.sel"
+     ],
+     [
+      "ex15.sel"
+     ]
+    ],
+    "cells": 2310,
+    "max_rel": 9.8421e-13,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex15a": {
+   "db": "ex15.dat (배포본)",
+   "input_sha256": "ec4e2bcde7f1274594eacb0befc7a417d48337b9fd7f9e8eb1a70d573cfd72c3",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex15.sel"
+     ],
+     [
+      "ex15.sel"
+     ]
+    ],
+    "cells": 2310,
+    "max_rel": 9.8421e-13,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex15b": {
+   "db": "ex15.dat (배포본)",
+   "input_sha256": "5367353610dec5b2404947e3c5aa06702985e2beded2aa550024e1d23bf5e1b7",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex15.sel"
+     ],
+     [
+      "ex15.sel"
+     ]
+    ],
+    "cells": 2310,
+    "max_rel": 9.8421e-13,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex16": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "9ba3f6577fa20b0aea00863fbfccc6345b6dc6d87808a03976bac95b9189dbf0",
+   "official": {
+    "solutions": [
+     {
+      "pH": 6.2,
+      "pe": 4.0,
+      "I": 0.0004852
+     },
+     {
+      "pH": 6.8,
+      "pe": 4.0,
+      "I": 0.001314
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -4.93,
+      "Aragonite": -3.44,
+      "Calcite": -3.3,
+      "Chalcedony": -0.01,
+      "Chrysotile": -15.88,
+      "CO2(g)": -1.87,
+      "Dolomite": -6.89,
+      "Gypsum": -4.62,
+      "H2(g)": -20.45,
+      "H2O(g)": -1.5,
+      "Halite": -10.32,
+      "O2(g)": -42.39,
+      "Quartz": 0.42,
+      "Sepiolite": -10.82,
+      "Sepiolite(d)": -13.72,
+      "SiO2(a)": -0.85,
+      "Sylvite": -10.33,
+      "Talc": -12.2
+     },
+     {
+      "Anhydrite": -4.07,
+      "Aragonite": -1.92,
+      "Calcite": -1.78,
+      "Chalcedony": 0.16,
+      "Chrysotile": -10.85,
+      "CO2(g)": -2.05,
+      "Dolomite": -3.99,
+      "Gypsum": -3.77,
+      "H2(g)": -21.65,
+      "H2O(g)": -1.5,
+      "Halite": -9.71,
+      "O2(g)": -39.99,
+      "Quartz": 0.59,
+      "Sepiolite": -7.17,
+      "Sepiolite(d)": -10.07,
+      "SiO2(a)": -0.68,
+      "Sylvite": -9.86,
+      "Talc": -6.82
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.00228,
+    "max_dSI": 0.01
+   }
+  },
+  "ex17": {
+   "db": "pitzer.dat (배포본)",
+   "input_sha256": "cfba5e79422dfc6535b6d317ab8a804c6ce7f98aa4819f19ff8505d41cd9b5d6",
+   "official": {
+    "solutions": [
+     {
+      "pH": 8.0,
+      "pe": 4.0,
+      "I": 0.3751
+     },
+     {
+      "pH": 5.0,
+      "pe": 4.0,
+      "I": 11.11
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -1.27,
+      "Aragonite": -0.27,
+      "Arcanite": -5.73,
+      "Artinite": -3.25,
+      "Bischofite": -8.16,
+      "Bloedite": -6.63,
+      "Brucite": -3.24,
+      "Burkeite": -14.66,
+      "Calcite": -0.09,
+      "Carnallite": -11.16,
+      "CO2(g)": -3.5,
+      "Dolomite": 0.82,
+      "Epsomite": -2.99,
+      "Gaylussite": -6.22,
+      "Glaserite": -9.69,
+      "Glauberite": -4.32,
+      "Goergeyite": -5.85,
+      "Gypsum": -0.93,
+      "H2O(g)": -1.51,
+      "Halite": -3.02,
+      "Hexahydrite": -3.26,
+      "Huntite": -0.71,
+      "Kainite": -7.8,
+      "Kalicinite": -6.18,
+      "Kieserite": -4.54,
+      "Labile_S": -8.16,
+      "Leonhardite": -3.94,
+      "Leonite": -8.46,
+      "Magnesite": 0.06,
+      "MgCl2_2H2O": -18.1,
+      "MgCl2_4H2O": -10.53,
+      "Mirabilite": -2.96,
+      "Misenite": -75.69,
+      "Nahcolite": -3.65,
+      "Natron": -6.34,
+      "Nesquehonite": -2.62,
+      "Pentahydrite": -3.54,
+      "Pirssonite": -6.39,
+      "Polyhalite": -9.73,
+      "Portlandite": -9.65,
+      "Schoenite": -8.12,
+      "Sylvite": -4.07,
+      "Syngenite": -6.71,
+      "Thenardite": -3.85,
+      "Trona": -10.14
+     },
+     {
+      "Arcanite": -1.35,
+      "Artinite": -8.51,
+      "Bischofite": -2.55,
+      "Bloedite": 0.06,
+      "Brucite": -5.71,
+      "Burkeite": -10.61,
+      "Carnallite": -2.03,
+      "CO2(g)": -3.5,
+      "Epsomite": -0.22,
+      "Glaserite": -1.4,
+      "H2O(g)": -1.67,
+      "Halite": 0.02,
+      "Hexahydrite": -0.33,
+      "Kainite": -0.84,
+      "Kalicinite": -7.18,
+      "Kieserite": -0.79,
+      "Leonhardite": -0.67,
+      "Leonite": -0.81,
+      "Magnesite": -2.25,
+      "MgCl2_2H2O": -11.84,
+      "MgCl2_4H2O": -4.6,
+      "Mirabilite": -1.18,
+      "Misenite": -39.97,
+      "Nahcolite": -5.13,
+      "Natron": -10.79,
+      "Nesquehonite": -5.42,
+      "Pentahydrite": -0.44,
+      "Schoenite": -0.8,
+      "Sylvite": -0.55,
+      "Thenardite": -0.43,
+      "Trona": -14.75
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex17b": {
+   "db": "pitzer.dat (배포본)",
+   "input_sha256": "0de74c9958e2b12c348c0a6982c7ff1e63718b3d141052e0e9e08a41c7578553",
+   "official": null,
+   "compare": {
+    "solutions": [
+     24,
+     24
+    ],
+    "si_tables": [
+     24,
+     24
+    ],
+    "compared": 24,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex18": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "efcae774badc59458e8c6351d5db1f882f875640524430b28b1acb9fabf51a4d",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.55,
+      "pe": 0.0,
+      "I": 0.006547
+     },
+     {
+      "pH": 6.61,
+      "pe": 0.0,
+      "I": 0.07403
+     }
+    ],
+    "si": [
+     {
+      "Anhydrite": -2.97,
+      "Aragonite": -0.2,
+      "Calcite": -0.05,
+      "CH2O": -33.73,
+      "CO2(g)": -2.26,
+      "Dolomite": -0.27,
+      "Gypsum": -2.5,
+      "H2(g)": -15.13,
+      "H2O(g)": -1.91,
+      "Halite": -11.03,
+      "Melanterite": -7.87,
+      "O2(g)": -58.39,
+      "Siderite": -0.86,
+      "Sylvite": -9.47
+     },
+     {
+      "Anhydrite": -0.07,
+      "Aragonite": 0.2,
+      "Calcite": 0.32,
+      "CH2O": -14.59,
+      "CO2(g)": -0.94,
+      "Dolomite": 0.38,
+      "FeS(ppt)": -1.03,
+      "Gypsum": -0.15,
+      "H2(g)": -6.08,
+      "H2O(g)": -0.65,
+      "H2S(g)": -2.62,
+      "Halite": -5.07,
+      "Mackinawite": -0.29,
+      "Melanterite": -8.06,
+      "O2(g)": -59.99,
+      "Pyrite": 7.98,
+      "Siderite": -2.47,
+      "Sulfur": -2.12,
+      "Sylvite": -4.59
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.04253,
+    "max_dSI": 0.17
+   }
+  },
+  "ex19": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "eb56686c3193750a9c0b4ae68c73a7048f0b835c7217ebb141aa530f7f207b80",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": false,
+   "comparable": false,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex19b": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "dc377f792c959830a5d98a03a5cb3ade756787c47786cc6e3e14146e4fe406ac",
+   "official": {
+    "solutions": [],
+    "si": []
+   },
+   "compare": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": false,
+   "comparable": false,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     0,
+     0
+    ],
+    "si_tables": [
+     0,
+     0
+    ],
+    "compared": 0,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   }
+  },
+  "ex20a": {
+   "db": "iso.dat (배포본)",
+   "input_sha256": "225956987ea8429eabd55c8ec3ff0dfd0d440c20e58ca4d8c11535e76c810124",
+   "official": {
+    "solutions": [
+     {
+      "pH": 8.2,
+      "pe": 4.0,
+      "I": 0.002294
+     },
+     {
+      "pH": 8.199,
+      "pe": -2.394,
+      "I": 0.002301
+     }
+    ],
+    "si": [
+     {
+      "Calcite": -0.0,
+      "CH4(g)": -74.93,
+      "CO2(g)": -3.11,
+      "H2(g)": -24.4,
+      "H2O(g)": -1.51,
+      "O2(g)": -34.39
+     },
+     {
+      "[13C][18O]2(g)": -10.43,
+      "[13C]D4(g)": -40.95,
+      "[13C]H2D2(g)": -32.56,
+      "[13C]H3D(g)": -28.93,
+      "[13C]H4(g)": -25.72,
+      "[13C]HD3(g)": -36.54,
+      "[13C]O2(g)": -5.07,
+      "[13C]O[18O](g)": -7.45,
+      "[18O]2(g)": -65.97,
+      "C[18O]2(g)": -8.48,
+      "Ca[13C][18O]3(s)": -10.01,
+      "Ca[13C]O2[18O](s)": -4.17,
+      "Ca[13C]O3(s)": -1.96,
+      "Ca[13C]O[18O]2(s)": -6.85,
+      "CaC[18O]3(s)": -8.06,
+      "CaCO2[18O](s)": -2.22,
+      "CaCO[18O]2(s)": -4.9,
+      "Calcite": -0.01,
+      "CD4(g)": -39.0,
+      "CH2D2(g)": -30.6,
+      "CH3D(g)": -26.97,
+      "CH4(g)": -23.77,
+      "CHD3(g)": -34.59,
+      "CO2(g)": -3.12,
+      "CO[18O](g)": -5.5,
+      "D2(g)": -19.22,
+      "D2[18O](g)": -11.89,
+      "D2O(g)": -9.19,
+      "H2(g)": -11.61,
+      "H2[18O](g)": -4.21,
+      "H2O(g)": -1.51,
+      "HD(g)": -15.11,
+      "HD[18O](g)": -7.75,
+      "HDO(g)": -5.05,
+      "O2(g)": -59.97,
+      "O[18O](g)": -62.67
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex20b": {
+   "db": "iso.dat (배포본)",
+   "input_sha256": "741471f557c7531114226bfd4cb6bfcae6afb347163d331a7b98f18e6e1d770b",
+   "official": null,
+   "compare": {
+    "solutions": [
+     202,
+     202
+    ],
+    "si_tables": [
+     202,
+     202
+    ],
+    "compared": 202,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "ex20_open"
+     ],
+     [
+      "ex20_open"
+     ]
+    ],
+    "cells": 400,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": ""
+  },
+  "ex21": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "cf6c7541b7cabf7a02b66725bbf382507bc8407a5f5da8dee4f72a3758484d6a",
+   "official": {
+    "solutions": [
+     {
+      "pH": 7.0,
+      "pe": 4.0,
+      "I": 0.001
+     },
+     {
+      "pH": 7.6,
+      "pe": 13.12,
+      "I": 0.3658
+     }
+    ],
+    "si": [
+     {
+      "H2(g)": -22.05,
+      "H2O(g)": -1.5,
+      "Halite": -7.6,
+      "O2(g)": -39.19
+     },
+     {
+      "Anhydrite": -0.65,
+      "Aragonite": -0.18,
+      "Calcite": -0.03,
+      "Celestite": 0.03,
+      "CO2(g)": -3.36,
+      "Dolomite": -0.11,
+      "Gypsum": -0.34,
+      "H2(g)": -41.48,
+      "H2O(g)": -1.56,
+      "Halite": -3.03,
+      "O2(g)": -1.0,
+      "Strontianite": -0.94,
+      "Sylvite": -4.56
+     }
+    ]
+   },
+   "compare": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [
+      "radial"
+     ],
+     [
+      "radial"
+     ]
+    ],
+    "cells": 207,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     2,
+     2
+    ],
+    "si_tables": [
+     2,
+     2
+    ],
+    "compared": 2,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.00688,
+    "max_dSI": 0.13
+   }
+  },
+  "ex22": {
+   "db": "phreeqc.dat (phreeqpython 동봉 = A4)",
+   "input_sha256": "7e32dcb2b77f15415f9ccc44306d04c84d81d32797a80430b28b8466472dc32c",
+   "official": null,
+   "compare": {
+    "solutions": [
+     147,
+     147
+    ],
+    "si_tables": [
+     147,
+     147
+    ],
+    "compared": 147,
+    "max_dpH": 0.0,
+    "max_dpe": 0.0,
+    "max_rel_dI": 0.0,
+    "max_dSI": 0.0
+   },
+   "files": {
+    "files": [
+     [],
+     []
+    ],
+    "cells": 0,
+    "max_rel": 0.0,
+    "same_shape": true
+   },
+   "reproduced": true,
+   "comparable": true,
+   "error_ours": "",
+   "error_official": "",
+   "db_version_effect": {
+    "solutions": [
+     147,
+     147
+    ],
+    "si_tables": [
+     147,
+     147
+    ],
+    "compared": 147,
+    "max_dpH": 0.029,
+    "max_dpe": 15.159,
+    "max_rel_dI": 0.07045,
+    "max_dSI": 3.27
+   }
+  }
+ }
+}

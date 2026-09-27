@@ -132,8 +132,12 @@ def a4(ctx: Context) -> Outcome:
             minerals[phase] = c.moles()
             continue
         n = c.moles()
+        if n is None and c.amount is not None and c.amount.dimension is Dimension.CONCENTRATION:
+            n = c.amount.to_si() / 1000 * liters  # mol/m³ → mol/L × 물 부피 (질량수지와 같은 환산)
+        elif n is None and c.amount is not None and c.amount.dimension is Dimension.MOLALITY:
+            n = c.amount.to_si() * liters  # mol/kg × kgw(≈ L)
         if n is None:
-            return not_applicable(f"{c.formula}: 양을 mol 또는 질량으로 적어야 함", "phreeqpython", Fidelity.T)
+            return not_applicable(f"{c.formula}: 양을 mol·질량·몰농도로 적어야 함", "phreeqpython", Fidelity.T)
         guesses = comp.oxi_state_guesses(max_sites=-1)
         if not guesses:
             have = {el: sorted(masters.get(str(el), {})) for el in comp.elements if str(el) not in ("H", "O")}
@@ -152,7 +156,7 @@ def a4(ctx: Context) -> Outcome:
     from phreeqpython import PhreeqPython
 
     T_c = (ctx.T or 298.15) - 273.15
-    pp = PhreeqPython()
+    pp = PhreeqPython(database="phreeqc.dat")  # 기본값은 vitens.dat(Stimela 파생) — 출처 표기와 맞춘다
     sol = pp.add_solution({"temp": round(T_c, 2), "units": "mol/kgw", "pH": "7 charge",
                            **{k: f"{v:.8g}" for k, v in totals.items()}})
     eq_phases, targets = list(minerals), [0.0] * len(minerals)
@@ -163,6 +167,7 @@ def a4(ctx: Context) -> Outcome:
     if eq_phases:
         sol.equalize(eq_phases, targets)
 
+    ctx.shared["pH"] = float(sol.pH)  # A5 Pourbaix 가 쓴다
     species = sorted(((k, v) for k, v in sol.species.items() if k != "H2O"), key=lambda p: -p[1])[:8]
     si = {k: v for k, v in sol.phases.items() if "(g)" not in k and k != "Fix_pH"}
     supersat = sorted(((k, v) for k, v in si.items() if v > 0.05), key=lambda p: -p[1])[:5]
