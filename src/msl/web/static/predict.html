@@ -79,9 +79,14 @@ Fe2O3</textarea>
       </dl>
       <div class="near">비슷한 알려진 물질 (특성 거리 ${p.nn_distance}): ${p.nearest.map(n => `<b>${sub(n.formula)}</b> 형성 ${sgn(n.ef, 2)} · 갭 ${n.gap} · hull ${n.ehull}`).join(" / ")}</div>
       ${k ? `<div class="near">이 조성은 DB 에 DFT 계산값이 있습니다 — 예측보다 DFT 값을 쓰세요 (작업대의 A1·A7).</div>` : ""}
+      <div class="near"><button class="l2btn" type="button" data-l2="${esc(p.formula)}">L2 확인</button> 실제 결정 구조를 만들어 uMLIP 으로 이완 (새 원소계는 몇 분) <div data-l2out="${esc(p.formula)}"></div></div>
     </article>`;
   }
 
+  $("pd-out").addEventListener("click", e => {
+    const b = e.target.closest("[data-l2]"); if (!b) return;
+    window.L2.check(b.dataset.l2, $("pd-out").querySelector(`[data-l2out="${CSS.escape(b.dataset.l2)}"]`));
+  });
   const qf = new URLSearchParams(location.search).get("f");
   if (qf) { $("pd-text").value = qf; setTimeout(() => $("pd-run").click(), 0); }
   $("pd-run").addEventListener("click", async () => {
@@ -96,6 +101,11 @@ Fe2O3</textarea>
       $("pd-out").innerHTML = body.results.map(card).join("")
         + `<div class="pd-note"><span>조성만 보고 추정하므로 같은 조성의 다형(예: 방해석/아라고나이트)을 구분하지 못합니다</span><span>PBE 기준 밴드갭은 실측보다 약 40% 작게 나오는 경향이 있고, 모델은 그 PBE 값을 배웠습니다</span><span>hull 거리는 로컬 DB 의 알려진 상(자기 자신 제외)과 비교한 값입니다</span></div>`;
       $("pd-busy").textContent = `완료 · ${body.results.length}개 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
+      const found = await window.L2.saved(body.results.filter(p => !p.error).map(p => p.formula));
+      for (const [f, r] of Object.entries(found)) {
+        const out = $("pd-out").querySelector(`[data-l2out="${CSS.escape(f)}"]`);
+        if (out) out.innerHTML = window.L2.html(r) + ` <span class="iv">· 저장된 결과</span>`;
+      }
     } catch (e) {
       $("pd-errors").innerHTML = `<span>${esc(e.message)}</span>`; $("pd-errors").hidden = false; $("pd-busy").textContent = "";
     } finally { $("pd-run").disabled = false; }

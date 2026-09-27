@@ -201,3 +201,17 @@ def evaluate(formula: str, models: tuple[str, ...] = ("mace-mpa-0", "orb-v3"), n
             "mp_ehull": None if mp_ehull is None else round(float(mp_ehull), 4), "n_structures": len(structs),
             "models": per_model, "ehull_mean": round(float(np.mean(vals)), 4), "ehull_spread": round(float(max(vals) - min(vals)), 4),
             "seconds": round(time.time() - t0, 1)}
+
+
+RESULTS = CACHE / "results"
+
+
+def saved(formula: str) -> dict[str, Any] | None:
+    """이미 계산한 L2 결과 (조성별)."""
+    path = RESULTS / f"{Composition(formula).reduced_formula}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def save(res: dict[str, Any]) -> None:
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / f"{res['formula']}.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")

@@ -57,3 +57,23 @@ def test_single_point_matches_mp_for_gga() -> None:
     for name in umlip.MODELS:
         r = umlip.relax(s, name)
         assert r.converged and -6.02 < r.energy / len(s) < -5.95  # MP mp-1265 원시 약 −5.98 eV/atom
+
+
+def test_l2_web_saved_results(tmp_path, monkeypatch) -> None:
+    """저장된 L2 결과는 계산 없이 바로 돌려준다 · 잘못된 화학식은 422."""
+    from fastapi import HTTPException
+
+    from msl.web import app as web
+
+    monkeypatch.setattr(l2, "RESULTS", tmp_path)
+    fake = {"formula": "MgAl2O4", "known": "mp-3536-GGA", "mp_ehull": 0.0, "n_structures": 1, "ehull_mean": 0.0,
+            "ehull_spread": 0.0, "models": {"mace-mpa-0": {"ehull": 0.0, "decomposition": {"MgAl2O4": 1.0}}}, "seconds": 1.0}
+    l2.save(fake)
+    assert l2.saved("Mg2Al4O8")["formula"] == "MgAl2O4"  # 약분 조성으로 찾는다
+    r = web.l2_start(web.L2Request(formula="MgAl2O4"))
+    assert r["status"] == "done" and r["cached"] and r["result"]["ehull_mean"] == 0.0
+    assert set(web.l2_saved(web.L2SavedRequest(formulas=["MgAl2O4", "NaCl"]))) == {"MgAl2O4"}
+    with pytest.raises(HTTPException):
+        web.l2_start(web.L2Request(formula="Xx9"))
+    with pytest.raises(HTTPException):
+        web.l2_status("없는작업")

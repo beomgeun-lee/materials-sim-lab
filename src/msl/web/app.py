@@ -306,7 +306,7 @@ def space_save(req: YamlRequest) -> dict[str, Any]:
 def predict_page() -> str:
     from msl.report.space import page
 
-    return page("물성 예측", (STATIC / "predict.html").read_text(encoding="utf-8"))
+    return page("물성 예측", (STATIC / "l2.html").read_text(encoding="utf-8") + (STATIC / "predict.html").read_text(encoding="utf-8"))
 
 
 @app.get("/api/predict/info")
@@ -368,7 +368,7 @@ GOALS = wb.ROOT / "examples" / "goals"
 def recommend_page() -> str:
     from msl.report.space import page
 
-    return page("목표 기반 추천", (STATIC / "recommend.html").read_text(encoding="utf-8"))
+    return page("목표 기반 추천", (STATIC / "l2.html").read_text(encoding="utf-8") + (STATIC / "recommend.html").read_text(encoding="utf-8"))
 
 
 @app.get("/api/goals")
@@ -447,3 +447,88 @@ def recommend_run_csv(file: str):
     name = file.removesuffix(".json") + ".csv"
     return Response("\ufeff" + to_csv(res), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+# ── L2 안정성 확인 (uMLIP, 백그라운드 작업) ─────────────────────────────
+
+import threading
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+
+_L2_POOL = ThreadPoolExecutor(max_workers=1)  # uMLIP 은 CPU 를 다 쓰므로 한 번에 하나씩
+_L2_JOBS: dict[str, dict[str, Any]] = {}
+_L2_LOCK = threading.Lock()
+
+
+class L2Request(BaseModel):
+    formula: str
+    orderings: int = 6
+    force: bool = False  # 저장된 결과가 있어도 다시 계산
+
+
+def _l2_job(job: str, formula: str, orderings: int) -> None:
+    from msl import l2
+
+    rec = _L2_JOBS[job]
+    rec["status"] = "running"
+    try:
+        res = l2.evaluate(formula, n_orderings=orderings, log=lambda line: rec["log"].append(line))
+        l2.save(res)
+        rec["result"], rec["status"] = res, "done"
+    except Exception as exc:
+        rec["error"], rec["status"] = f"{type(exc).__name__}: {exc}", "error"
+
+
+@app.post("/api/l2")
+def l2_start(req: L2Request) -> dict[str, Any]:
+    """L2 확인 시작. 저장된 결과가 있으면 바로 돌려주고, 같은 조성이 이미 돌고 있으면 그 작업을 알려 준다."""
+    import importlib.util
+
+    from pymatgen.core import Composition
+
+    from msl import l2
+
+    try:
+        formula = Composition(_formula_of(req.formula)).reduced_formula
+    except Exception as exc:
+        raise HTTPException(422, f"화학식을 읽지 못함: {exc}") from exc
+    if not req.force and (res := l2.saved(formula)):
+        return {"job": None, "status": "done", "result": res, "cached": True}
+    if importlib.util.find_spec("mace") is None or importlib.util.find_spec("orb_models") is None:
+        raise HTTPException(503, "uMLIP 이 설치되지 않음 — 터미널에서 `uv sync --extra l2`")
+    with _L2_LOCK:
+        for job, rec in _L2_JOBS.items():
+            if rec["formula"] == formula and rec["status"] in ("queued", "running"):
+                return {"job": job, "status": rec["status"]}
+        job = uuid.uuid4().hex[:12]
+        waiting = sum(r["status"] in ("queued", "running") for r in _L2_JOBS.values())
+        _L2_JOBS[job] = {"formula": formula, "status": "queued", "log": [], "result": None, "error": None, "ahead": waiting}
+        _L2_POOL.submit(_l2_job, job, formula, req.orderings)
+    return {"job": job, "status": "queued", "ahead": waiting}
+
+
+@app.get("/api/l2/{job}")
+def l2_status(job: str) -> dict[str, Any]:
+    rec = _L2_JOBS.get(job)
+    if rec is None:
+        raise HTTPException(404, "작업이 없음 (서버를 다시 시작하면 사라짐)")
+    return {"formula": rec["formula"], "status": rec["status"], "log": rec["log"][-6:], "result": rec["result"], "error": rec["error"]}
+
+
+class L2SavedRequest(BaseModel):
+    formulas: list[str]
+
+
+@app.post("/api/l2/saved")
+def l2_saved(req: L2SavedRequest) -> dict[str, Any]:
+    """저장된 L2 결과 (화면이 표를 그릴 때 한꺼번에 조회)."""
+    from msl import l2
+
+    out = {}
+    for f in req.formulas[:500]:
+        try:
+            if (res := l2.saved(f)) is not None:
+                out[f] = res
+        except Exception:
+            continue
+    return out

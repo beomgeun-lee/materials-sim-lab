@@ -133,7 +133,7 @@ h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; ma
       return `<tr><td>${i + 1}</td><td><b>${sub(r.formula)}</b></td><td><span class="src ${r.source === "DFT" ? "dft" : "l1"}">${r.source === "DFT" ? "DB·DFT" : "L1 예측"}</span>${r.material_id ? ` <span class="iv">${esc(r.material_id)}</span>` : ""}</td>
         <td class="st-${r.status.split(" ")[0]}">${esc(r.status)}</td><td>${v.ehull === null ? "—" : (v.ehull > 0 ? "+" : "") + v.ehull.toFixed(3)}${iv(r.intervals.ehull)}</td>
         <td>${v.gap === null ? "—" : v.gap.toFixed(2)}${iv(r.intervals.gap)}</td><td>${v.density === null ? "—" : v.density.toFixed(2)}</td>
-        <td><a href="/predict?f=${encodeURIComponent(r.formula)}" target="_blank" rel="noopener">상세</a></td><td class="note">${note}</td></tr>`;
+        <td><a href="/predict?f=${encodeURIComponent(r.formula)}" target="_blank" rel="noopener">상세</a> <button class="l2btn" type="button" data-l2="${esc(r.formula)}" title="uMLIP 구조 계산 — 새 원소계는 몇 분">L2</button></td><td class="note">${note}<div class="l2out" data-l2out="${esc(r.formula)}"></div></td></tr>`;
     }).join("");
     $("rc-out").innerHTML = `<div class="rc-sum"><div><b>${esc(res.goal.name)}</b> · 조건: ${esc(res.constraints_text.join(", ") || "없음")} · 정렬: ${esc(res.objective_text)}</div>
       <div>후보 ${c.candidates.toLocaleString()}개 → 전하 균형 ${c.charge_balanced.toLocaleString()}개 → 평가 ${c.evaluated.toLocaleString()}개 (DB ${c.known} · 새 조성 ${c.new}) · <b>충족 ${c["충족"]}</b> · 가능성 있음 ${c["가능성 있음"]} · 불충족 ${c["불충족"]}${c.out_of_domain ? ` · 학습 범위 밖 ${c.out_of_domain}` : ""}${c.below_hull_suspicious ? ` · hull 아래 과대평가 의심 ${c.below_hull_suspicious}` : ""}</div>
@@ -141,6 +141,19 @@ h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; ma
       ${file ? `<div><a href="/api/recommend/run/${encodeURIComponent(file)}/csv">CSV 내려받기</a> · 저장: data/recommendations/${esc(file)}</div>` : ""}</div>
       ${scatter(res)}
       <div class="tbl"><table class="t rc"><thead><tr><th>#</th><th>화학식</th><th>출처</th><th>판정</th><th>hull 거리 (80%)</th><th>밴드갭 (80%)</th><th>밀도</th><th></th><th>비고</th></tr></thead><tbody>${rows || `<tr><td colspan="9">조건을 만족하거나 가능성 있는 후보가 없습니다 — 조건을 넓혀 보세요.</td></tr>`}</tbody></table></div>`;
+  }
+
+  $("rc-out").addEventListener("click", e => {
+    const b = e.target.closest("[data-l2]"); if (!b) return;
+    const out = $("rc-out").querySelector(`[data-l2out="${CSS.escape(b.dataset.l2)}"]`);
+    window.L2.check(b.dataset.l2, out);
+  });
+  async function showSavedL2(res) {
+    const found = await window.L2.saved(res.results.map(r => r.formula));
+    for (const [f, r] of Object.entries(found)) {
+      const out = $("rc-out").querySelector(`[data-l2out="${CSS.escape(f)}"]`);
+      if (out) out.innerHTML = window.L2.html(r) + ` <span class="iv">· 저장된 결과</span>`;
+    }
   }
 
   async function loadRuns() {
@@ -151,7 +164,7 @@ h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; ma
   $("rc-runs").addEventListener("click", async e => {
     const b = e.target.closest("[data-run]"); if (!b) return;
     const res = await (await fetch(`/api/recommend/run/${encodeURIComponent(b.dataset.run)}`)).json();
-    fill(res.goal); render(res, b.dataset.run); $("rc-out").scrollIntoView({ block: "start" });
+    fill(res.goal); render(res, b.dataset.run); showSavedL2(res); $("rc-out").scrollIntoView({ block: "start" });
   });
 
   $("rc-run").addEventListener("click", async () => {
@@ -161,7 +174,7 @@ h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; ma
       const res = await fetch("/api/recommend", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal: readGoal() }) });
       const body = await res.json();
       if (!res.ok) { const d = body.detail; $("rc-errors").innerHTML = (d.errors || [typeof d === "string" ? d : JSON.stringify(d)]).map(x => `<span>${esc(x)}</span>`).join("<br>"); $("rc-errors").hidden = false; $("rc-busy").textContent = ""; return; }
-      render(body.result, body.file); loadRuns();
+      render(body.result, body.file); showSavedL2(body.result); loadRuns();
       $("rc-busy").textContent = `완료 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
     } catch (e) { $("rc-errors").innerHTML = `<span>${esc(e.message)}</span>`; $("rc-errors").hidden = false; $("rc-busy").textContent = ""; }
     finally { clearInterval(tick); $("rc-run").disabled = false; }

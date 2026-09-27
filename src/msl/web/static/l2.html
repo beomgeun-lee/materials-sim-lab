@@ -1,0 +1,42 @@
+<script>
+window.L2 = (() => {
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const sgn = (v) => (v > 0 ? "+" : "") + Number(v).toFixed(3);
+  const label = (e) => e <= 0 ? "L2 안정" : e <= 0.05 ? "L2 준안정" : "L2 불안정";
+  function html(res) {
+    const m = res.models, names = Object.keys(m);
+    const dec = Object.entries(m[names[0]].decomposition || {}).map(([f, x]) => `${esc(f)} ${(x * 100).toFixed(0)}%`).join(" + ");
+    const cls = res.ehull_mean <= 0 ? "ok" : res.ehull_mean <= 0.05 ? "warn" : "bad";
+    return `<span class="l2res ${cls}"><b>${label(res.ehull_mean)}</b> hull ${sgn(res.ehull_mean)} eV/atom</span>`
+      + ` <span class="iv">(${names.map(n => `${n} ${sgn(m[n].ehull)}`).join(" · ")} · 두 모델 차이 ${res.ehull_spread.toFixed(3)}${res.known ? " · DB 구조" : ` · 후보 구조 ${res.n_structures}개`})</span>`
+      + (res.ehull_mean > 0 && dec ? `<br><span class="iv">분해되면 ${dec}</span>` : "");
+  }
+  async function check(formula, el, force = false) {
+    el.innerHTML = `<span class="iv">L2 시작 중…</span>`;
+    const r = await fetch("/api/l2", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ formula, force }) });
+    const body = await r.json();
+    if (!r.ok) { el.innerHTML = `<span class="l2res bad">${esc(body.detail || "L2 실패")}</span>`; return; }
+    if (body.status === "done") { el.innerHTML = html(body.result) + (body.cached ? ` <span class="iv">· 저장된 결과</span>` : ""); return; }
+    const t0 = Date.now();
+    const tick = async () => {
+      const s = await (await fetch(`/api/l2/${body.job}`)).json();
+      if (s.status === "done") { el.innerHTML = html(s.result); return; }
+      if (s.status === "error") { el.innerHTML = `<span class="l2res bad">L2 오류: ${esc(s.error)}</span>`; return; }
+      const last = (s.log || []).slice(-1)[0] || (s.status === "queued" ? "앞 작업을 기다리는 중" : "준비 중");
+      el.innerHTML = `<span class="iv">L2 계산 중 ${((Date.now() - t0) / 1000).toFixed(0)}초 — ${esc(last.trim())}</span>`;
+      setTimeout(tick, 2000);
+    };
+    setTimeout(tick, 1000);
+  }
+  async function saved(formulas) {
+    try { return await (await fetch("/api/l2/saved", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ formulas }) })).json(); }
+    catch (e) { return {}; }
+  }
+  return { html, check, saved };
+})();
+</script>
+<style>
+.l2res { font-weight: 600; } .l2res.ok { color: var(--ok); } .l2res.warn { color: var(--warn); } .l2res.bad { color: var(--bad); }
+.l2btn { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); border-radius: 5px; padding: 1px 8px; cursor: pointer; }
+.l2btn:hover { border-color: var(--accent); }
+</style>
