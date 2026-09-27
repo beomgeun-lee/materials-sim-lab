@@ -77,7 +77,9 @@ def balance(comps: list[Resolved]) -> Balance:
     rows, elements = [], {}
     for ref, (n, comp) in chosen.items():
         mass = n * comp.weight
-        rows.append({"ref": ref, "formula": comp.reduced_formula, "moles": round(n, 8), "mass_g": round(mass, 6),
+        # 분자식이 약분되면(아세트산 C2H4O2 → CH2O) 표시가 다른 물질처럼 보인다 — 그때는 분자식 그대로
+        shown = comp.reduced_formula if comp.get_reduced_composition_and_factor()[1] == 1 else comp.hill_formula.replace(" ", "")
+        rows.append({"ref": ref, "formula": shown, "moles": round(n, 8), "mass_g": round(mass, 6),
                      "mass_fraction": round(mass / total_mass, 8) if total_mass else None})
         for el, amt in comp.get_el_amt_dict().items():
             elements[el] = elements.get(el, 0.0) + n * amt

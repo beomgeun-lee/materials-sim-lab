@@ -18,6 +18,7 @@ Fe2O3</textarea>
 </section>
 <div class="errbox" id="pd-errors" hidden></div>
 <div class="pd-cards" id="pd-out"></div>
+<div id="pd-notes"></div>
 
 <style>
 .pd-model { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px; display: grid; gap: 4px; }
@@ -40,6 +41,7 @@ Fe2O3</textarea>
 .pd-card .near { font-size: 12.5px; color: var(--muted); }
 .pd-card .near b { color: var(--ink); font-weight: 600; }
 .pd-card .intv { color: var(--muted); }
+.pd-card dd > div.intv { font-family: var(--font-body); font-size: 12px; }
 .pd-note { font-size: 12.5px; color: var(--muted); display: grid; gap: 2px; }
 .pd-note span::before { content: "한계 · "; color: var(--warn); font-weight: 600; }
 </style>
@@ -72,7 +74,7 @@ Fe2O3</textarea>
     return `<article class="pd-card"><h3>${sub(p.formula)}</h3><div class="badges">${badges}</div>
       <dl>
         <dt>형성에너지</dt><dd>${sgn(p.ef)} eV/atom <span class="intv">(80% ${sgn(p.ef_interval[0])} ~ ${sgn(p.ef_interval[1])})</span>${dft(k && sgn(k.ef))}</dd>
-        ${p.ehull !== null ? `<dt>hull 거리</dt><dd>${sgn(p.ehull)} eV/atom — ${esc(p.stability)}${dft(k && k.ehull.toFixed(3))}</dd>` : ""}
+        ${p.ehull !== null ? `<dt>hull 거리</dt><dd>${sgn(p.ehull)} eV/atom — ${esc(p.stability)}${dft(k && k.ehull.toFixed(3))}${k ? `<div class="intv">예측값은 이 조성을 뺀 나머지 알려진 상과 비교한 값(음수 = 그보다 안정), DFT 값은 이 조성을 포함한 hull 거리(0 = 안정)</div>` : ""}</dd>` : ""}
         ${dec && p.ehull > 0 ? `<dt>분해되면</dt><dd>${dec}</dd>` : ""}
         <dt>밴드갭</dt><dd>${p.gap.toFixed(2)} eV <span class="intv">(80% ${p.gap_interval[0].toFixed(2)} ~ ${p.gap_interval[1].toFixed(2)} · 금속일 확률 ${(p.p_metal * 100).toFixed(0)}%)</span>${dft(k && k.gap.toFixed(2), " eV")}</dd>
         <dt>밀도</dt><dd>${p.density ?? "—"} g/cm³ <span class="intv">(원자당 ${p.vpa} Å³)</span>${dft(k && k.density, " g/cm³")}</dd>
@@ -98,8 +100,8 @@ Fe2O3</textarea>
       const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texts }) });
       const body = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(body.detail || body));
-      $("pd-out").innerHTML = body.results.map(card).join("")
-        + `<div class="pd-note"><span>조성만 보고 추정하므로 같은 조성의 다형(예: 방해석/아라고나이트)을 구분하지 못합니다</span><span>PBE 기준 밴드갭은 실측보다 약 40% 작게 나오는 경향이 있고, 모델은 그 PBE 값을 배웠습니다</span><span>hull 거리는 로컬 DB 의 알려진 상(자기 자신 제외)과 비교한 값입니다</span></div>`;
+      $("pd-out").innerHTML = body.results.map(card).join("");
+      $("pd-notes").innerHTML = `<div class="pd-note"><span>결정 고체를 기준으로 한 예측입니다 — 염산·암모니아수 같은 용액은 용질의 고체 결정(예: HCl 결정)으로 계산됩니다</span><span>조성만 보고 추정하므로 같은 조성의 다형(예: 방해석/아라고나이트)을 구분하지 못합니다</span><span>PBE 기준 밴드갭은 실측보다 약 40% 작게 나오는 경향이 있고, 모델은 그 PBE 값을 배웠습니다</span><span>hull 거리는 로컬 DB 의 알려진 상(자기 자신 제외)과 비교한 값입니다</span></div>`;
       $("pd-busy").textContent = `완료 · ${body.results.length}개 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
       const found = await window.L2.saved(body.results.filter(p => !p.error).map(p => p.formula));
       for (const [f, r] of Object.entries(found)) {

@@ -67,7 +67,10 @@ def _clean(v: Any) -> Any:
 
 FIELD_KO = {"id": "id", "name": "이름", "components": "성분", "ref": "참조", "amount": "양", "state": "상태",
             "conditions": "조건", "T": "온도", "P": "압력", "pH": "pH", "Eh": "전위 Eh", "sweep": "스윕", "assays": "시험",
-            "mode": "모드", "generator": "생성기", "collect": "수집 열", "base": "레시피 틀"}
+            "mode": "모드", "generator": "생성기", "collect": "수집 열", "base": "레시피 틀",
+            "required": "필수 원소", "optional": "선택 원소", "max_elements": "원소 수 최대", "max_atoms": "화학식당 원자 수 최대",
+            "constraints": "조건", "objective": "정렬", "top_k": "보여 줄 후보", "prop": "물성", "min": "최소", "max": "최대",
+            "direction": "방향", "value": "목표값"}
 
 
 def _loc(loc: tuple) -> str:
@@ -108,8 +111,19 @@ def _msg(e: dict) -> str:
     return e["msg"].removeprefix("Value error, ")
 
 
-def errors_of(exc: ValidationError) -> list[str]:
-    return [f"{_loc(e['loc'])}: {_msg(e)}" for e in exc.errors()]
+def errors_of(exc: ValidationError, data: dict[str, Any] | None = None) -> list[str]:
+    """검증 오류 → 한 줄 한국어. data(원래 입력)를 주면 '성분 · 1번째' 에 성분 이름을 붙인다."""
+    comps = (data or {}).get("components") or []
+    out = []
+    for e in exc.errors():
+        loc = _loc(e["loc"])
+        if len(e["loc"]) >= 2 and e["loc"][0] == "components" and isinstance(e["loc"][1], int) and e["loc"][1] < len(comps):
+            ref = str((comps[e["loc"][1]] or {}).get("ref") or "")
+            name = ref.split(":", 1)[-1] if ref else ""
+            if name:
+                loc = loc.replace(f"{e['loc'][1] + 1}번째", f"{e['loc'][1] + 1}번째({name})", 1)
+        out.append(f"{loc}: {_msg(e)}")
+    return out
 
 
 def validate_recipe(form: dict[str, Any], registry: Registry) -> tuple[Recipe | None, list[str]]:
@@ -117,7 +131,7 @@ def validate_recipe(form: dict[str, Any], registry: Registry) -> tuple[Recipe | 
     try:
         recipe = Recipe.model_validate(data)
     except ValidationError as exc:
-        return None, errors_of(exc)
+        return None, errors_of(exc, data)
     if recipe.assays != "auto":
         unknown = [c for c in recipe.assays if c not in registry.assays]
         if unknown:

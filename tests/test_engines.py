@@ -212,3 +212,10 @@ def test_a10_pending_without_key(monkeypatch: pytest.MonkeyPatch) -> None:
     c = ctx([comp("cas:7647-01-0", "HCl", "0.1 mol", State.AQUEOUS)])
     c.comps[0].cas = "7647-01-0"
     assert regulation.a10(c).status is Status.PENDING
+
+
+def test_a4_hypochlorite_message_is_plain() -> None:
+    """차아염소산나트륨은 phreeqc.dat 에 Cl(+1) 이 없어 계산하지 않는다 — 이유를 알기 쉬운 말로 (웹 사용 점검 3번)."""
+    c = ctx([comp("cas:7681-52-9", "NaClO", "0.05 mol", State.AQUEOUS), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
+    out = equilibrium.a4(c)
+    assert out.status is Status.NOT_APPLICABLE and "수용액 계산 DB" in out.summary and "phreeqc.dat 의 산화수" not in out.summary

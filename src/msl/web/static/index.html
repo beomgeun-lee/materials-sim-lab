@@ -165,7 +165,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px
 .comp-list { display: grid; gap: 6px; }
 .comp { display: grid; grid-template-columns: 58px 1fr; gap: 3px 10px; align-items: center; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--tile); }
 .comp.err { border-color: var(--bad); }
-.comp .c-sym { grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.comp .c-sym { grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.15; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.comp .c-sym.long { font-size: 13px; }
+.comp .c-sym.xlong { font-size: 11px; }
 .comp .c-top { display: flex; gap: 6px; align-items: baseline; justify-content: space-between; min-width: 0; }
 .comp .c-nm { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .comp .c-ref { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); overflow-wrap: anywhere; }
@@ -201,6 +203,7 @@ details.adv { border-top: 1px solid var(--line); padding-top: 10px; }
 details.adv .cond-grid { margin-top: 8px; }
 textarea#yaml-edit { width: 100%; min-height: 240px; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; margin-top: 8px; white-space: pre; }
 textarea#f-notes { width: 100%; min-height: 48px; }
+@media (max-width: 640px) { .presets { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%; grid-template-rows: auto auto; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; } .presets .grp { display: none; } .preset { scroll-snap-align: start; } }
 .presets .grp { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .04em; margin-top: 2px; }
 .preset.new { border-style: dashed; color: var(--accent); align-content: center; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -210,7 +213,7 @@ textarea#f-notes { width: 100%; min-height: 48px; }
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <div class="eyebrow">materials-sim-lab · v0</div>
+      <div class="eyebrow">materials-sim-lab</div>
       <h1>가상 조합 실험실</h1>
       <p>레시피를 고르고 실행하면 공공 데이터와 오픈 계산 엔진이 실제로 계산합니다. <a href="/spaces" id="spaces-link">조합 공간 →</a> · <a href="/predict">물성 예측 →</a> · <a href="/recommend">목표 기반 추천 →</a></p>
     </div>
@@ -358,16 +361,22 @@ function blankForm() {
 }
 function markDirty() { $("dirty").hidden = JSON.stringify(form) === snapshot; }
 
+function symClass(t) {  // 화학식 칸(58px)에 한 줄로 들어가도록 — NaClO 가 "NaCl / O" 로 쪼개지던 문제
+  const n = String(t || "").length;
+  return n > 7 ? "xlong" : n > 4 ? "long" : "";
+}
+
 function compRow(c, i) {
   const inf = infoByRef[c.ref] || {};
   const [ns, key] = c.ref.split(/:(.*)/s);
   const sym = inf.formula ? sub(inf.formula) : esc((key || c.ref).slice(0, 14));
+  const symCls = symClass(inf.formula || key || c.ref);
   const [v, u] = splitQty(c.amount);
   const units = UNITS.includes(u) ? UNITS : [...UNITS, u];
   const refLine = inf.error ? `<span class="c-ref bad">${esc(c.ref)} — ${esc(inf.error)}</span>`
     : `<span class="c-ref">${esc(c.ref)}${inf.via ? " · " + esc(inf.via) : ""}</span>`;
   return `<div class="comp${inf.error ? " err" : ""}" data-i="${i}">
-    <div class="c-sym">${sym}</div>
+    <div class="c-sym ${symCls}">${sym}</div>
     <div class="c-top"><span class="c-nm" title="${esc(inf.name || key)}">${esc(c.label || inf.name || key)}</span><button class="c-del" type="button" data-del="${i}" aria-label="${esc(inf.name || key)} 빼기">✕</button></div>
     <div class="c-ctl">
       <input type="number" step="any" min="0" data-f="value" value="${esc(v)}" aria-label="양" placeholder="양">
@@ -462,6 +471,7 @@ function refreshRowInfo() {
     const inf = infoByRef[c.ref] || {}, key = c.ref.split(/:(.*)/s)[1] || c.ref;
     row.classList.toggle("err", !!inf.error);
     row.querySelector(".c-sym").innerHTML = inf.formula ? sub(inf.formula) : esc(key.slice(0, 14));
+    row.querySelector(".c-sym").className = "c-sym " + symClass(inf.formula || key);
     row.querySelector(".c-nm").textContent = c.label || inf.name || key;
     row.querySelector(".c-ctl:last-child").innerHTML = inf.error ? `<span class="c-ref bad">${esc(c.ref)} — ${esc(inf.error)}</span>`
       : `<span class="c-ref">${esc(c.ref)}${inf.via ? " · " + esc(inf.via) : ""}</span>`;
@@ -475,6 +485,7 @@ function setYaml(text) {
 }
 
 function showErrors(list) {
+  $("save-msg").textContent = ""; $("save-msg").className = "msg";
   $("errors").innerHTML = `<b>레시피를 고쳐야 실행할 수 있습니다</b>` + list.map(e => `<span>${esc(e)}</span>`).join("");
   $("errors").hidden = false;
 }
@@ -494,8 +505,10 @@ async function addFromText(ev) {
   try {
     const r = await (await fetch("/api/resolve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) })).json();
     if (!r.formula) { $("add-msg").className = "msg bad"; $("add-msg").textContent = `찾지 못함: ${r.ref} — ${r.error || "화학식 없음"}`; return; }
-    if (addComponent(r.ref, DEFAULT_AMOUNT[r.state] || "1 g", r.state, r)) {
-      $("add-msg").className = "msg ok"; $("add-msg").textContent = `추가: ${r.name} (${r.formula}) · ${r.via} — 양·상태를 확인하세요`;
+    const isWater = r.formula === "H2O";
+    const amt = r.state === "liquid" && !isWater ? "0.1 mol" : (DEFAULT_AMOUNT[r.state] || "1 g");
+    if (addComponent(r.ref, amt, r.state, r)) {
+      $("add-msg").className = "msg ok"; $("add-msg").textContent = `추가: ${r.name} (${r.formula}) · 기본 양 ${amt} — 원하는 양으로 바꾸세요`;
       $("add-text").value = "";
     }
   } catch (e) { $("add-msg").className = "msg bad"; $("add-msg").textContent = "찾기 실패: " + e.message; }
@@ -546,6 +559,12 @@ async function run(noCache = false) {
 
 async function save(overwrite = false) {
   readForm();
+  if (!form.name || form.name.trim() === "새 레시피") {
+    $("save-msg").className = "msg bad"; $("save-msg").textContent = "저장하기 전에 위쪽 레시피 이름을 알아보기 쉽게 바꿔 주세요 (지금: 새 레시피)";
+    $("f-name").focus(); $("f-name").select(); return;
+  }
+  const cur = recipes[current];
+  if (!overwrite && cur && cur.source === "user" && cur.id === form.id) overwrite = true;  // 지금 고치는 내 레시피는 확인 없이 덮어쓴다
   $("save-msg").className = "msg"; $("save-msg").textContent = "저장 중…";
   const res = await fetch("/api/recipe/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ recipe: form, overwrite }) });
   const body = await res.json();

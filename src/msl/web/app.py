@@ -331,8 +331,8 @@ def _formula_of(text: str) -> str:
 
     t = text.strip()
     if wb.FORMULA_RE.match(t):
-        bad = [str(e) for e in Composition(t).elements if str(e) not in ELEMENTS]  # pymatgen 은 Xx 같은 가상 원소도 받아들인다
-        if bad:
+        bad = [getattr(e, "symbol", str(e)) for e in Composition(t).elements if getattr(e, "symbol", str(e)) not in ELEMENTS]
+        if bad:  # pymatgen 은 Xx 같은 가상 원소도 받아들인다 (표기는 'Xx0+' — 기호만 보여 준다)
             raise ValueError(f"원소 기호가 아님: {', '.join(bad)}")
         return t
     from msl.resolve import resolve

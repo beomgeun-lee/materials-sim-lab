@@ -156,3 +156,45 @@ def test_korean_alias_table() -> None:
 def test_molecular_formula(formula: str, shown: str) -> None:
     """약분하면 분자가 바뀌는 화학식(초산·포도당)은 그대로, 유기물은 힐 표기."""
     assert molecular_formula(Composition(formula)) == shown
+
+
+def test_errors_name_the_component() -> None:
+    """오류가 '성분 · 1번째' 대신 성분 이름을 함께 보여 준다 (웹 사용 점검 5번)."""
+    _, errors = wb.validate_recipe({"id": "rcp-a", "name": "a", "components": [{"ref": "name:락스", "amount": "-5 mol"}]},
+                                   load_registry())
+    assert errors and errors[0].startswith("성분 · 1번째(락스)")
+
+
+def test_goal_errors_are_korean() -> None:
+    from pydantic import ValidationError
+
+    from msl.recommend import Goal
+
+    with pytest.raises(ValidationError) as exc:
+        Goal.model_validate({"id": "goal-x", "name": "x", "required": ["Li", "Xy"]})
+    assert wb.errors_of(exc.value) == ["필수 원소: 원소 기호가 아님: Xy"]
+
+
+def test_vinegar_alias() -> None:
+    a = korean_aliases()["식초"]
+    assert a["cas"] == "64-19-7" and a["state"] == "aqueous"
+
+
+def test_predict_rejects_dummy_element_by_symbol() -> None:
+    from msl.web.app import _formula_of
+
+    with pytest.raises(ValueError, match=r"원소 기호가 아님: Xx$"):
+        _formula_of("Xx2O3")
+
+
+def test_balance_shows_molecular_formula() -> None:
+    """질량수지에 아세트산이 약분된 'H2CO' 로 보이지 않아야 한다 (웹 점검 중 발견)."""
+    from msl.recipe.balance import balance
+    from msl.resolve import Resolved
+    from msl.schema.quantity import Quantity
+    from msl.schema.refs import SubstanceRef
+
+    r = Resolved(ref=SubstanceRef.model_validate("cas:64-19-7"), name="acetic acid", formula="C2H4O2", groups=[], state=None,
+                 amount=Quantity.model_validate("0.1 mol"), props={})
+    row = balance([r]).to_json()["rows"][0]
+    assert row["formula"] == "C2H4O2" and abs(row["mass_g"] - 6.005) < 0.01

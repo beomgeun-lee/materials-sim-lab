@@ -68,6 +68,9 @@ def test_recommend_li_co_o(tmp_path, monkeypatch) -> None:
     assert top and all(r["status"] != "불충족" for r in top)
     tiers = [rc.TIER[r["status"]] for r in top]
     assert tiers == sorted(tiers)  # 판정 순
+    for t in set(tiers):  # 같은 판정 안에서는 DB(DFT) 후보가 L1 예측보다 먼저 (웹 사용 점검 11번)
+        src = [r["source"] for r in top if rc.TIER[r["status"]] == t]
+        assert src == sorted(src, key=lambda x: x != "DFT")
     lco = next(r for r in top if r["formula"] == "LiCoO2")  # 실제 양극재 LiCoO2 는 DB 값으로 충족
     assert lco["source"] == "DFT" and lco["status"] == "충족"
     for r in top:

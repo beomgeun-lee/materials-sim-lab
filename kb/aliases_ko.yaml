@@ -10,6 +10,7 @@
 - {names: [질산], cas: 7697-37-2, state: aqueous, formula: HNO3}
 - {names: [인산], cas: 7664-38-2, state: aqueous, formula: H3PO4}
 - {names: [초산, 아세트산, 빙초산], cas: 64-19-7, state: liquid, formula: C2H4O2}
+- {names: [식초], cas: 64-19-7, state: aqueous, formula: C2H4O2, note: 아세트산 약 4~6% 수용액 — 농도는 양·물로}
 - {names: [구연산], cas: 77-92-9, formula: C6H8O7}
 - {names: [붕산], cas: 10043-35-3, formula: BH3O3}
 - {names: [가성소다, 양잿물], cas: 1310-73-2, formula: HNaO, note: 수산화나트륨}

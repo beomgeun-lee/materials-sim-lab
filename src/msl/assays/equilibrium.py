@@ -141,9 +141,10 @@ def a4(ctx: Context) -> Outcome:
         guesses = comp.oxi_state_guesses(max_sites=-1)
         if not guesses:
             have = {el: sorted(masters.get(str(el), {})) for el in comp.elements if str(el) not in ("H", "O")}
+            states = "; ".join(f"{k} {', '.join(f'{x:+d}' for x in v) or '없음'}" for k, v in have.items())
             return not_applicable(
-                f"{c.formula}: 산화수를 판정할 수 없어 PHREEQC 입력으로 바꿀 수 없음 "
-                f"(phreeqc.dat 의 산화수: {', '.join(f'{k} {v}' for k, v in have.items())})", "phreeqpython", Fidelity.T)
+                f"{c.formula}: 수용액 계산 DB(phreeqc.dat)가 다루는 이온으로 바꿀 수 없어 수용액 평형은 계산하지 않음 "
+                f"— 이 DB 가 아는 산화 상태는 {states} 뿐 (예: 락스의 차아염소산 이온 ClO⁻ 은 없음)", "phreeqpython", Fidelity.T)
         for el, amt in comp.get_el_amt_dict().items():
             if el in ("H", "O"):
                 continue

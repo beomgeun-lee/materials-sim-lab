@@ -61,6 +61,9 @@ def to_markdown(res: SpaceResult) -> str:
     return "\n".join(lines) + "\n"
 
 
+FONT_LINKS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">'  # 웹 화면과 같은 글꼴 (없으면 하위 화면 제목이 명조 대체 글꼴로 보였다)
+
+
 def _style() -> str:
     m = re.search(r"<style>(.*?)</style>", STATIC.read_text(encoding="utf-8"), re.S)
     return m.group(1) if m else ""
@@ -162,7 +165,7 @@ def to_html(res: SpaceResult, nav: str = "") -> str:
 
 EXTRA_CSS = """
 .page { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 14px; }
-.page h1 { font-family: var(--font-display); font-size: 26px; font-weight: 600; }
+.page h1 { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
 .page .sub { color: var(--muted); font-size: 13px; }
 .page a { color: var(--accent); }
 .charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 12px; }
@@ -180,5 +183,5 @@ ul.spaces li { background: var(--surface); border: 1px solid var(--line); border
 def page(title: str, body: str, tail: str = "") -> str:
     """웹 화면과 같은 스타일의 단일 HTML 페이지."""
     return (f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>{html.escape(title)}</title><link rel="icon" href="data:,"><style>{_style()}{EXTRA_CSS}</style></head>'
+            f'<title>{html.escape(title)}</title><link rel="icon" href="data:,">{FONT_LINKS}<style>{_style()}{EXTRA_CSS}</style></head>'
             f'<body><main class="page">{body}</main>{tail}</body></html>')

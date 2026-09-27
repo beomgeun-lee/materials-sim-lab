@@ -225,7 +225,7 @@ def _via_korean_registry(base: dict[str, Any], ns: Namespace, key: str) -> Resol
     except dg.DataGoKrUnavailable as exc:
         return Resolved(**base, name=key, formula=None, error=f"국문명·KE 해석에는 data.go.kr 키가 필요: {exc}")
     if cas is None:
-        return Resolved(**base, name=key, formula=None, error=f"KOSHA 목록에서 {key!r} 와 정확히 같은 이름을 찾지 못함")
+        return Resolved(**base, name=key, formula=None, error=f"'{key}' 을(를) 찾지 못했습니다 — 정식 이름(예: 염화수소)·CAS 번호·화학식으로 다시 찾아보세요")
     cid, formula, title = _from_pubchem(pubchem.lookup(cas))
     if cid is None:
         return Resolved(**base, name=key, formula=None, cas=cas, error=f"CAS {cas} 를 PubChem 에서 찾지 못함")

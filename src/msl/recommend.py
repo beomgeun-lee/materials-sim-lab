@@ -93,7 +93,7 @@ class Goal(_Model):
     def _elements(cls, v: list[str]) -> list[str]:
         bad = [e for e in v if e not in ELEMENTS]
         if bad:
-            raise ValueError(f"원소 기호가 아님: {bad}")
+            raise ValueError(f"원소 기호가 아님: {', '.join(bad)}")
         return list(dict.fromkeys(v))
 
     @model_validator(mode="after")
@@ -233,7 +233,8 @@ def recommend(goal: Goal, progress: Callable[[str], None] | None = None) -> dict
             "in_domain": rec["in_domain"] or is_known, "objective": _objective(goal.objective, v),
             "theoretical": rec["known"]["theoretical"] if is_known else None,
         })
-    rows.sort(key=lambda r: (TIER[r["status"]], bool(r["flags"]), r["objective"]))  # 같은 판정 안에서는 의심 표시 없는 후보 먼저
+    # 같은 판정 안에서는 DB(DFT)로 확인된 후보 먼저, 그다음 의심 표시 없는 L1 예측 — 예측값이 확인된 물질보다 위에 오지 않게
+    rows.sort(key=lambda r: (TIER[r["status"]], r["source"] != "DFT", bool(r["flags"]), r["objective"]))
     top = [r for r in rows if r["status"] != "불충족"][: goal.top_k]
     _decompose(top)
     counts = {"candidates": n_all, "charge_balanced": n_balanced, "evaluated": len(rows),
