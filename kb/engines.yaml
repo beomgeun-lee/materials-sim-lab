@@ -1,0 +1,2228 @@
+# 엔진·모델 레지스트리 — 계획서 3·5장. 근거는 docs/00-조사/02-시뮬레이션-엔진.md (조사일 2026-09-26).
+#
+# 라이선스는 licenses.yaml id 로만 적는다. 모델(kind=model)은 코드와 가중치 라이선스를 따로 적는다.
+# 정책 (msl registry check 가 강제):
+#   GPL(copyleft strong)         → isolation: worker (sim-worker-gpl 컨테이너, CLI·파일 I/O 로만 호출)
+#   AGPL                         → isolation: excluded, allowed_in: [research]
+#   비상업(ASL·academic-only 등)  → allowed_in: [research]
+#   상용(kind=commercial)         → isolation: reference-only, code_license: proprietary
+# 이 파일의 운영 규칙 (검사기 밖):
+#   라이선스 미확인(unknown)과 벤더 약관(FAIR Chemistry·OMat24)은 법무 확인 전까지 allowed_in: [research]
+#   fit 은 조사 문서 적합도. 범위(하~중 등)는 낮은 쪽을 적고 role 에 원래 범위를 남긴다
+#   version 은 조사 문서 표기 그대로, released 는 일(日)까지 적힌 경우만 채운다
+#
+# 법률 자문이 아니다. 배포 전에 법무 검토가 필요하다.
+
+# ── 안정성·상평형 ────────────────────────────────────────────────────────
+- id: pymatgen
+  name: pymatgen (PhaseDiagram·Pourbaix·InterfacialReactivity·Reaction)
+  kind: library
+  category: 안정성·상평형
+  assays: [A1, A2, A5, A7]
+  fidelity: [L0, L2]
+  version: "2026.9.24"
+  released: 2026-09-23
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [laptop]
+  fit: 상
+  role: L0/L2 결과를 판정하는 공통 코어 (E_hull·분해 생성물·Pourbaix·계면 반응·치환 구조 생성)
+  caveats: 0 K DFT 기준. 유한온도는 GibbsComputedStructureEntry(Bartel 기술자) 근사로 보정. 에너지 기준(GGA/GGA+U/r2SCAN) 혼합은 MP2020 보정 체계를 따르고, 기준이 다른 값을 한 hull 에 섞지 않는다
+  refs:
+    - https://pypi.org/pypi/pymatgen/json
+  checked: 2026-09-26
+
+- id: mp-api
+  name: mp-api (Materials Project 공식 Python 클라이언트)
+  kind: library
+  category: 데이터 접근
+  assays: [A1, A2, A7]
+  fidelity: [L0]
+  version: "0.46.5"
+  released: 2026-08-18
+  code_license: BSD-3-Clause-LBNL
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [laptop]
+  fit: 상
+  role: MP 엔트리·요약 물성 조회 (API 키 필요). v2026.04.13 DB 는 0.46.2 이상 필요
+  caveats: GNoME 유래 배치(gnome_r2scan_statics)는 BY-NC 라 조회에서 제외한다. 결과는 data/cache/mp/ 에 캐시
+  refs:
+    - https://pypi.org/pypi/mp-api/json
+  checked: 2026-09-26
+
+- id: reaction-network
+  name: reaction-network
+  kind: library
+  category: 안정성·상평형
+  assays: [A2]
+  fidelity: [L0]
+  version: "8.3.0"
+  released: 2024-03-06
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 고상반응 경로·열역학 선택성 참고 (합성 경로 1차 판정 근거의 하나)
+  caveats: 열역학 기반이라 동역학·핵생성 미반영. 2024-03 이후 릴리스 없음(개발 활동 미확인). v7부터 graph-tool 대신 rustworkx
+  refs:
+    - https://github.com/materialsproject/reaction-network
+  checked: 2026-09-26
+
+- id: pycalphad
+  name: pycalphad
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: "0.11.2"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [laptop]
+  fit: 상
+  role: 합금 T트랙 코어 (상분율·액상선·고상선)
+  caveats: 정확도는 TDB 품질이 좌우. 공개 TDB 는 계가 제한적이라 MVP 는 오픈 TDB 가 있는 계로 한정. 상용 DB 수준의 다성분 합금 정확도는 재현 불가
+  refs:
+    - https://pycalphad.org/docs/latest/
+  checked: 2026-09-26
+
+- id: espei
+  name: ESPEI
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: "0.9.1"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: DFT·uMLIP·실험 데이터로 TDB 파라미터 피팅 — L2/L3 결과를 T트랙 DB 로 되먹이는 다리
+  caveats: L2 결과로 피팅한 TDB 는 'L2 유래'로 표시하고 평가 DB 와 구분. uMLIP 유래 TDB 는 엔트로피·액상 기술이 약하다
+  refs:
+    - https://pypi.org/pypi/espei/json
+  checked: 2026-09-26
+
+- id: scheil
+  name: scheil
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: "0.3.0 (2025-11)"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: Scheil 응고·편석 (pycalphad 기반)
+  refs:
+    - https://pypi.org/pypi/scheil/json
+  checked: 2026-09-26
+
+- id: kawin
+  name: kawin
+  kind: library
+  category: 합금 석출·확산
+  assays: [A6]
+  fidelity: [T]
+  version: "0.5.0"
+  released: 2026-06-05
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: KWN 석출·조대화, 1D 확산·균질화 (DICTRA/TC-PRISMA 부분 오픈 대안)
+  caveats: pycalphad 로 TDB 를 읽는다
+  refs:
+    - https://github.com/materialsgenomefoundation/kawin
+  checked: 2026-09-26
+
+- id: equilipy
+  name: Equilipy (ORNL)
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: "0.3.3"
+  released: 2026-07-20
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 오픈 CALPHAD 평형 대안 — ChemSage DAT 호환이 필요할 때
+  caveats: ChemSage DAT·TDB 입력. 상용 FactSage DAT 파일을 읽을 수 있다
+  refs:
+    - https://github.com/ORNL/Equilipy
+  checked: 2026-09-26
+
+- id: thermochimica
+  name: Thermochimica (ORNL)
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: GitHub 2026-07 커밋
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop]
+  fit: 중
+  role: 오픈 CALPHAD 평형 대안 — ChemSage DAT 호환이 필요할 때
+  caveats: Fortran 코어라 Python API 하. MOOSE 와 연동된다
+  refs:
+    - https://github.com/ORNL-CEES/thermochimica
+  checked: 2026-09-26
+
+- id: opencalphad
+  name: OpenCalphad
+  kind: library
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T]
+  version: GitHub 2026-09-25 커밋
+  code_license: GPL-3.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop]
+  fit: 하
+  role: CALPHAD 평형 (오픈 대안, 우선순위 낮음)
+  caveats: GPL — 격리 워커에서 CLI·파일 I/O 로만 호출. 공식 Python 바인딩 상태 미확인(2026년 Julia 포트 존재)
+  refs:
+    - https://github.com/sundmanbo/opencalphad
+  checked: 2026-09-26
+
+- id: thermo-calc
+  name: Thermo-Calc (TC-Python, DICTRA·TC-PRISMA)
+  kind: commercial
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T, L3]
+  version: "2026a"
+  released: 2026-01-21
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [laptop]
+  fit: 기준용
+  role: 상용 CALPHAD 외부 검증 기준 (L3), 확산·석출(DICTRA·TC-PRISMA) 기준
+  caveats: DB 폭 업계 최대 수준, Aqueous Calculator 추가. 2026b 릴리스 노트 존재(출시일 미확인). 서버 다중 사용자·제3자 제공 조건은 계약 확인 필요
+  refs:
+    - https://thermocalc.com/news/thermo-calc-2026a-release-overview/
+  checked: 2026-09-26
+
+- id: factsage
+  name: FactSage (ChemApp for Python)
+  kind: commercial
+  category: 안정성·상평형
+  assays: [A2, A6]
+  fidelity: [T, L3]
+  version: "8.4"
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [laptop]
+  fit: 기준용
+  role: 상용 CALPHAD 외부 검증 기준 — 산화물·슬래그·염, 고온 규산염(ThermoEngine 상용 대안)
+  caveats: ChemApp for Python 834.0(2025-09)은 Windows 전용. DAT 파일은 Thermochimica/Equilipy 에서도 읽힌다. 서버 제공 조건은 계약 확인 필요
+  refs:
+    - https://factsage.com/factsage-edu/
+    - https://gtt-technologies.de/software/chemapp/chemapp-for-python/
+  checked: 2026-09-26
+
+- id: pandat
+  name: Pandat (CompuTherm, PanPython)
+  kind: commercial
+  category: 안정성·상평형
+  assays: [A6]
+  fidelity: [T, L3]
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [laptop]
+  fit: 기준용
+  role: 상용 CALPHAD 외부 검증 기준 (Al·Mg 합금이 강하다고 알려짐)
+  caveats: 버전·PanPython 세부 미확인
+  checked: 2026-09-26
+
+# ── 화학평형·반응 (기체·수계·지구화학) ───────────────────────────────────
+- id: cantera
+  name: Cantera
+  kind: library
+  category: 화학평형·반응
+  assays: [S0, A3]
+  fidelity: [T]
+  version: "3.2.0"
+  released: 2025-11-18
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.10,<3.15"
+  compute: [laptop]
+  fit: 상
+  role: 기체 평형 주력 (A3), S0 반응열·기체 발생량 정량 재평가
+  caveats: 입력은 메커니즘 YAML(NASA 다항식 열역학 + 반응식). 메커니즘이 없는 화학계는 반응속도를 풀 수 없다(평형은 가능)
+  refs:
+    - https://pypi.org/pypi/cantera/json
+  checked: 2026-09-26
+
+- id: nasa-cea
+  name: NASA CEA (cea)
+  kind: library
+  category: 화학평형·반응
+  assays: [A3]
+  fidelity: [T]
+  version: "3.3.4"
+  released: 2026-08-28
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [laptop]
+  fit: 중
+  role: Cantera 교차검증용 (평형 조성·로켓 성능·CJ 폭굉·충격파)
+  caveats: 기체 위주, 응축상 제한적. 내장 2,000+ 화학종 DB. Python 바인딩은 최근 재구현
+  refs:
+    - https://github.com/nasa/cea
+    - https://nasa.github.io/cea/
+  checked: 2026-09-26
+
+- id: phreeqc
+  name: PHREEQC (USGS)
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: 3.8.7 (2025-02, 2026-02 수정)
+  code_license: USGS-public
+  isolation: in-process
+  allowed_in: [research, product]
+  install: binary
+  compute: [laptop]
+  fit: 상
+  role: 수계 T트랙 1순위 — Reaktoro 와 이중화 (종분화·pH/pe·포화지수·침전·기체 발생·표면 착물)
+  caveats: 고농도 전해질은 Pitzer DB 필요. 유기물 커버리지 약함. 동봉 DB(phreeqc.dat·llnl.dat·minteq 등). Python 에서는 phreeqpython 으로 호출
+  refs:
+    - https://www.usgs.gov/software/phreeqc-version-3
+    - https://github.com/usgs-coupled/phreeqcrm/releases
+  checked: 2026-09-26
+
+- id: phreeqpython
+  name: phreeqpython
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: 1.6.2 (2026-04)
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: PHREEQC Python 래퍼 — A4 1순위 경로
+  refs:
+    - https://pypi.org/pypi/phreeqpython/json
+  checked: 2026-09-26
+
+- id: phreeqcrm
+  name: PhreeqcRM (phreeqcrm)
+  kind: library
+  category: 화학평형·반응
+  fidelity: [T]
+  version: 0.0.20 (2026-06)
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: PHREEQC 반응수송 결합용 래퍼 (대안)
+  caveats: 라이선스 BSD-3 + USGS 조건 병기
+  refs:
+    - https://github.com/usgs-coupled/phreeqcrm/releases
+  checked: 2026-09-26
+
+- id: phreeqpy
+  name: phreeqpy
+  kind: library
+  category: 화학평형·반응
+  fidelity: [T]
+  version: 0.6.0 (2024-06)
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 하
+  role: PHREEQC 대체 래퍼 (phreeqpython 우선)
+  refs:
+    - https://pypi.org/pypi/phreeqpy/json
+  checked: 2026-09-26
+
+- id: reaktoro
+  name: Reaktoro
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: "2.13.0"
+  released: 2026-02-19
+  code_license: LGPL-2.1
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 상
+  role: 수계 이중화 — 다상(수용액·기체·광물) 평형·동역학, 고온·고압(SUPCRT 계열 DB)
+  caveats: PyPI 미배포(conda 전용). PHREEQC DB·SUPCRTBL DB 사용 가능. LGPL — 동적 import·교체 가능 상태 유지, 수정분 공개
+  refs:
+    - https://anaconda.org/conda-forge/reaktoro
+  checked: 2026-09-26
+
+- id: pyeql
+  name: pyEQL
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: "1.6.5"
+  released: 2026-08-22
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 전해질 용액 물성(전도도·밀도·활동도) 보조
+  caveats: 반응 평형은 PHREEQC 엔진에 위임
+  refs:
+    - https://pypi.org/pypi/pyEQL/json
+  checked: 2026-09-26
+
+- id: gems3k
+  name: GEMS3K / xGEMS
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: GEMS3K GitHub 2026-09-15 커밋
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 중
+  role: GEM 평형 — 시멘트 수화물·건설재료·지구화학 조합 시
+  caveats: GEMS 형식 DB(Cemdata 등). DB 준비에 GEM-Selektor GUI(학술 전용, gem-selektor 항목)가 필요할 수 있다
+  refs:
+    - https://github.com/gemshub/GEMS3K
+    - https://gems.web.psi.ch/GEMS3/downloads/
+  checked: 2026-09-26
+
+- id: gem-selektor
+  name: GEM-Selektor GUI
+  kind: library
+  category: 화학평형·반응
+  fidelity: [T]
+  code_license: academic-only
+  isolation: reference-only
+  allowed_in: [research]
+  install: binary
+  compute: [laptop]
+  fit: 하
+  role: GEMS 형식 DB 준비용 GUI (연구 전용)
+  caveats: 비영리 학술 기관에만 무상 — 학술 주체 요건 확인. 제품 경로에서 쓰지 않는다
+  refs:
+    - https://gems.web.psi.ch/GEMS3/downloads/
+  checked: 2026-09-26
+
+- id: perple-x
+  name: Perple_X
+  kind: library
+  category: 화학평형·반응
+  assays: [A2]
+  fidelity: [T]
+  version: GitHub 2026-09-24 커밋
+  code_license: GPL-3.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop]
+  fit: 하
+  role: 고온·고압 암석·광물 상평형(변성·맨틀) — 규산염 고상반응 대안
+  caveats: GPL — 별도 프로세스(Fortran CLI)로만 호출. 자체 열역학 DB(Holland–Powell 등). 지질 조건 특화
+  checked: 2026-09-26
+
+- id: thermoengine
+  name: ThermoEngine (ENKI, MELTS)
+  kind: library
+  category: 화학평형·반응
+  fidelity: [T]
+  version: 1.0.1 (공식 문서) — PyPI thermoengine 2.0.0.dev18 은 ThermoEngineLite
+  code_license: AGPL-3.0
+  isolation: excluded
+  allowed_in: [research]
+  install: pip
+  python_requires: ==3.10.*
+  compute: [laptop]
+  fit: 하
+  role: 사용 안 함 — 규산염 용융 시험은 제품 범위에서 빼거나 FactSage 로 대체
+  caveats: AGPL-3 — 네트워크 서비스 이용자에게도 소스 공개 의무라 서버 제품 부적합. ThermoEngineLite 는 Python 3.10 전용
+  refs:
+    - https://gitlab.com/ENKI-portal/ThermoEngine
+    - https://enki-portal.gitlab.io/ThermoEngine/
+  checked: 2026-09-26
+
+- id: supcrtbl
+  name: SUPCRTBL
+  kind: library
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  code_license: unknown
+  isolation: reference-only
+  allowed_in: [research]
+  install: binary
+  compute: [laptop]
+  fit: 중
+  role: 고온·고압 수용액 종·광물 표준 열역학 DB — Reaktoro DB 로 간접 사용 (조사 문서 적합도 '중(DB로서)')
+  caveats: 라이선스 미확인('closed source'로 보고됨). 최신 버전 미확인
+  refs:
+    - https://hydrogeochem.earth.indiana.edu/software/index.html
+  checked: 2026-09-26
+
+- id: coolprop
+  name: CoolProp
+  kind: library
+  category: 화학평형·반응
+  assays: [A3]
+  fidelity: [T]
+  version: "8.0.0"
+  released: 2026-06-27
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 순수·혼합 유체 물성(EOS)·상변화 보조
+  caveats: 반응 평형은 다루지 않는다
+  refs:
+    - https://pypi.org/pypi/CoolProp/json
+  checked: 2026-09-26
+
+- id: thermo
+  name: thermo
+  kind: library
+  category: 화학평형·반응
+  assays: [S0, A3]
+  fidelity: [T]
+  version: "0.6.1"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 유체·혼합물 물성 보조, S0 반응열(418 J/g 기준) 정량 재평가
+  caveats: 반응 평형은 다루지 않는다. 물성 데이터·상관식은 chemicals 패키지
+  refs:
+    - https://pypi.org/pypi/thermo/json
+  checked: 2026-09-26
+
+- id: chemicals
+  name: chemicals
+  kind: library
+  category: 화학평형·반응
+  assays: [A3]
+  fidelity: [T]
+  version: "1.5.2"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 화학물질 물성 데이터·추정식 (thermo 의 기반)
+  refs:
+    - https://pypi.org/pypi/chemicals/json
+  checked: 2026-09-26
+
+- id: gwb
+  name: Geochemist's Workbench (GWB, ChemPlugin)
+  kind: commercial
+  category: 화학평형·반응
+  assays: [A4]
+  fidelity: [T]
+  version: GWB 2026
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [laptop]
+  fit: 기준용
+  role: 상용 지구화학 반응·반응수송 비교 기준
+  caveats: 상용 구독. Python 은 ChemPlugin(Python·C++·Fortran)
+  refs:
+    - https://www.gwb.com/plugin.php
+  checked: 2026-09-26
+
+- id: hsc-chemistry
+  name: HSC Chemistry
+  kind: commercial
+  category: 화학평형·반응
+  assays: [A5]
+  fidelity: [T]
+  version: 10 (구독형)
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [laptop]
+  fit: 기준용
+  role: 상용 야금·공정 평형, Eh-pH 비교 기준
+  caveats: 상용 구독, 만료 시 동작 중지. Python API 미확인
+  refs:
+    - https://www.metso.com/globalassets/portfolio/hsc-chemistry/04-hsc-license-types.pdf
+  checked: 2026-09-26
+
+# ── 원자 단위: 글루·DFT ──────────────────────────────────────────────────
+- id: ase
+  name: ASE (Atomic Simulation Environment)
+  kind: library
+  category: 원자 단위 (글루)
+  assays: [A1, A7]
+  fidelity: [L2, L3]
+  version: "3.29.0"
+  released: 2026-06-21
+  code_license: LGPL-2.1
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 모든 계산기(uMLIP·DFT·TB)의 공통 인터페이스 — 이완·MD(열안정성)·NEB
+  caveats: LGPL-2.1+ — 동적 import·교체 가능 상태 유지, 수정분 공개
+  refs:
+    - https://pypi.org/pypi/ase/json
+  checked: 2026-09-26
+
+- id: vasp
+  name: VASP
+  kind: commercial
+  category: 원자 단위 (DFT)
+  assays: [A1]
+  fidelity: [L3]
+  version: "6.5.1"
+  released: 2025-03-11
+  code_license: proprietary
+  isolation: reference-only
+  allowed_in: [research]
+  install: commercial
+  compute: [hpc]
+  fit: 중
+  role: MP 호환 L3 검증 — MP hull 과 직접 비교 가능한 유일한 경로
+  caveats: 연구그룹 단위 라이선스(기관·개인 단위 아님). 제3자 제공·서버 공유 제한 조항 흔함(계약 확인). 6.5.1 이후 버전 미확인. ASE·pymatgen·atomate2 로 간접 호출
+  refs:
+    - https://vasp.at/info/post/new-release-vasp-651/
+    - https://vasp.at/info/faq/
+  checked: 2026-09-26
+
+- id: quantum-espresso
+  name: Quantum ESPRESSO
+  kind: library
+  category: 원자 단위 (DFT)
+  assays: [A1]
+  fidelity: [L3]
+  version: "7.5"
+  released: 2025-08-19
+  code_license: GPL-2.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop, hpc]
+  fit: 중
+  role: 오픈 L3 DFT (자기일관 재계산)
+  caveats: GPL — 격리 워커에서 CLI·파일 I/O 로 호출. MP hull 에 그대로 넣지 않는다(의사퍼텐셜·설정 차이) — 경쟁상까지 같은 설정으로 재계산. 노트북은 약 20원자 이하 셀 소수 검증만(수 시간/건, 추정)
+  refs:
+    - https://gitlab.com/QEF/q-e/-/releases/qe-7.5
+  checked: 2026-09-26
+
+- id: gpaw
+  name: GPAW
+  kind: library
+  category: 원자 단위 (DFT)
+  assays: [A1]
+  fidelity: [L3]
+  version: "26.7.0"
+  released: 2026-07-06
+  code_license: GPL-3.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop, hpc]
+  fit: 중
+  role: 작은 셀 L3 검증 (Python 네이티브 DFT)
+  caveats: import gpaw 는 GPL 전파 우려 — 격리 워커 안에서만. 에너지 기준이 MP 와 달라 자기일관 hull 필요
+  refs:
+    - https://pypi.org/pypi/gpaw/json
+  checked: 2026-09-26
+
+- id: cp2k
+  name: CP2K
+  kind: library
+  category: 원자 단위 (DFT)
+  fidelity: [L3]
+  version: "2026.1"
+  code_license: GPL-2.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [hpc]
+  fit: 하
+  role: 대형 셀·AIMD·계면·용액 (조사 문서 적합도 하~중)
+  caveats: GPL — 격리 워커 전용. 2026.1 부터 CMake 전용 빌드
+  refs:
+    - https://github.com/cp2k/cp2k/releases/
+  checked: 2026-09-26
+
+- id: abinit
+  name: ABINIT
+  kind: library
+  category: 원자 단위 (DFT)
+  fidelity: [L3]
+  version: 10.6.x
+  code_license: GPL-3.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [hpc]
+  fit: 하
+  role: DFPT(유전·포논)
+  caveats: GPL — 격리 워커 전용
+  refs:
+    - https://docs.abinit.org/about/release-notes/
+  checked: 2026-09-26
+
+# ── 원자 단위: 분자 양자화학·TB ──────────────────────────────────────────
+- id: pyscf
+  name: PySCF (+GPU4PySCF)
+  kind: library
+  category: 분자 양자화학
+  assays: [A3, A4]
+  fidelity: [L3]
+  version: "2.14.0"
+  released: 2026-07-18
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 상
+  role: 분자 L3 (적합도 상은 분자 한정) — 신규 화학종 열화학·반응 에너지 추정
+  caveats: GPU4PySCF 1.8.1(2026-08)로 GPU 가속 DFT. 상업 결합 자유. 연속체 용매 추정은 정확도 낮음
+  refs:
+    - https://pypi.org/pypi/pyscf/json
+  checked: 2026-09-26
+
+- id: psi4
+  name: Psi4
+  kind: library
+  category: 분자 양자화학
+  fidelity: [L3]
+  version: "1.10.2"
+  released: 2026-06-18
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 중
+  role: 고정밀 파동함수 방법 (분자)
+  caveats: v1.11 공지(2026-06)
+  refs:
+    - https://psicode.org/posts/
+  checked: 2026-09-26
+
+- id: orca
+  name: ORCA (학술판)
+  kind: library
+  category: 분자 양자화학
+  fidelity: [L3]
+  version: "6.1.1"
+  released: 2025-12-15
+  code_license: academic-only
+  isolation: worker
+  allowed_in: [research]
+  install: binary
+  compute: [laptop]
+  fit: 중
+  role: 분자 L3 (연구 전용)
+  caveats: 학술 무료. 상업 이용·서버 제품은 FAccTs 유료 라이선스 필요. Python 은 OPI(orca-pi 2.0.0)
+  refs:
+    - https://www.faccts.de/orca/
+  checked: 2026-09-26
+
+- id: xtb
+  name: xtb
+  kind: library
+  category: 분자 양자화학
+  assays: [A3, A4]
+  fidelity: [L2]
+  version: GitHub 활동 중 (PyPI xtb 22.1 은 2022년 구버전 래퍼)
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 상
+  role: 반경험 TB — 분자 수백 원자를 초 단위로, 반응 에너지 1차 추정·구조 이완
+  caveats: Python 은 tblite 를 쓴다
+  checked: 2026-09-26
+
+- id: tblite
+  name: tblite
+  kind: library
+  category: 분자 양자화학
+  assays: [A3, A4]
+  fidelity: [L2]
+  version: "0.7.0"
+  released: 2026-07-13
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 상
+  role: xtb 계열 TB 의 Python 라이브러리 — 신규 분자 열화학 1차 추정
+  caveats: g-xTB 최종 구현이 통합될 예정(시점 미확인)
+  checked: 2026-09-26
+
+- id: g-xtb
+  name: g-xTB
+  kind: library
+  category: 분자 양자화학
+  fidelity: [L2]
+  version: v2.0.0 (개발판)
+  code_license: unknown
+  isolation: worker
+  allowed_in: [research]
+  install: source
+  compute: [laptop]
+  fit: 중
+  role: 추적 대상 — 범용 TB 정확도 개선판
+  caveats: 라이선스 미확인. 최종 구현은 tblite 로 통합 예정
+  refs:
+    - https://github.com/grimme-lab/g-xtb
+  checked: 2026-09-26
+
+- id: dftd3
+  name: dftd3 (DFT-D3 분산 보정)
+  kind: library
+  category: 분자 양자화학
+  fidelity: [L2, L3]
+  version: "1.6.0"
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 상
+  role: 분산 보정 (DFT·TB·uMLIP 공용)
+  checked: 2026-09-26
+
+- id: dftd4
+  name: dftd4 (DFT-D4 분산 보정)
+  kind: library
+  category: 분자 양자화학
+  fidelity: [L2, L3]
+  version: "4.2.0"
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 상
+  role: 분산 보정 (DFT·TB·uMLIP 공용)
+  checked: 2026-09-26
+
+# ── 원자 단위: MD ────────────────────────────────────────────────────────
+- id: lammps
+  name: LAMMPS
+  kind: library
+  category: 분자동역학
+  fidelity: [L2]
+  version: 22Jul2025 update 6 (안정판)
+  released: 2026-09-03
+  code_license: GPL-2.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu, hpc]
+  fit: 중
+  role: uMLIP 대규모 MD (SevenNet·MACE·PET·GRACE 플러그인) — 별도 프로세스로 호출
+  caveats: import lammps(파이썬 모듈)는 격리 워커 안에서만. 기능판 2Sep2026
+  refs:
+    - https://www.lammps.org/news/2026_09_03-stable-update6/
+  checked: 2026-09-26
+
+- id: gromacs
+  name: GROMACS
+  kind: library
+  category: 분자동역학
+  assays: [A8]
+  version: "2026.3"
+  released: 2026-06-25
+  code_license: LGPL-2.1
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [gpu]
+  fit: 하
+  role: 연성물질 MD — 고분자 블렌드 상용성 연구 옵션 (조사 문서 적합도 하~중)
+  caveats: 고분자·생체 위주. 2026 에서 NNP/MM 지원 확장. Python API 하
+  refs:
+    - https://manual.gromacs.org/2026.1/release-notes/2026/2026.1.html
+  checked: 2026-09-26
+
+- id: openmm
+  name: OpenMM
+  kind: library
+  category: 분자동역학
+  assays: [A8]
+  version: "8.6.1"
+  released: 2026-09-11
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [gpu]
+  fit: 중
+  role: 고분자 블렌드·용액 MD 연구 옵션 (Python 우선 API)
+  caveats: 일부 플랫폼은 LGPL
+  checked: 2026-09-26
+
+# ── uMLIP (범용 머신러닝 원자간 포텐셜) ─────────────────────────────────
+# MBD = Matbench Discovery (조회 2026-09-26). 수치는 CPS·F1·E_hull MAE(eV/atom).
+# OMat 헤드·OMat24 단독 가중치는 MP 보정 에너지와 기준이 다르다 — MP hull 과 섞으려면 MPA/OAM 계열.
+- id: orb-v3
+  name: ORB v3 conservative-inf-mpa (Orbital Materials)
+  kind: model
+  category: uMLIP
+  assays: [A1, A7]
+  fidelity: [L2]
+  version: orb-models 0.7.0 / orb-v3-conservative-inf-mpa
+  released: 2026-05-26
+  code_license: Apache-2.0
+  weights_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.12"
+  compute: [laptop, gpu]
+  fit: 상
+  role: L2 기본 스크리닝 1순위 (앙상블 1번째, MP 기준 정렬 MPA 가중치)
+  caveats: MBD CPS 0.860·F1 0.905·MAE 0.024, MD wall time 최단 그룹·GPU 메모리 1.6 GB. Alexandria 와 WBM 프로토타입 약 97k 중복(YAML 명시, 누수 가능성) — 자체 검증 세트로 재평가. 학습 데이터 일부 비공개(OSCD). orb-v3-*-omat 가중치는 MP 에너지 기준과 다름. CPU 지원(Windows 비보장)
+  refs:
+    - https://github.com/orbital-materials/orb-models
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: orbmol-v2
+  name: OrbMol-v2 (Orbital Materials)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: OrbMol-v2 (2026-05)
+  code_license: Apache-2.0
+  weights_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.12"
+  compute: [laptop, gpu]
+  fit: 중
+  role: 분자·용액 도메인 대안 (UMA 대신 허용적 라이선스로)
+  caveats: OMol25+OPoly26 학습, 장거리 정전기
+  refs:
+    - https://huggingface.co/Orbital-Materials/orbmol-v2
+  checked: 2026-09-26
+
+- id: sevennet-omni
+  name: SevenNet-Omni-i12 (서울대 MDIL)
+  kind: model
+  category: uMLIP
+  assays: [A1, A7]
+  fidelity: [L2]
+  version: sevenn 0.13.0 / SevenNet-Omni-i12
+  released: 2026-06-19
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 상
+  role: 앙상블 2번째 모델 (국산, 아키텍처가 달라 불일치 기반 불확실도 추정에 유리)
+  caveats: MBD CPS 0.873·F1 0.906·MAE 0.021. 학습 데이터 COSMOSDataset(243M 구조, CC-BY-4.0). LAMMPS 다중 GPU 병렬, CUDA D3 분산 보정, 멀티피델리티. 구 체크포인트(MF-ompa·7net-0)는 sevennet-mf-ompa 항목으로 분리
+  refs:
+    - https://github.com/MDIL-SNU/SevenNet
+    - https://zenodo.org/records/20759148
+    - https://matbench-discovery.materialsproject.org/models/sevennet-omni-i12
+  checked: 2026-09-26
+
+- id: sevennet-mf-ompa
+  name: SevenNet-MF-ompa (구 체크포인트)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: SevenNet-MF-ompa (MBD 등록 2025-03-13)
+  code_license: GPL-3.0
+  weights_license: GPL-3.0
+  isolation: worker
+  allowed_in: [research]
+  install: pip
+  compute: [gpu]
+  fit: 하
+  role: 비교·재현용 — 운영은 SevenNet-Omni 사용
+  caveats: 등록 당시 코드·가중치 GPL-3. 현행 sevenn 코드는 MIT 로 바뀌었으나 구 체크포인트 재라이선스 여부 미확인. 7net-0 등 다른 구 체크포인트도 같은 기준으로 취급. MBD CPS 0.844·F1 0.901
+  refs:
+    - https://github.com/MDIL-SNU/SevenNet
+  checked: 2026-09-26
+
+- id: mace-mpa-0
+  name: MACE-MPA-0
+  kind: model
+  category: uMLIP
+  assays: [A1, A7]
+  fidelity: [L2]
+  version: mace-torch 0.3.16 / MACE-MPA-0
+  released: 2026-05-10
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 상
+  role: 노트북 CPU 경량 1순위
+  caveats: MBD CPS 0.795·F1 0.852·MAE 0.028, 9.1M. MPtrj+sAlex 학습(MP 기준 정렬). 같은 mace-torch 로 ASL 가중치도 로드되므로 운영 환경에서는 가중치 해시로 비상업 가중치 차단
+  refs:
+    - https://github.com/ACEsuit/mace-foundations
+  checked: 2026-09-26
+
+- id: mace-mp-0
+  name: MACE-MP-0 (MP-0a/b/b2/b3)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: mace-torch 0.3.16 / MACE-MP-0
+  released: 2026-05-10
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 중
+  role: 구세대 MIT 가중치 — MPA-0 권장
+  caveats: MBD CPS 0.637·F1 0.669·MAE 0.057 (MPtrj만 학습)
+  refs:
+    - https://github.com/ACEsuit/mace-foundations
+  checked: 2026-09-26
+
+- id: mace-mh-1
+  name: MACE-MH-1
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: mace-torch 0.3.16 / MACE-MH-1
+  released: 2026-05-10
+  code_license: MIT
+  weights_license: ASL
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 하
+  role: 분자·표면·벌크 교차 도메인 대안 — 연구 전용
+  caveats: 가중치 ASL(비상업) — 운영 환경 로드 차단. MBD 리더보드 미등재
+  refs:
+    - https://huggingface.co/mace-foundations/mace-mh-1
+    - https://github.com/ACEsuit/mace-foundations
+  checked: 2026-09-26
+
+- id: mace-omat-0
+  name: MACE 비-MP 가중치 (OMAT-0·MATPES-PBE/r2SCAN·OMOL-0·MH-0·MDP)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: mace-torch 0.3.16
+  released: 2026-05-10
+  code_license: MIT
+  weights_license: ASL
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 하
+  role: 연구 전용 대안
+  caveats: 가중치 ASL(비상업) — 운영 환경 로드 차단. OMAT-0 은 MP 보정 에너지와 기준이 다르다. MBD 리더보드 미등재
+  refs:
+    - https://github.com/ACEsuit/mace-foundations
+  checked: 2026-09-26
+
+- id: mattersim
+  name: MatterSim v1 1M·5M (Microsoft)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: mattersim 1.2.5 / v1 1M·5M
+  released: 2026-05-28
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: ">=3.12"
+  compute: [laptop, gpu]
+  fit: 중
+  role: 노트북 경량 대안 (v1 1M), MatterGen 평가 파이프라인의 이완기
+  caveats: MBD(5M) CPS 0.767·F1 0.862·MAE 0.024. 학습 데이터 비공개(OSCD), 넓은 온도·압력 범위 학습. Mac MPS 수치 불안정 보고 → CPU 권장
+  refs:
+    - https://github.com/microsoft/mattersim
+  checked: 2026-09-26
+
+- id: matgl
+  name: MatGL (M3GNet·TensorNet·CHGNet)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: "4.0.3"
+  released: 2026-07-02
+  code_license: BSD-3-Clause
+  weights_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 구세대·경량 uMLIP·물성 모델 (MEGNet 후속)
+  caveats: v3.0(2026-05)에서 DGL 제거·PyG 전용. 메시지패싱 버그 수정으로 구 가중치 무효 — 전 모델 재학습, HF materialyze 에서만 배포. TensorNet-MatPES(PBE/r2SCAN 2025.2), QET. CPU·MPS 가능, JAX·Warp 가속 옵션
+  refs:
+    - https://github.com/materialyzeai/matgl
+  checked: 2026-09-26
+
+- id: chgnet
+  name: CHGNet (Berkeley Ceder)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: "0.4.2"
+  released: 2025-09-22
+  code_license: BSD-3-Clause
+  weights_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 노트북 경량 대안 (구세대)
+  caveats: MBD CPS 0.400·F1 0.613·MAE 0.063 (MPtrj만). MatGL 재학습 가중치와 구분해 버전·해시 기록
+  refs:
+    - https://pypi.org/pypi/chgnet/json
+  checked: 2026-09-26
+
+- id: uma
+  name: UMA (Meta fairchem)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: fairchem-core 2.23.0 / uma-s-1p1·uma-s-1p2·uma-s-1p2p1·uma-m-1p1
+  released: 2026-09-24
+  code_license: MIT
+  weights_license: FAIR-Chemistry-License-v1
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [gpu]
+  fit: 중
+  role: 재료·분자·촉매·MOF·분자결정까지 한 모델로 (라이선스 수용 시 1순위)
+  caveats: 가중치 FAIR Chemistry License v1 — 상업 이용은 허용되나 이용정책(AUP) 준수, HF 게이트(실명·생년월일·기관명), 중국·러시아·벨라루스 등 제재 지역 제외, 재배포 범위 미확인 → 법무 검토 전까지 research 전용. omat 헤드는 MP 에너지 기준과 다름. MBD 미등재(Meta 자체 문서 성능만). uma-s-1p2p1 파라미터 수 미확인
+  refs:
+    - https://huggingface.co/facebook/UMA
+  checked: 2026-09-26
+
+- id: esen-30m-oam
+  name: eSEN-30M-OAM (Meta FAIR)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: fairchem-core 2.23.0 / eSEN-30M-OAM
+  released: 2026-09-24
+  code_license: MIT
+  weights_license: OMat24-model-license
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  python_requires: ">=3.11"
+  compute: [gpu]
+  fit: 중
+  role: 상위권 대안 (라이선스 수용 시)
+  caveats: MBD CPS 0.888·F1 0.925·MAE 0.018. 가중치 OMat24 License — 이용정책 준수, 재배포 범위 미확인 → 법무 검토 전까지 research 전용. eqV2 가중치도 같은 약관
+  refs:
+    - https://huggingface.co/facebook/OMAT24/blob/main/LICENSE
+  checked: 2026-09-26
+
+- id: prophet-oame-mbd
+  name: Prophet-OAME-MBD (Kairos Materials)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: Prophet-OAME-MBD (MBD 등록 2026-09-13)
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 정확도 최우선 대안 (검증 부족)
+  caveats: MBD CPS 1위 0.912·F1 0.928 이나 CMDS 40/42위(MD 안정성 약함). 논문 미출판, 학습 데이터 일부 비공개(ELEMENTA, OSCD). 62.3M, 스핀 포함. 가중치 CC-BY-4.0 — 저작자 표시
+  refs:
+    - https://matbench-discovery.materialsproject.org/models/prophet-oame-mbd
+  checked: 2026-09-26
+
+- id: tece-oam-rra
+  name: TECE-OAM-RRA-1.0 (ShanghaiTech)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: TECE-OAM-RRA-1.0 (MBD 등록 2026-07-05)
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 정확도 최우선(GPU 여유) 후보 — PET-OAM-XL·EquFlashV2 와 함께
+  caveats: MBD CPS 0.908·F1 0.929·MAE 0.018, 222M — 노트북 CPU 비현실적. 가중치 CC-BY-4.0 — 저작자 표시. TACE-OAM-RRA-Preview(214M)는 가중치 라이선스 미확인
+  refs:
+    - https://matbench-discovery.materialsproject.org/models/tece-oam-rra-1.0
+  checked: 2026-09-26
+
+- id: tace-oam-l
+  name: TACE-OAM-L (ShanghaiTech)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: TACE-OAM-L (MBD 등록 2026-04-09)
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: MD 안정성 중시 1순위 (CMDS 0.728)
+  caveats: MBD CPS 0.889·F1 0.910·MAE 0.020, 82.9M. 속도·정확도 균형 구간(GPU 메모리 4.4 GB). 가중치 CC-BY-4.0 — 저작자 표시
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: equflashv2
+  name: EquFlashV2 (삼성전자 DS부문)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: EquFlashV2 (MBD 등록 2026-06-11)
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 정확도 최우선 후보, 국산 앙상블 2번째 대안
+  caveats: MBD CPS 0.907·F1 0.929·MAE 0.018, 44.9M, GPU 메모리 14.4 GB. 가중치 CC-BY-4.0 — 저작자 표시
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: equflash
+  name: EquFlash (삼성전자)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: EquFlash (MBD 등록 2025-06-23)
+  code_license: unknown
+  weights_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: source
+  compute: [gpu]
+  fit: 하
+  role: 구판 — EquFlashV2 사용
+  caveats: 코드·가중치 라이선스 미확인. MBD CPS 0.888·F1 0.919
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: equiformerv3
+  name: EquiformerV3+DeNS-OAM (MIT atomicarchitects)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: EquiformerV3+DeNS-OAM (MBD 등록 2026-04-07)
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 상위권 대안 (코드·가중치 모두 MIT)
+  caveats: MBD CPS 0.902·F1 0.931·MAE 0.018, 30.3M. GPU 메모리 39.2 GB 로 보고 모델 중 최대
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: grace-3l-oam-l
+  name: GRACE-3L-OAM-L (ICAMS 보훔대)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: tensorpotential 0.6.1 / GRACE-3L-OAM-L
+  released: 2026-09-03
+  code_license: ASL
+  weights_license: ASL
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 하
+  role: MD 안정성 중시 대안 — 연구 전용 (조사 문서 적합도 '하(상업)')
+  caveats: 코드·가중치 ASL(비상업) — 운영 환경 로드 차단. MBD CPS 0.900·F1 0.925·CMDS 0.739(상위). TensorFlow 기반. GRACE-1L/2L-OAM·OMAT 가중치도 같은 ASL
+  refs:
+    - https://github.com/ICAMS/grace-tensorpotential
+    - https://matbench-discovery.materialsproject.org/models/grace-3l-oam-l
+  checked: 2026-09-26
+
+- id: pet-oam-xl
+  name: PET-OAM-XL (EPFL lab-cosmo)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: upet 0.3.1 / PET-OAM-XL
+  released: 2026-09-25
+  code_license: BSD-3-Clause
+  weights_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: 정확도 최우선(GPU 여유) 1순위 후보 (조사 문서 적합도 중~상)
+  caveats: MBD CPS 0.898·F1 0.924·MAE 0.019, 730M — GPU 필수(추정). 불확실도 추정 내장. ASE·LAMMPS(KOKKOS)·i-PI·TorchSim·GROMACS 연동
+  refs:
+    - https://github.com/lab-cosmo/upet
+  checked: 2026-09-26
+
+- id: pet-mad
+  name: PET-MAD-1.6 XS/S/M (EPFL lab-cosmo)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: upet 0.3.1 / PET-MAD-1.6
+  released: 2026-09-25
+  code_license: BSD-3-Clause
+  weights_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop, gpu]
+  fit: 중
+  role: 경량 범용 대안 (102원소, r2SCAN) — 자기일관 hull 용
+  caveats: r2SCAN 기준이라 MP hull 과 섞지 않는다. MAD-XS/S 는 CPU 가능(추정). PET-OMat·PET-OMATPES 도 BSD-3 (조사 문서 적합도 중~상)
+  refs:
+    - https://github.com/lab-cosmo/upet
+  checked: 2026-09-26
+
+- id: nequip-oam-l
+  name: Nequip-OAM-L (Harvard mir-group)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: nequip 0.19.1 / Nequip-OAM-L
+  released: 2026-09-01
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: 기본 스크리닝 대안 (ORB v3 대체 후보, 조사 문서 적합도 중~상)
+  caveats: MBD CPS 0.870·F1 0.893·MAE 0.022, 9.6M. 컴파일 기반 고속 추론. 가중치 CC-BY-4.0 — 저작자 표시
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: nequip-oam-xl
+  name: Nequip-OAM-XL (Harvard mir-group)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: nequip 0.19.1 / Nequip-OAM-XL
+  released: 2026-09-01
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: 상위권 대안 (조사 문서 적합도 중~상)
+  caveats: MBD CPS 0.886·F1 0.906·MAE 0.020, 32.1M. 가중치 CC-BY-4.0 — 저작자 표시
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: allegro-oam-l
+  name: Allegro-OAM-L (Harvard mir-group)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: nequip 0.19.1 / Allegro-OAM-L
+  released: 2026-09-01
+  code_license: MIT
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: 대규모 병렬 MD (조사 문서 적합도 중~상)
+  caveats: MBD 수치는 조사 문서에 없음. 가중치 CC-BY-4.0 — 저작자 표시
+  checked: 2026-09-26
+
+- id: matris-10m-oam
+  name: MatRIS-10M-OAM (HPC-AI-Team)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: MatRIS-10M-OAM (MBD 등록 2025-10-29)
+  code_license: BSD-3-Clause
+  weights_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 기본 스크리닝 대안 (조사 문서 적합도 중~상)
+  caveats: MBD CPS 0.877·F1 0.921·MAE 0.019, 10.4M. MD 과제 wall time 511,454 s 로 느린 편
+  refs:
+    - https://matbench-discovery.materialsproject.org/models
+  checked: 2026-09-26
+
+- id: dpa-4
+  name: DPA-4.0.1-Pro-MPtrj (DeepModeling)
+  kind: model
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: deepmd-kit 3.2.0 / DPA-4.0.1-Pro-MPtrj
+  released: 2026-08-19
+  code_license: LGPL-3.0
+  weights_license: CC-BY-4.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: MPtrj 전용(compliant) 대안 — MP 에너지 기준과 직접 호환
+  caveats: MBD CPS 0.840·F1 0.857·MAE 0.029 (논문 표기 DPA4-Pro CPS 0.842, compliant 1위). 추론 처리량 11.9배는 저자 주장. 2026-05-22 블로그 기준 '코드 추후 공개' — 공개 상태 미확인. MBD YAML 에 CC-BY-4.0 체크포인트 등록
+  refs:
+    - https://arxiv.org/html/2606.02419
+    - https://blogs.deepmodeling.com/DPA4_05_22_2026
+  checked: 2026-09-26
+
+- id: dpa-3-1
+  name: DPA-3.1 (DeepModeling)
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  version: deepmd-kit 3.2.0 / DPA-3.1
+  released: 2026-08-19
+  code_license: LGPL-3.0
+  weights_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 하
+  role: 멀티태스크 사전학습(OpenLAM) 모델
+  caveats: 조사 문서는 가중치를 'LGPL-3 또는 CC-BY-4.0'으로만 적어 더 제약적인 LGPL-3 로 기록 — 체크포인트별 확인 필요
+  checked: 2026-09-26
+
+- id: alphanet
+  name: AlphaNet
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  code_license: GPL-3.0
+  weights_license: unknown
+  isolation: worker
+  allowed_in: [research]
+  install: source
+  compute: [gpu]
+  fit: 하
+  role: 참고 (GPL)
+  caveats: 조사 문서는 'AlphaNet(GPL-3)'만 표기 — 가중치 라이선스 미확인. GPL 이라 격리 워커 전용
+  checked: 2026-09-26
+
+- id: nequix
+  name: Nequix
+  kind: model
+  category: uMLIP
+  fidelity: [L2]
+  code_license: unknown
+  weights_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: source
+  compute: [gpu]
+  fit: 하
+  role: 저예산 학습 소형 모델 (0.7M) 참고
+  caveats: 라이선스 미확인(조사 문서는 신규 계열을 '대부분 MIT/BSD + CC-BY'로만 표기). TorchSim 지원
+  checked: 2026-09-26
+
+- id: torchsim
+  name: TorchSim (torch-sim-atomistic)
+  kind: library
+  category: uMLIP
+  assays: [A1]
+  fidelity: [L2]
+  version: "0.6.2"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [gpu]
+  fit: 상
+  role: L2 배치 이완·MD 엔진 (ORB v3 + SevenNet-Omni 앙상블 배치 실행)
+  caveats: MACE·fairchem·SevenNet·ORB·MatterSim·metatomic·Nequix 모델 지원. ASE 대비 '최대 100배'는 자체 주장
+  refs:
+    - https://github.com/TorchSim/torch-sim
+  checked: 2026-09-26
+
+- id: phonopy
+  name: phonopy
+  kind: library
+  category: 원자 단위 물성 계산
+  assays: [A7]
+  fidelity: [L2]
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 포논·동역학 안정성(허수 모드) — uMLIP 과 결합
+  caveats: 노트북은 소형 셀·소수 후보만(시간 소요)
+  refs:
+    - https://pypi.org/pypi/phonopy/json
+  checked: 2026-09-26
+
+- id: matcalc
+  name: matcalc
+  kind: library
+  category: 원자 단위 물성 계산
+  assays: [A7]
+  fidelity: [L2]
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 탄성·EOS 등 물성 계산기 — uMLIP 과 결합
+  caveats: 조사 문서 표기는 'BSD'(조항 수 미확인) — BSD-3 로 기록
+  refs:
+    - https://pypi.org/pypi/matcalc/json
+  checked: 2026-09-26
+
+# ── 물성 예측 ML (L1 대리모델) ───────────────────────────────────────────
+# L1 은 안정성을 확정하지 않는다 (MBD F1: ALIGNN 0.567, CGCNN 0.507, MEGNet 0.510, Wrenformer 0.466).
+- id: matminer
+  name: matminer
+  kind: library
+  category: 물성 예측 ML
+  assays: [A7]
+  fidelity: [L1]
+  version: "0.10.1"
+  released: 2026-04-14
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: L1 물성 1차 추정 — 조성·구조 특징 추출 + scikit-learn/LightGBM 대리모델
+  caveats: 조사 문서 표기는 'BSD(수정)' — BSD-3 로 기록
+  refs:
+    - https://pypi.org/pypi/matminer/json
+  checked: 2026-09-26
+
+- id: matbench
+  name: Matbench
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: 0.6 (2022-07)
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: L1 모델 평가용 벤치마크 (13개 물성)
+  caveats: 정체(2022-07 이후 릴리스 없음). 조사 문서 표기는 'BSD(수정)'
+  refs:
+    - https://pypi.org/pypi/matbench/json
+  checked: 2026-09-26
+
+- id: aviary
+  name: Roost / Wren (aviary)
+  kind: library
+  category: 물성 예측 ML
+  assays: [A7]
+  fidelity: [L1]
+  version: GitHub 2026-07 커밋
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop]
+  fit: 중
+  role: 구조 없이 조성(Wren 은 Wyckoff)만으로 물성 추정
+  checked: 2026-09-26
+
+- id: crabnet
+  name: CrabNet
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: 2.0.8 (2023-01)
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: <3.11
+  compute: [laptop]
+  fit: 하
+  role: 조성 트랜스포머 물성 추정
+  caveats: 정체, Python <3.11 전용
+  refs:
+    - https://pypi.org/pypi/crabnet/json
+  checked: 2026-09-26
+
+- id: modnet
+  name: MODNet
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: 0.4.5 (2025-03)
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 소량 데이터 물성 추정 (조성·구조 특징)
+  caveats: 저활동
+  refs:
+    - https://pypi.org/pypi/modnet/json
+  checked: 2026-09-26
+
+- id: alignn
+  name: ALIGNN (NIST)
+  kind: library
+  category: 물성 예측 ML
+  assays: [A7]
+  fidelity: [L1]
+  version: "2026.8.11"
+  released: 2026-08-14
+  code_license: unknown
+  weights_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: pip
+  compute: [gpu]
+  fit: 중
+  role: 구조 GNN 물성(밴드갭·탄성 등) 1차 추정
+  caveats: 라이선스 표기 불명확 — 저장소 NOASSERTION, PyPI 분류자 MIT, NIST 공개 SW 조건. LICENSE 원문 확인 후 NIST-software 또는 MIT 로 바꾸고 product 허용 검토. 사전학습 가중치도 같은 기준. GPU 권장
+  refs:
+    - https://pypi.org/pypi/alignn/json
+  checked: 2026-09-26
+
+- id: megnet
+  name: MEGNet (구 패키지)
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: 1.3.2 (2022)
+  code_license: BSD-3-Clause
+  isolation: excluded
+  allowed_in: [research]
+  install: pip
+  compute: [laptop]
+  fit: 하
+  role: 사용 안 함 — MatGL 로 이관
+  caveats: 구 패키지 사용 중지. 조사 문서 표기는 'BSD'
+  checked: 2026-09-26
+
+- id: rdkit
+  name: RDKit
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L0, L1]
+  version: "2026.3.6"
+  released: 2026-09-03
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 분자 기술자·반응 SMARTS (적합도 상은 분자 한정)
+  refs:
+    - https://pypi.org/pypi/rdkit/json
+  checked: 2026-09-26
+
+- id: chemprop
+  name: Chemprop
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: "2.3.1"
+  released: 2026-08-04
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 분자 물성 MPNN (L1)
+  refs:
+    - https://pypi.org/pypi/chemprop/json
+  checked: 2026-09-26
+
+- id: deepchem
+  name: DeepChem
+  kind: library
+  category: 물성 예측 ML
+  fidelity: [L1]
+  version: 2.8.0 (2024-04)
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 하
+  role: 범용 분자 ML
+  caveats: 릴리스 정체
+  refs:
+    - https://pypi.org/pypi/deepchem/json
+  checked: 2026-09-26
+
+# ── 생성·탐색 ────────────────────────────────────────────────────────────
+- id: smact
+  name: SMACT
+  kind: library
+  category: 조성 필터·생성
+  assays: [A1]
+  fidelity: [L0]
+  version: "4.0.2"
+  released: 2026-09-24
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 조성 단계 필터 — 전하중성·전기음성도가 허용하는 조성 열거
+  refs:
+    - https://pypi.org/pypi/SMACT/json
+  checked: 2026-09-26
+
+- id: mattergen
+  name: MatterGen (Microsoft)
+  kind: model
+  category: 조성 필터·생성
+  assays: [A1]
+  version: 1.0.3 (2025-07)
+  code_license: MIT
+  weights_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 화학계·공간군·밴드갭·자성·E_hull·체적탄성률 조건부 결정 생성 (원소→화합물 대안)
+  caveats: 조사 문서는 라이선스를 MIT 단일 표기 — 가중치 별도 표기 확인 권장. 학습은 다중 GPU(범위 밖), 단일 소비자 GPU 샘플링 시간 미확인. 저장소 2026-08 커밋
+  refs:
+    - https://github.com/microsoft/mattergen
+  checked: 2026-09-26
+
+- id: diffcsp
+  name: DiffCSP
+  kind: library
+  category: 조성 필터·생성
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [gpu]
+  fit: 하
+  role: 조성 → 결정구조 예측
+  caveats: 연구 코드, 2025-04 이후 커밋 없음
+  checked: 2026-09-26
+
+- id: gnome
+  name: GNoME (DeepMind)
+  kind: library
+  category: 조성 필터·생성
+  version: 데이터 확장 2024-08
+  code_license: Apache-2.0
+  isolation: reference-only
+  allowed_in: [research]
+  install: source
+  fit: 하
+  role: 방법론 참고 (SAPS 치환 + AIRSS + 능동학습) — 직접 사용 안 함
+  caveats: 가중치 미공개. 데이터 CC BY-NC 4.0 — 상업 트랙에서는 학습·파인튜닝에 쓰지 않는다
+  refs:
+    - https://github.com/google-deepmind/materials_discovery
+  checked: 2026-09-26
+
+# ── 최적화·실험계획 ──────────────────────────────────────────────────────
+- id: botorch
+  name: BoTorch
+  kind: library
+  category: 최적화·실험계획
+  version: "0.18.1"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 탐색 루프 표준 BO 엔진 (다목적·제약)
+  refs:
+    - https://pypi.org/pypi/botorch/json
+  checked: 2026-09-26
+
+- id: ax
+  name: Ax
+  kind: library
+  category: 최적화·실험계획
+  version: "1.3.1"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 탐색 루프 — 다음에 시험할 조합 선택 (목적함수는 L1/L2 점수)
+  refs:
+    - https://pypi.org/pypi/ax-platform/json
+  checked: 2026-09-26
+
+- id: baybe
+  name: BayBE (Merck KGaA)
+  kind: library
+  category: 최적화·실험계획
+  version: "0.15.0"
+  released: 2026-06-11
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 상
+  role: 탐색 루프 — 화학 파라미터 인코딩·전이학습, 실험계획 친화
+  refs:
+    - https://pypi.org/pypi/baybe/json
+  checked: 2026-09-26
+
+- id: atlas
+  name: Atlas (the-matter-lab)
+  kind: library
+  category: 최적화·실험계획
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  python_requires: ">=3.9,<3.11"
+  compute: [laptop]
+  fit: 하
+  role: 자율실험실용 BO (혼합 파라미터·미지 제약)
+  caveats: Python 3.9~3.10 만 지원
+  refs:
+    - https://github.com/the-matter-lab/atlas
+  checked: 2026-09-26
+
+# ── 합성가능성·합성 경로 ─────────────────────────────────────────────────
+# ML 합성가능성 모델은 '합성 가능'을 과대예측한다(arXiv 2602.04075). 참고 지표로만 노출한다.
+- id: synthnn
+  name: SynthNN
+  kind: library
+  category: 합성가능성
+  fidelity: [L1]
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  compute: [laptop]
+  fit: 중
+  role: 합성가능성 참고 지표 (조성 기반)
+  caveats: 1차 판정 근거는 E_hull(L2/L3)·reaction-network 선택성·텍스트마이닝 전구체 통계
+  refs:
+    - https://github.com/antoniuk1/SynthNN
+    - https://arxiv.org/abs/2602.04075
+  checked: 2026-09-26
+
+- id: pu-cgcnn
+  name: PU-CGCNN (kaist-amsg, snu-micc)
+  kind: library
+  category: 합성가능성
+  fidelity: [L1]
+  code_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: source
+  compute: [laptop, gpu]
+  fit: 중
+  role: 합성가능성 참고 지표 (구조 기반 PU 학습, 국내 연구)
+  caveats: 코드 라이선스 미확인
+  refs:
+    - https://github.com/kaist-amsg/Synthesizability-PU-CGCNN
+  checked: 2026-09-26
+
+- id: csllm
+  name: CSLLM
+  kind: library
+  category: 합성가능성
+  fidelity: [L1]
+  code_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: source
+  compute: [gpu]
+  fit: 중
+  role: 합성가능성·합성 방법·전구체 참고 지표
+  caveats: 코드 라이선스 미확인. 논문 수치(자체 분할) 합성가능성 98.6%·방법 분류 91.0%·전구체 80.2%
+  refs:
+    - https://www.nature.com/articles/s41467-025-61778-y
+  checked: 2026-09-26
+
+# ── 유기 반응 예측·역합성 ────────────────────────────────────────────────
+- id: aizynthfinder
+  name: AiZynthFinder
+  kind: library
+  category: 유기 역합성
+  version: 4.4.1 (2025-12)
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  python_requires: <3.13
+  compute: [laptop]
+  fit: 하
+  role: 템플릿 기반 유기 역합성 (우리 범위 밖에 가까움)
+  refs:
+    - https://pypi.org/pypi/aizynthfinder/json
+  checked: 2026-09-26
+
+- id: askcos
+  name: ASKCOS v2 (MIT)
+  kind: library
+  category: 유기 역합성
+  version: ASKCOS v2
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  fit: 하
+  role: 역합성·조건 추천·생성물 예측·용해도 (조사 문서 적합도 하~중)
+  caveats: GitLab mlpds_mit/askcosv2, Docker 로 서버 배포
+  refs:
+    - https://arxiv.org/abs/2501.01835
+    - https://pubs.acs.org/doi/full/10.1021/acs.accounts.5c00155
+  checked: 2026-09-26
+
+- id: ibm-rxn
+  name: IBM RXN for Chemistry
+  kind: service
+  category: 유기 역합성
+  code_license: MIT
+  isolation: excluded
+  allowed_in: [research]
+  install: service
+  fit: 하
+  role: 사용 금지 — 의존 불가
+  caveats: 2026-10-28 서비스 종료, 호스팅 API 도 중단. code_license 는 래퍼(rxn4chemistry) 기준. 자체 호스팅판 rxn-sandbox 의 라이선스는 미확인
+  refs:
+    - https://github.com/rxn4chemistry/rxn4chemistry
+  checked: 2026-09-26
+
+# ── 거시·혼합 물성 ───────────────────────────────────────────────────────
+- id: msl-mixing-rules
+  name: 혼합법칙·Hashin–Shtrikman 경계 (자체 구현)
+  kind: in-house
+  category: 거시·혼합 물성
+  assays: [A8]
+  fidelity: [L0]
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: none
+  compute: [laptop]
+  fit: 상
+  role: A8 1차 엔진
+  caveats: Voigt/Reuss, Hashin–Shtrikman 경계, Mori–Tanaka, Halpin–Tsai, Maxwell–Garnett(유전) 해석식. 미세구조(형상·분포·계면) 입력이 없으면 경계값만 제시
+  checked: 2026-09-26
+
+- id: fenicsx
+  name: FEniCSx (DOLFINx)
+  kind: library
+  category: 거시·혼합 물성
+  assays: [A8]
+  version: "0.11.0"
+  released: 2026-06-23
+  code_license: LGPL-3.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: conda
+  compute: [laptop]
+  fit: 중
+  role: RVE 균질화 FEM (열·탄성·확산) — A8 대안
+  refs:
+    - https://anaconda.org/conda-forge/fenics-dolfinx
+  checked: 2026-09-26
+
+- id: moose
+  name: MOOSE (INL)
+  kind: library
+  category: 거시·혼합 물성
+  version: 연속 릴리스 (GitHub 2026-09)
+  code_license: LGPL-2.1
+  isolation: in-process
+  allowed_in: [research, product]
+  install: source
+  fit: 하
+  role: 다중물리·상장(phase-field), Thermochimica 연동
+  caveats: 입력파일 중심, 빌드 부담. 서버급 자원
+  checked: 2026-09-26
+
+- id: elmer
+  name: Elmer
+  kind: library
+  category: 거시·혼합 물성
+  version: GitHub 2026-09
+  code_license: GPL-2.0
+  isolation: worker
+  allowed_in: [research, product]
+  install: source
+  fit: 하
+  role: 다중물리 FEM
+  caveats: ElmerSolver 라이브러리는 LGPL, GUI 와 대부분 솔버는 GPL — GPL 버전 표기가 없어 GPL-2.0(or later)로 기록하고 격리 워커 전용
+  refs:
+    - https://github.com/ElmerCSC/elmerfem/blob/devel/license_texts/ElmerLicensePolicy.md
+  checked: 2026-09-26
+
+- id: damask
+  name: DAMASK
+  kind: library
+  category: 거시·혼합 물성
+  code_license: AGPL-3.0
+  isolation: excluded
+  allowed_in: [research]
+  install: source
+  fit: 하
+  role: 사용 안 함 — 결정소성·균질화
+  caveats: AGPL-3 — 서버 제품에 넣지 않는다
+  refs:
+    - https://directory.fsf.org/wiki/DAMASK
+  checked: 2026-09-26
+
+- id: icet
+  name: icet
+  kind: library
+  category: 합금 클러스터 전개·SQS
+  assays: [A6]
+  fidelity: [L2]
+  version: "4.0"
+  released: 2026-09-05
+  code_license: MPL-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 합금 클러스터 전개·몬테카를로 — uMLIP 과 결합해 혼합엔탈피·질서-무질서 (TDB 없는 합금계 → ESPEI)
+  caveats: MPL-2.0 — 파일 단위 카피레프트, 수정한 파일 공개
+  refs:
+    - https://pypi.org/pypi/icet/json
+  checked: 2026-09-26
+
+- id: smol
+  name: smol
+  kind: library
+  category: 합금 클러스터 전개·SQS
+  assays: [A6]
+  fidelity: [L2]
+  version: "0.5.7"
+  code_license: BSD-3-Clause
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: 클러스터 전개·몬테카를로 (icet 대안)
+  caveats: 조사 문서 표기는 'BSD'(조항 수 미확인) — BSD-3 로 기록
+  refs:
+    - https://pypi.org/pypi/smol/json
+  checked: 2026-09-26
+
+- id: sqsgenerator
+  name: sqsgenerator
+  kind: library
+  category: 합금 클러스터 전개·SQS
+  assays: [A6]
+  fidelity: [L2]
+  version: "0.5.6"
+  code_license: MIT
+  isolation: in-process
+  allowed_in: [research, product]
+  install: pip
+  compute: [laptop]
+  fit: 중
+  role: SQS(특수 준무작위 구조) 생성 — uMLIP 혼합엔탈피 계산 입력
+  refs:
+    - https://pypi.org/pypi/sqsgenerator/json
+  checked: 2026-09-26
+
+# ── 공급·경제성 ──────────────────────────────────────────────────────────
+- id: msl-kr-regulation
+  name: 국내 화학물질 규제 조회 (자체 구현, data.go.kr 클라이언트)
+  kind: in-house
+  category: 국내 규제
+  assays: [A10]
+  fidelity: [L0]
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: none
+  compute: [laptop]
+  fit: 상
+  role: A10 1차 엔진 — 한국환경공단 화학물질·유독물 GHS, KOSHA MSDS(15번 법적 규제)를 CAS 로 조회
+  caveats: 데이터 라이선스는 소스별로 따른다 (KOSHA MSDS 는 unknown → restricted). 응답은 data/cache/datagokr/ 캐시
+  checked: 2026-09-27
+
+- id: msl-supply-risk
+  name: 공급·경제성 집계 (자체 구현)
+  kind: in-house
+  category: 공급·경제성
+  assays: [A9]
+  fidelity: [L0]
+  code_license: Apache-2.0
+  isolation: in-process
+  allowed_in: [research, product]
+  install: none
+  compute: [laptop]
+  fit: 상
+  role: A9 1차 엔진
+  caveats: USGS MCS·World Bank Pink Sheet·한국광해광업공단 자료로 원료 가격·공급 집중도·핵심광물 해당 여부를 집계. 소스 라이선스는 sources.yaml 을 따른다
+  checked: 2026-09-26
+
+# ── 혼합 위험성 (반응성 규칙) ────────────────────────────────────────────
+- id: cameo-reactivity
+  name: CAMEO Chemicals 반응성 그룹 규칙 (NOAA)
+  kind: rules
+  category: 혼합 위험성
+  assays: [S0]
+  fidelity: [L0]
+  code_license: unknown
+  isolation: in-process
+  allowed_in: [research]
+  install: none
+  compute: [laptop]
+  fit: 상
+  role: S0 1차 엔진 — 반응성 그룹(68개)×그룹 매트릭스를 자체 구현해 2성분 혼합 위험 판정
+  caveats: 비적합(적색) 기준은 발열 약 418 J/g(≈100 cal/g) 초과, 불안정·부식성·가연성·독성 생성물, 기체 발생에 따른 압력 상승. 2성분 쌍만 평가 — 3성분 이상은 모든 쌍 평가 후 '다성분 미평가' 경고 필수. 한 물질의 여러 그룹끼리는 섞지 않는다. 상온·상압(약 24~49 °C, 1 atm) 가정. 미 정부 공개 자료이나 규칙 데이터의 기계가독 제공 여부·재배포 조건 미확인 → 확인 전까지 research 전용
+  refs:
+    - https://cameochemicals.noaa.gov/browse/react
+    - https://cameochemicals.noaa.gov/help/reactivity/how_reactivity_is_predicted.htm
+  checked: 2026-09-26
+
+- id: crw4
+  name: CRW4 Chemical Reactivity Worksheet (AIChE CCPS)
+  kind: rules
+  category: 혼합 위험성
+  assays: [S0]
+  fidelity: [L0]
+  code_license: unknown
+  isolation: reference-only
+  allowed_in: [research]
+  install: binary
+  compute: [laptop]
+  fit: 중
+  role: S0 교차검증 — 같은 반응성 그룹 방법론 + 재질·흡착제 호환성
+  caveats: NOAA·Dow·CCPS·MTI 공동 개발, 현재 AIChE CCPS 무료 배포(이용 조건 미확인). 데스크톱 앱이라 API 없음. 최신 버전·데이터 export 형식 미확인
+  refs:
+    - https://repository.library.noaa.gov/view/noaa/61941
+    - https://www.aiche.org/ccps/resources/chemical-reactivity-worksheet
+  checked: 2026-09-26

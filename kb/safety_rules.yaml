@@ -1,0 +1,75 @@
+# S0 혼합 안전 게이트 규칙 v0 — 계획서 3.4절
+#
+# 반응성 그룹 이름은 NOAA CAMEO Chemicals 체계를 따른다. 화합물별 그룹은 PubChem(PUG-View
+# 'Reactive Group')에서 받는다. 그룹 쌍에 대한 판정은 NOAA 의 쌍별 판정표를 아직 받지 못해
+# (계획서 10절 #1) 잘 알려진 위험 조합만 직접 적은 **자체 규칙 v0** 이다. 여기 없는 쌍은
+# "규칙 해당 없음"일 뿐 안전하다는 뜻이 아니다 — 리포트에 규칙 수와 함께 그렇게 표시한다.
+#
+# 규칙 형식
+#   a, b          : 두 성분 조건. groups 는 그룹 이름 목록(끝이 '*' 이면 접두어 일치),
+#                   formula 는 화학식 정규식(선택). a·b 는 순서와 무관하게 검사한다.
+#   verdict       : incompatible(부적합) / caution(주의)
+#   hazards, gases: 리포트에 표시할 위험 요약. 발생량·조건 같은 정량 정보는 적지 않는다.
+
+- id: R1
+  name: 산 + 차아염소산염
+  a: {groups: ["Acids, *"]}
+  b: {groups: ["Oxidizing Agents, Strong"], formula: "Cl.*O|O.*Cl"}
+  verdict: incompatible
+  hazards: [유독 기체 발생, 발열]
+  gases: [염소(Cl₂)]
+  note: 산이 차아염소산염을 분해해 염소 기체가 나온다 (가정용 락스 + 산성 세정제 사고)
+
+- id: R2
+  name: 암모니아·아민 + 차아염소산염
+  a: {groups: ["Bases, Weak", "Amines, *"], formula: "N"}
+  b: {groups: ["Oxidizing Agents, Strong"], formula: "Cl.*O|O.*Cl"}
+  verdict: incompatible
+  hazards: [유독 기체 발생]
+  gases: [클로라민(NH₂Cl 등)]
+  note: 락스 + 암모니아계 세정제 사고의 원인
+
+- id: R3
+  name: 알칼리 금속 + 물
+  a: {groups: ["Metals, Alkali, Very Active"]}
+  b: {groups: ["Water and Aqueous Solutions"]}
+  verdict: incompatible
+  hazards: [가연성 기체 발생, 격렬한 발열, 화재]
+  gases: [수소(H₂)]
+  note: 물과 격렬히 반응해 수소가 나오고 발화할 수 있다
+
+- id: R4
+  name: 강산 + 강산화제
+  a: {groups: ["Acids, Strong Non-oxidizing", "Acids, Strong Oxidizing"]}
+  b: {groups: ["Oxidizing Agents, Strong"]}
+  verdict: incompatible
+  hazards: [발열, 유독·부식성 기체 발생 가능]
+  gases: []
+  note: 산화제의 종류에 따라 생성 기체가 달라진다
+
+- id: R5
+  name: 탄화수소 + 강산화제
+  a: {groups: ["Hydrocarbons, *"]}
+  b: {groups: ["Oxidizing Agents, Strong"]}
+  verdict: caution
+  hazards: [가연성 혼합물, 점화원이 있으면 연소·폭발]
+  gases: []
+  note: 상온에서 저절로 반응하지는 않지만 불꽃·정전기 등 점화원을 차단해야 한다
+
+- id: R6
+  name: 강산 + 강염기
+  a: {groups: ["Acids, Strong Non-oxidizing", "Acids, Strong Oxidizing"]}
+  b: {groups: ["Bases, Strong"]}
+  verdict: caution
+  hazards: [중화 발열, 튐]
+  gases: []
+  note: 진한 용액끼리 섞으면 급격히 발열한다
+
+- id: R7
+  name: 산 + 염기성 염
+  a: {groups: ["Acids, *"]}
+  b: {groups: ["Salts, Basic"]}
+  verdict: caution
+  hazards: [발열, 탄산염이면 이산화탄소 발생]
+  gases: []
+  note: 중화 반응

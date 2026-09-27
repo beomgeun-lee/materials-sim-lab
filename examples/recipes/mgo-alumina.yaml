@@ -1,0 +1,14 @@
+# 고상반응 데모 — 마그네시아 + 알루미나. 기대: MgAl2O4(스피넬) 생성이 열역학적으로 유리 (계획서 7절 검증 세트)
+id: rcp-mgo-alumina
+name: 마그네시아 + 알루미나 → 스피넬
+components:
+  - ref: formula:MgO
+    amount: 1 mol
+    state: solid
+  - ref: formula:Al2O3
+    amount: 1 mol
+    state: solid
+conditions:
+  T: 1,400 °C
+  P: 1 atm
+assays: auto

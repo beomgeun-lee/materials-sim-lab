@@ -1,0 +1,106 @@
+# 시험 카탈로그 — 계획서 3.2절. 코드에서는 '시험'을 assay 라고 부른다.
+# engines / sources 는 engines.yaml / sources.yaml 의 id 를 참조한다 (msl registry check 로 검사).
+
+- code: S0
+  name: 혼합 안전 게이트
+  question: 섞어도 되는가? 발열·기체 발생·독성 위험은?
+  applies_to: [전체]
+  fidelity: [L0, T]
+  engines: [cameo-reactivity, cantera]
+  sources: [cameo, pubchem, keco-ghs, kosha-msds]
+  stage: 2
+  note: 모든 시험보다 먼저 실행하고 리포트 맨 위에 표시한다. 2성분 쌍만 평가 — 3성분 이상은 미평가 경고
+
+- code: A1
+  name: 조성 안정성
+  question: 이 조성·구조는 안정한가? 무엇으로 분해되는가?
+  applies_to: [원소→화합물, 반응 생성물]
+  fidelity: [L0, L1, L2, L3]
+  engines: [pymatgen, smact, orb-v3, sevennet-omni, mace-mpa-0, torchsim]
+  sources: [materials-project, cod, oqmd, alexandria]
+  stage: 2
+  note: 2단계는 L0(공공 DB hull), 4단계에 L2(uMLIP 자기일관 hull) 추가
+
+- code: A2
+  name: 고상·계면 반응
+  question: 섞으면 반응하는가? 생성물·반응에너지·최적 혼합비는?
+  applies_to: [고체+고체]
+  fidelity: [L0]
+  engines: [pymatgen, reaction-network]
+  sources: [materials-project, nasa-cea-thermo]
+  stage: 2
+  note: 고체는 DFT + 유한온도 근사, 기체 생성물은 NASA CEA G(T) 를 결합한다
+
+- code: A3
+  name: 기체 평형·연소
+  question: 평형 조성과 단열 온도는?
+  applies_to: [기체 포함]
+  fidelity: [T]
+  engines: [cantera, nasa-cea]
+  sources: [nasa-cea-thermo]
+  stage: 3
+
+- code: A4
+  name: 수용액 평형
+  question: pH·종분화·침전(포화지수)·기체 발생은?
+  applies_to: [수용액]
+  fidelity: [T]
+  engines: [phreeqpython, phreeqc, reaktoro]
+  sources: [phreeqc-db]
+  stage: 3
+
+- code: A5
+  name: 수계 안정성·부식
+  question: 이 pH·전위에서 금속·산화물이 안정한가?
+  applies_to: [금속·산화물+물]
+  fidelity: [L0]
+  engines: [pymatgen]
+  sources: [materials-project]
+  stage: 3
+
+- code: A6
+  name: 합금 상평형
+  question: 상분율·액상선·고상선·응고 거동은?
+  applies_to: [금속 원소 조합]
+  fidelity: [T]
+  engines: [pycalphad, scheil]
+  sources: [sgte-unary]
+  stage: 3
+  note: 공개 TDB 가 있는 계로 한정. 계별 TDB 소스는 3단계 전 조사(계획서 10절 #6) 후 추가
+
+- code: A7
+  name: 물성 추정
+  question: 밀도·밴드갭·탄성률 등은?
+  applies_to: [결정상]
+  fidelity: [L0, L1, L2]
+  engines: [pymatgen, matminer, alignn, matcalc, phonopy]
+  sources: [materials-project, jarvis-dft]
+  stage: 4
+
+- code: A8
+  name: 블렌드·복합 물성
+  question: 유효 강성·열전도·밀도 범위는?
+  applies_to: [재료 혼합]
+  fidelity: [L0]
+  engines: [msl-mixing-rules]
+  sources: []
+  stage: 3
+  note: 성분 물성은 사용자 소재 정의(material:) 또는 DB 조회값을 쓴다
+
+- code: A9
+  name: 공급·경제성
+  question: 원료 가격·공급 집중도·핵심광물 해당 여부는?
+  applies_to: [전체]
+  fidelity: [L0]
+  engines: [msl-supply-risk]
+  sources: [usgs-mcs, world-bank-pink-sheet, komir-files]
+  stage: 2
+
+- code: A10
+  name: 국내 규제
+  question: 유독물 등 국내 규제 대상에 해당하는가?
+  applies_to: [화학물질]
+  fidelity: [L0]
+  engines: [msl-kr-regulation]
+  sources: [keco-chem, keco-ghs, kosha-msds]
+  stage: 2

@@ -1,0 +1,21 @@
+# 사용자 정의 소재 — 레시피의 `material:<id>` 가 가리키는 물성 묶음 (계획서 3.1절 Material)
+#
+# 상용 등급·혼합 소재처럼 원자 구조로 표현하지 않는 성분이다. 값은 교과서 대표값이며
+# 실제 제품은 등급·공정에 따라 다르다. A8(블렌드 물성)이 이 값을 쓴다.
+# 단위: density g/cm³, youngs_modulus GPa, poisson_ratio 무차원
+
+- id: epoxy-generic
+  name: 에폭시 수지 (경화, 일반)
+  class: 고분자
+  density: 1.20
+  youngs_modulus: 3.5
+  poisson_ratio: 0.35
+  note: 비스페놀 A 계열 경화 에폭시 대표값
+
+- id: e-glass-fiber
+  name: E-유리 섬유
+  class: 무기 섬유
+  density: 2.55
+  youngs_modulus: 72.0
+  poisson_ratio: 0.22
+  note: 복합재 강화용 E-glass 대표값

@@ -1,0 +1,17 @@
+# 데이터 — 원본 스냅샷과 적재 결과는 저장소에 넣지 않는다 (라이선스·용량)
+data/
+
+# 비밀값 (MP_API_KEY 등)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store

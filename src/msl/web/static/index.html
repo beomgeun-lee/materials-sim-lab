@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>가상 조합 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #EDF1F2; --surface: #FFFFFF; --surface-2: #F5F7F8; --ink: #14212A; --muted: #56666E; --line: #D3DCE0;
+  --accent: #2A55C9; --accent-soft: #E2E9FA; --accent-mid: #B9C9F2;
+  --ok: #1B7A52; --ok-soft: #DFF1E8; --warn: #9A6200; --warn-soft: #FAEFD8; --bad: #B3302A; --bad-soft: #F8E1DF;
+  --idle: #66737B; --idle-soft: #E9EDEF;
+  --f-L0: #4A5A65; --f-L1: #0E7780; --f-L2: #6843BE; --f-L3: #86388B; --f-T: #9C4F28; --tile: #FBFCFC;
+  --font-display: "Hahmlet", "Noto Serif KR", "AppleMyungjo", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0E1519; --surface: #152028; --surface-2: #1A2731; --ink: #E2EBEE; --muted: #93A3AB; --line: #2A3A45;
+    --accent: #86A3FF; --accent-soft: #1F2E52; --accent-mid: #34487E;
+    --ok: #5FCB98; --ok-soft: #133526; --warn: #E8B454; --warn-soft: #3A2C10; --bad: #F08A80; --bad-soft: #3E1A18;
+    --idle: #9AA7AE; --idle-soft: #22303A;
+    --f-L0: #A9B8C2; --f-L1: #5CC9D1; --f-L2: #B39BF2; --f-L3: #D78FDB; --f-T: #E59A6E; --tile: #182430;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; padding-inline: 16px; padding-block: 20px 40px; }
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 18px; }
+h1, h2 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.brand h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 3.4vw, 34px); letter-spacing: -0.01em; }
+.brand p { color: var(--muted); margin-top: 4px; }
+.live { display: grid; gap: 2px; padding: 8px 12px; border: 1px solid var(--ok); background: var(--ok-soft); border-radius: 6px; font-size: 12.5px; max-width: 480px; }
+.live b { color: var(--ok); }
+
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.preset { text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 10px 12px; cursor: pointer; font: inherit; display: grid; gap: 2px; }
+.preset:hover { border-color: var(--accent); }
+.preset:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.preset[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.preset .p-title { font-weight: 600; }
+.preset .p-sub { font-size: 12px; color: var(--muted); font-family: var(--font-mono); overflow-wrap: anywhere; }
+
+.work { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 18px; align-items: start; }
+@media (max-width: 880px) { .work { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; }
+.panel h2 { font-family: var(--font-display); font-weight: 500; font-size: 19px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.tile { border: 1.5px solid var(--ink); background: var(--tile); border-radius: 3px; padding: 6px 8px 7px; display: grid; grid-template-rows: auto 1fr auto; min-height: 108px; }
+.tile.err { border-color: var(--bad); }
+.tile .ns { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 4px; }
+.tile .sym { font-family: var(--font-display); font-weight: 700; font-size: 21px; line-height: 1.15; align-self: center; overflow-wrap: anywhere; }
+.tile .nm { font-size: 11.5px; color: var(--muted); line-height: 1.3; overflow-wrap: anywhere; }
+.tile .amt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; }
+.tile .amt { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.tile .st { font-size: 10.5px; color: var(--muted); }
+.resolved { font-size: 12px; color: var(--muted); display: grid; gap: 3px; }
+.resolved .rerr { color: var(--bad); }
+
+dl.cond { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 13.5px; }
+dl.cond dt { color: var(--muted); }
+dl.cond dd { margin: 0; font-family: var(--font-mono); }
+
+.run-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.run { font: inherit; font-weight: 600; font-size: 15px; background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 10px 22px; cursor: pointer; }
+.run:disabled { opacity: .6; cursor: progress; }
+.linkish { font: inherit; font-size: 12.5px; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; }
+.busy { font-size: 12.5px; color: var(--muted); }
+
+details.yaml { border-top: 1px solid var(--line); padding-top: 10px; }
+details.yaml summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--accent); }
+details.yaml pre { margin: 10px 0 0; padding: 12px; background: var(--surface-2); border-radius: 6px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 12px; line-height: 1.55; overflow-x: auto; white-space: pre; }
+
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+.flow .step { padding: 4px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); white-space: nowrap; }
+.flow .arr { color: var(--muted); }
+.route { display: grid; gap: 4px; font-size: 12.5px; }
+.route .r { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 2px 8px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--line); }
+.chip .code { font-family: var(--font-mono); font-weight: 600; }
+.route .why { color: var(--muted); }
+.placeholder { color: var(--muted); font-size: 14px; padding: 24px 0; }
+
+.gate { border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; border: 1px solid; }
+.gate.ok { background: var(--ok-soft); border-color: var(--ok); }
+.gate.warn { background: var(--warn-soft); border-color: var(--warn); }
+.gate.bad { background: var(--bad-soft); border-color: var(--bad); }
+.gate.na { background: var(--idle-soft); border-color: var(--line); }
+.gate .g-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.gate .g-verdict { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.gate.ok .g-verdict { color: var(--ok); } .gate.warn .g-verdict { color: var(--warn); } .gate.bad .g-verdict { color: var(--bad); } .gate.na .g-verdict { color: var(--idle); }
+.gate ul { margin: 0; padding-left: 18px; font-size: 13px; }
+.gate .groups { font-size: 12px; color: var(--muted); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card.wide { grid-column: 1 / -1; }
+.card.dim { background: var(--surface-2); }
+.c-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.c-code { font-family: var(--font-mono); font-weight: 600; font-size: 13px; }
+.c-name { font-weight: 600; font-size: 15px; margin-right: auto; }
+.badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 3px; border: 1px solid currentColor; font-family: var(--font-mono); white-space: nowrap; }
+.f-L0 { color: var(--f-L0); } .f-L1 { color: var(--f-L1); } .f-L2 { color: var(--f-L2); } .f-L3 { color: var(--f-L3); } .f-T { color: var(--f-T); }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); } .pill.na, .pill.wait { background: var(--idle-soft); color: var(--idle); }
+.c-sum { font-size: 14px; }
+.kv { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 3px 12px; font-size: 13px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums; font-family: var(--font-mono); overflow-wrap: anywhere; }
+.warnbox { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 8px 10px; font-size: 13px; border-radius: 0 4px 4px 0; }
+.meta { display: grid; gap: 4px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.meta .row { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.meta .mono { color: var(--ink); }
+.srcs { display: flex; flex-wrap: wrap; gap: 5px; }
+.src { font-size: 11.5px; padding: 1px 7px; border-radius: 3px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+.src .part { font-weight: 600; } .src .part.open { color: var(--ok); } .src .part.restricted { color: var(--warn); }
+.caveat { font-size: 12.5px; color: var(--muted); display: grid; gap: 2px; }
+.caveat span::before { content: "한계 · "; color: var(--warn); font-weight: 600; }
+.tbl { overflow-x: auto; }
+table.t { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+table.t th, table.t td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.t th { color: var(--muted); font-weight: 500; font-size: 11.5px; }
+table.t td.hl { color: var(--f-L2); font-weight: 600; }
+.chart { overflow-x: auto; }
+.chart svg { display: block; width: 100%; max-width: 620px; height: auto; }
+.chart svg text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart svg .lbl { fill: var(--ink); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.chart svg .grid { stroke: var(--line); stroke-dasharray: 2 3; }
+.legend-line { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+.legend-line i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+.xcheck { font-size: 12.5px; display: grid; gap: 4px; }
+.xcheck .bad { color: var(--bad); font-weight: 600; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 16px; font-size: 12.5px; }
+.legend div { display: flex; gap: 8px; align-items: baseline; }
+.legend .badge { flex: none; }
+footer.foot { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">materials-sim-lab · v0</div>
+      <h1>가상 조합 실험실</h1>
+      <p>레시피를 고르고 실행하면 공공 데이터와 오픈 계산 엔진이 실제로 계산합니다.</p>
+    </div>
+    <div class="live"><b>실제 계산</b><span id="engines">Materials Project · PubChem · Cantera(NASA) · PHREEQC · pymatgen</span></div>
+  </header>
+
+  <nav class="presets" id="presets" aria-label="레시피"></nav>
+
+  <main class="work">
+    <section class="panel" aria-labelledby="bench-title">
+      <div><div class="eyebrow">작업대</div><h2 id="bench-title">레시피</h2></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="resolved" id="resolved"></div>
+      <dl class="cond" id="cond"></dl>
+      <div class="run-row">
+        <button class="run" id="run" type="button">실행</button>
+        <button class="linkish" id="rerun" type="button" hidden>캐시 없이 다시 계산</button>
+        <span class="busy" id="busy" aria-live="polite"></span>
+      </div>
+      <details class="yaml"><summary>레시피 파일 (YAML)</summary><pre id="yaml"></pre></details>
+    </section>
+
+    <section class="panel" aria-labelledby="report-title">
+      <div><div class="eyebrow">리포트</div><h2 id="report-title">시험 결과</h2></div>
+      <div id="report"><p class="placeholder">왼쪽 [실행]을 누르면 계산을 시작합니다. 처음 실행하는 화학계는 Materials Project 조회 때문에 10~20초 걸릴 수 있습니다.</p></div>
+      <div class="legend" aria-label="충실도 범례">
+        <div><span class="badge f-L0">L0</span><span>조회·규칙 — 공공 DB 값과 규칙</span></div>
+        <div><span class="badge f-L1">L1</span><span>ML 대리모델 (4단계)</span></div>
+        <div><span class="badge f-L2">L2</span><span>범용 원자간 포텐셜 (4단계)</span></div>
+        <div><span class="badge f-L3">L3</span><span>DFT·상용 도구 (6단계)</span></div>
+        <div><span class="badge f-T">T</span><span>평형 트랙 — 열역학 DB로 평형 계산</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>모든 결과에는 충실도·엔진 버전·에너지 기준·출처 라이선스가 붙습니다. 같은 입력은 캐시에서 즉시 다시 보여 줍니다.</p>
+    <p id="prov"></p>
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const sub = (f) => esc(f).replace(/(\d+(?:\.\d+)?)/g, "<sub>$1</sub>");
+const STATUS = { "ok": ["완료", "ok"], "warning": ["주의", "warn"], "not-applicable": ["해당 없음", "na"], "pending": ["대기", "wait"], "failed": ["실패", "bad"] };
+const PART = { open: "배포 가능", restricted: "연구용" };
+const STATE = { solid: "고체", liquid: "액체", gas: "기체", aqueous: "수용액" };
+let recipes = [], current = 0, timer = null;
+
+function fmt(v) {
+  if (typeof v === "number") {
+    if (Math.abs(v) < 1e-9) return "0";
+    if (Number.isInteger(v)) return v.toLocaleString();
+    const a = Math.abs(v);
+    return a >= 100 ? v.toFixed(1) : a >= 1 ? v.toFixed(2) : v.toPrecision(3);
+  }
+  if (typeof v === "boolean") return v ? "예" : "아니오";
+  return esc(v);
+}
+
+function tileHtml(ref, amount, state, name, formula, err) {
+  const [ns, key] = ref.split(/:(.*)/s);
+  const big = formula ? sub(formula) : esc(key.length > 12 ? key.slice(0, 12) + "…" : key);
+  return `<div class="tile${err ? " err" : ""}"><div class="ns"><span>${esc(ns)}</span></div><div class="sym">${big}</div>
+    <div><div class="nm">${esc(name || key)}</div><div class="amt-row"><span class="amt">${esc(amount || "—")}</span><span class="st">${STATE[state] || ""}</span></div></div></div>`;
+}
+
+function select(i) {
+  current = i;
+  const r = recipes[i];
+  document.querySelectorAll(".preset").forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+  $("tiles").innerHTML = r.components.map(c => tileHtml(c.ref, c.amount, c.state, "", null, null)).join("");
+  $("resolved").innerHTML = "";
+  const cond = Object.entries(r.conditions).map(([k, v]) => `<dt>${esc({ T: "온도", P: "압력", atmosphere: "분위기", pH: "pH", time: "시간" }[k] || k)}</dt><dd>${esc(v)}</dd>`);
+  cond.push(`<dt>모드</dt><dd>${r.mode === "system" ? "원소 계 탐색" : "혼합"}</dd>`, `<dt>시험</dt><dd>${Array.isArray(r.assays) ? r.assays.join(", ") : "자동 선택"}</dd>`);
+  $("cond").innerHTML = cond.join("");
+  $("yaml").textContent = r.yaml;
+  $("report").innerHTML = `<p class="placeholder">[실행]을 누르면 <b>${esc(r.name)}</b>를 계산합니다.</p>`;
+  $("rerun").hidden = true; $("prov").textContent = "";
+  try { localStorage.setItem("vlab-live", r.file); } catch (e) {}
+  history.replaceState(null, "", "#" + r.id.replace(/^rcp-/, ""));
+}
+
+async function run(noCache = false) {
+  const r = recipes[current];
+  $("run").disabled = true; $("rerun").hidden = true;
+  const t0 = Date.now();
+  $("busy").textContent = "계산 중…";
+  timer = setInterval(() => { $("busy").textContent = `계산 중… ${((Date.now() - t0) / 1000).toFixed(0)}초`; }, 500);
+  try {
+    const res = await fetch("/api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: r.file, no_cache: noCache }) });
+    if (!res.ok) throw new Error(`서버 오류 ${res.status}: ${await res.text()}`);
+    render(await res.json());
+    $("busy").textContent = `완료 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
+  } catch (e) {
+    $("report").innerHTML = `<div class="warnbox">실행하지 못했습니다. ${esc(e.message)}</div>`;
+    $("busy").textContent = "";
+  } finally {
+    clearInterval(timer); $("run").disabled = false; $("rerun").hidden = false;
+  }
+}
+
+function render(rep) {
+  $("tiles").innerHTML = rep.components.map(c => tileHtml(c.ref, c.amount, c.state, c.name, c.formula, c.error)).join("");
+  $("resolved").innerHTML = rep.components.map(c => c.error
+    ? `<span class="rerr">${esc(c.ref)} — ${esc(c.error)}</span>`
+    : `<span>${esc(c.ref)} → ${esc(c.via)}${c.cid ? ` · CID ${c.cid}` : ""}${c.groups.length ? ` · 반응성 그룹: ${esc(c.groups.join(", "))}` : ""}</span>`).join("");
+
+  const s0 = rep.results.find(x => x.assay === "S0");
+  const rest = rep.results.filter(x => x.assay !== "S0");
+  const ran = rep.results.filter(x => ["ok", "warning"].includes(x.status)).length;
+  const steps = ["성분 해석 " + rep.components.filter(c => !c.error).length + "/" + rep.components.length, "S0 안전 게이트", "라우터 " + rep.routed.length + "개 선택", `계산 ${ran}개`, "리포트"];
+  let html = `<div class="flow">${steps.map(s => `<span class="step">${s}</span>`).join('<span class="arr" aria-hidden="true">→</span>')}</div>`;
+  html += `<div class="route">${rep.routed.map(r => `<div class="r"><span class="chip"><span class="code">${r.code}</span>${esc(r.name)}</span><span class="why">${esc(r.reason)}</span></div>`).join("")}</div>`;
+  if (s0) html += gate(s0, rep);
+  html += `<div class="cards">${rest.map(x => card(x, rep)).join("")}</div>`;
+  $("report").innerHTML = html;
+  const any = rep.results[0];
+  if (any) {
+    const v = any.provenance.engine_versions;
+    $("engines").textContent = Object.entries(v).map(([k, x]) => `${k} ${x}`).join(" · ");
+    $("prov").textContent = `레시피 ${rep.recipe.id} · 서버 처리 ${rep.elapsed}초 · msl ${any.provenance.msl_version}`;
+  }
+}
+
+function srcChips(x, rep) {
+  return x.sources.map(s => {
+    const lic = rep.licenses[s.license] || { name: s.license, partition: "restricted" };
+    return `<span class="src">${esc(rep.source_names[s.source] || s.source)}${s.version ? " · " + esc(s.version) : ""} · ${esc(s.license)} · <span class="part ${lic.partition}">${PART[lic.partition]}</span></span>`;
+  }).join("");
+}
+
+function gate(x, rep) {
+  const d = x.data;
+  if (x.status === "not-applicable") return `<div class="gate na"><div class="g-head"><span class="eyebrow">S0 혼합 안전 게이트</span><span class="g-verdict">해당 없음</span><span>${esc(d.summary)}</span></div></div>`;
+  const items = (d.pairs || []).map(p => `<li><b>${esc(p.verdict)}</b> · ${esc(p.name)} (${esc(p.a)} × ${esc(p.b)}) — ${esc(p.hazards.join(", "))}${p.gases.length ? " · 기체: " + esc(p.gases.join(", ")) : ""}. ${esc(p.note)}</li>`).join("");
+  const groups = (d.groups || []).map(g => `${esc(g.name)}: ${g.groups.length ? esc(g.groups.join(", ")) : "정보 없음"}`).join(" / ");
+  return `<div class="gate ${d.verdict_code}"><div class="g-head"><span class="eyebrow">S0 혼합 안전 게이트</span><span class="g-verdict">${esc(d.verdict)}</span><span>${esc(d.title)}</span></div>
+    ${items ? `<ul>${items}</ul>` : ""}<div class="groups">반응성 그룹 — ${groups}</div>
+    <div class="caveat">${x.caveats.map(c => `<span>${esc(c)}</span>`).join("")}</div>
+    <div class="srcs">${srcChips(x, rep)}</div></div>`;
+}
+
+function card(x, rep) {
+  const [label, cls] = STATUS[x.status] || [x.status, "na"];
+  const d = x.data || {};
+  const quiet = ["pending", "not-applicable"].includes(x.status);
+  const wide = d.curves || d.bounds || (d.table && d.table.columns.length > 3);
+  let body = `<p class="c-sum">${esc(d.summary || "")}</p>`;
+  if (x.warnings.length && x.status !== "failed") body += x.warnings.map(w => `<div class="warnbox">${esc(w)}</div>`).join("");
+  if (x.values.length) body += `<dl class="kv">${x.values.map(v => `<dt>${esc(v.name)}</dt><dd>${fmt(v.value)}${v.unit ? " " + esc(v.unit) : ""}</dd>`).join("")}</dl>`;
+  if (d.curves) body += chartCurves(d);
+  if (d.bounds) body += chartBounds(d.bounds);
+  if (d.table) body += table(d.table);
+  if (d.crosscheck && d.crosscheck.checks && d.crosscheck.checks.length) body += crosscheck(d.crosscheck);
+  if (d.kosha && d.kosha.length) body += `<details><summary class="eyebrow">KOSHA MSDS · 15. 법적 규제현황</summary>${d.kosha.map(k => `<div class="xcheck"><b>${esc(k.name)}</b> <span class="mono">MSDS ${esc(k.chem_id)} · 갱신 ${esc(k.updated || "")}</span>${k.items.map(([n, t]) => `<div>${esc(n)}: ${esc(t.split("|").map(x => x.trim()).filter(Boolean).join(" · "))}</div>`).join("")}</div>`).join("")}</details>`;
+  if (d.si && Object.keys(d.si).length) body += `<details><summary class="eyebrow">포화지수 SI 상위</summary>${table({ columns: ["광물", "SI"], rows: Object.entries(d.si) })}</details>`;
+  if (!quiet) {
+    body += `<div class="meta"><div class="row"><span>엔진 <span class="mono">${esc(x.engine)} ${esc(x.engine_version)}</span></span>${x.energy_reference ? `<span>에너지 기준 <span class="mono">${esc(x.energy_reference)}</span></span>` : ""}<span>조건 <span class="mono">${esc(x.conditions_basis)}</span></span><span>입력 해시 <span class="mono">${x.provenance.input_hash.slice(0, 10)}</span></span></div>
+      <div class="srcs">${srcChips(x, rep)}</div></div>`;
+    if (x.caveats.length) body += `<div class="caveat">${x.caveats.map(c => `<span>${esc(c)}</span>`).join("")}</div>`;
+  }
+  return `<article class="card${wide ? " wide" : ""}${quiet ? " dim" : ""}"><div class="c-head"><span class="c-code">${x.assay}</span><span class="c-name">${esc(rep.assay_names[x.assay] || x.assay)}</span><span class="badge f-${x.fidelity}">${x.fidelity}</span><span class="pill ${cls}">${label}</span></div>${body}</article>`;
+}
+
+function table(t) {
+  return `<div class="tbl"><table class="t"><thead><tr>${t.columns.map(c => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${t.rows.map(r => `<tr>${r.map((c, i) => `<td${typeof c === "string" && c.includes("L2") ? ' class="hl"' : ""}>${i === 0 && typeof c === "string" && /^[A-Z]/.test(c) && !c.includes(" ") ? sub(c) : fmt(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function crosscheck(c) {
+  const rows = c.checks.map(k => {
+    if (!("decomposed" in k)) return `<div>${esc(k.formula)}: ${esc(k.note || "")}</div>`;
+    const prod = Object.entries(k.products).map(([n, v]) => `${esc(n)} ${fmt(v)}`).join(", ");
+    return `<div${k.mismatch ? ' class="bad"' : ""}>${esc(k.formula)} @ ${fmt(k.T_used)} K — NASA 실험 열화학: ${k.decomposed ? "분해됨" : "안정"} (${prod})${k.mp_gibbs_e_hull_meV !== undefined ? ` · MP+Gibbs 근사 E_hull ${fmt(k.mp_gibbs_e_hull_meV)} meV/atom` : ""}${k.note ? " · " + esc(k.note) : ""}</div>`;
+  }).join("");
+  return `<div class="xcheck"><div class="eyebrow">평형 트랙 교차검증 (NASA 실험 열화학)</div>${rows}</div>`;
+}
+
+function chartCurves(d) {
+  const W = 620, H = 270, L = 62, R = 20, T = 20, B = 46, pw = W - L - R, ph = H - T - B;
+  const all = d.curves.flatMap(c => c.kinks.map(k => k.e));
+  let y0 = Math.max(5, ...all), y1 = Math.min(-5, ...all);
+  const pad = (y0 - y1) * 0.12; y0 += pad; y1 -= pad;
+  const X = x => L + x * pw, Y = e => T + (y0 - e) / (y0 - y1) * ph;
+  const colors = ["var(--muted)", "var(--accent)"];
+  let g = "";
+  const step = niceStep((y0 - y1) / 4);
+  for (let t = Math.ceil(y1 / step) * step; t <= y0; t += step) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${Math.round(t)}</text>`;
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) g += `<text x="${X(t)}" y="${H - B + 16}" text-anchor="middle">${t}</text>`;
+  g += `<line x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink)" stroke-width="1"/>`;
+  if (d.recipe_x !== null && d.recipe_x !== undefined) g += `<line x1="${X(d.recipe_x)}" x2="${X(d.recipe_x)}" y1="${T}" y2="${T + ph}" stroke="var(--f-T)" stroke-dasharray="5 4"/><text class="lbl" x="${X(d.recipe_x) + 5}" y="${T + 12}">레시피 x=${d.recipe_x.toFixed(2)}</text>`;
+  d.curves.forEach((c, i) => {
+    const col = colors[Math.min(i, 1) + (d.curves.length === 1 ? 1 : 0)] || "var(--accent)";
+    g += `<polyline fill="none" stroke="${col}" stroke-width="${i === d.curves.length - 1 ? 2.4 : 1.6}" points="${c.kinks.map(k => `${X(k.x).toFixed(1)},${Y(k.e).toFixed(1)}`).join(" ")}"/>`;
+    g += c.kinks.map(k => `<circle cx="${X(k.x)}" cy="${Y(k.e)}" r="3" fill="${col}"><title>x=${k.x} · ${k.e} meV/atom · ${esc(k.rxn)}</title></circle>`).join("");
+    const low = c.kinks.reduce((a, b) => (b.e < a.e ? b : a));
+    if (low.e < -1) {
+      const prod = low.rxn.split("->")[1] || low.rxn;
+      g += `<text class="lbl" x="${X(low.x)}" y="${Y(low.e) + 18}" text-anchor="middle">${esc(prod.trim().replace(/^[\d.]+\s*/, "").replace(/\s\+\s[\d.]+\s*/g, " + "))}</text>`;
+    }
+  });
+  g += `<text x="${L}" y="${T - 6}">반응에너지 (meV/atom)</text><text x="${W - R}" y="${H - 8}" text-anchor="end">혼합비 x (${esc(d.labels[0])} 비율) →</text>`;
+  g += `<text x="${L + 4}" y="${Y(0) - 6}">${esc(d.labels[1])}만</text><text x="${W - R - 4}" y="${Y(0) - 6}" text-anchor="end">${esc(d.labels[0])}만</text>`;
+  const legend = d.curves.map((c, i) => `<span><i style="background:${colors[Math.min(i, 1) + (d.curves.length === 1 ? 1 : 0)]}"></i>${esc(c.label)}</span>`).join("");
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="혼합비에 따른 반응에너지">${g}</svg></div><div class="legend-line">${legend}<span>점에 마우스를 올리면 반응식</span></div>`;
+}
+
+function niceStep(raw) {
+  const p = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / p;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * p;
+}
+
+function chartBounds(b) {
+  const W = 620, H = 160, L = 20, R = 20, max = Math.max(...b.components.map(c => c.value)) * 1.1, pw = W - L - R;
+  const X = v => L + v / max * pw;
+  let g = "";
+  const step = niceStep(max / 5);
+  for (let t = 0; t <= max; t += step) g += `<line class="grid" x1="${X(t)}" x2="${X(t)}" y1="30" y2="108"/><text x="${X(t)}" y="126" text-anchor="middle">${Math.round(t)}</text>`;
+  g += `<rect x="${X(b.reuss)}" y="52" width="${X(b.voigt) - X(b.reuss)}" height="30" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>`;
+  g += `<rect x="${X(b.hs[0])}" y="58" width="${X(b.hs[1]) - X(b.hs[0])}" height="18" fill="var(--accent-mid)"/>`;
+  g += `<text class="lbl" x="${X(b.reuss)}" y="46">Reuss ${b.reuss.toFixed(1)}</text><text class="lbl" x="${X(b.voigt)}" y="98" text-anchor="middle">Voigt ${b.voigt.toFixed(1)}</text>`;
+  b.components.forEach((c, i) => { g += `<line x1="${X(c.value)}" x2="${X(c.value)}" y1="30" y2="108" stroke="var(--ink)" stroke-width="1.3"/><text class="lbl" x="${X(c.value) + (i ? -5 : 5)}" y="${i ? 46 : 120}" text-anchor="${i ? "end" : "start"}">${esc(c.name.split(" (")[0])} ${c.value}</text>`; });
+  g += `<text x="${W - R}" y="${H - 6}" text-anchor="end">영률 (${esc(b.unit)}) →</text>`;
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="복합재 영률 경계">${g}</svg></div><div class="legend-line"><span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>Voigt–Reuss (섬유 배열 극단)</span><span><i style="background:var(--accent-mid)"></i>Hashin–Shtrikman (무작위 등방)</span></div>`;
+}
+
+async function init() {
+  recipes = await (await fetch("/api/recipes")).json();
+  $("presets").innerHTML = recipes.map((r, i) => `<button class="preset" type="button" id="preset-${esc(r.id)}" data-i="${i}" aria-pressed="false"><span class="p-title">${esc(r.name)}</span><span class="p-sub">${esc(r.components.map(c => c.ref).join(" + "))}</span></button>`).join("");
+  $("presets").addEventListener("click", e => { const b = e.target.closest(".preset"); if (b) select(Number(b.dataset.i)); });
+  $("run").addEventListener("click", () => run(false));
+  $("rerun").addEventListener("click", () => run(true));
+  let start = recipes.findIndex(r => "#" + r.id.replace(/^rcp-/, "") === location.hash);
+  if (start < 0) { try { start = recipes.findIndex(r => r.file === localStorage.getItem("vlab-live")); } catch (e) {} }
+  select(Math.max(0, start));
+  window.addEventListener("hashchange", () => {
+    const i = recipes.findIndex(r => "#" + r.id.replace(/^rcp-/, "") === location.hash);
+    if (i >= 0 && i !== current) select(i);
+  });
+}
+init();
+</script>
+</body>
+</html>

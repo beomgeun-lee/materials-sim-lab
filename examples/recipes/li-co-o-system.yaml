@@ -1,0 +1,9 @@
+# 사용 장면 4 — 원소 계 탐색 (계획서 1절). 기대: LiCoO2 등 안정상, 준안정 후보는 L2 로 승격
+id: rcp-li-co-o-system
+name: Li-Co-O 계 안정 화합물 탐색
+mode: system
+components:
+  - ref: element:Li
+  - ref: element:Co
+  - ref: element:O
+assays: [A1, A7]

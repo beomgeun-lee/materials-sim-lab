@@ -1,0 +1,259 @@
+# 라이선스 정책 표 — 소스(sources.yaml)와 엔진(engines.yaml)은 여기 id 로만 라이선스를 적는다.
+#
+# 파티션 규칙 (msl.registry.models.LicenseEntry.partition):
+#   open       = 상업 이용 true, 재배포 true, 변경금지 아님 → 배포 빌드에 넣을 수 있다
+#   restricted = 그 밖의 전부 (모르는 것(null)도 restricted) → 연구용 파티션에만 둔다
+# copyleft 규칙 (engines.yaml 검사):
+#   strong(GPL)   → isolation 이 worker / excluded / reference-only 여야 한다
+#   network(AGPL) → 제품(product)에서 쓸 수 없다
+# 동일조건: SA 와, 데이터에 붙은 GPL 은 파생물에 같은 라이선스를 요구한다 (same_license_required)
+#
+# 이 표를 고칠 때는 근거(url·note)를 함께 적는다. 법률 자문이 아니다.
+
+# ── 퍼블릭 도메인·자유 이용 ─────────────────────────────────────────────
+- id: CC0-1.0
+  name: Creative Commons Zero 1.0
+  commercial_use: true
+  redistribution: true
+  url: https://creativecommons.org/publicdomain/zero/1.0/
+
+- id: public-domain
+  name: 퍼블릭 도메인 (미국 연방정부 저작물 등)
+  commercial_use: true
+  redistribution: true
+  note: 17 U.S.C. §105. 제3자 저작물이 섞인 데이터는 해당 부분 제외
+
+- id: USGS-public
+  name: USGS 소프트웨어·데이터 이용 조건
+  commercial_use: true
+  redistribution: true
+  note: 자유 이용·재배포, 수정 시 수정 사실 고지 (PHREEQC 등)
+
+- id: KR-datagokr-unrestricted
+  name: 공공데이터포털 '이용허락범위 제한 없음'
+  commercial_use: true
+  redistribution: true
+  note: 기관 자체 약관이 따로 있으면 그쪽을 확인한다 (예 KOSHA MSDS 는 문구 상충 → unknown 처리)
+
+# ── Creative Commons ─────────────────────────────────────────────────────
+- id: CC-BY-4.0
+  name: Creative Commons Attribution 4.0
+  commercial_use: true
+  redistribution: true
+  url: https://creativecommons.org/licenses/by/4.0/
+
+- id: CC-BY-SA-3.0
+  name: Creative Commons Attribution-ShareAlike 3.0
+  commercial_use: true
+  redistribution: true
+  share_alike: true
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+
+- id: CC-BY-SA-4.0
+  name: Creative Commons Attribution-ShareAlike 4.0
+  commercial_use: true
+  redistribution: true
+  share_alike: true
+  url: https://creativecommons.org/licenses/by-sa/4.0/
+
+- id: CC-BY-ND-4.0
+  name: Creative Commons Attribution-NoDerivatives 4.0
+  commercial_use: true
+  redistribution: true
+  no_derivatives: true
+  url: https://creativecommons.org/licenses/by-nd/4.0/
+
+- id: CC-BY-NC-4.0
+  name: Creative Commons Attribution-NonCommercial 4.0
+  commercial_use: false
+  redistribution: true
+  url: https://creativecommons.org/licenses/by-nc/4.0/
+
+- id: CC-BY-NC-SA-4.0
+  name: Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+  commercial_use: false
+  redistribution: true
+  share_alike: true
+  url: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+- id: CC-BY-NC-ND-4.0
+  name: Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
+  commercial_use: false
+  redistribution: true
+  no_derivatives: true
+  url: https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+# ── 공공누리(KOGL)·기타 정부 라이선스 ────────────────────────────────────
+- id: KOGL-1
+  name: 공공누리 제1유형 (출처표시)
+  commercial_use: true
+  redistribution: true
+  url: https://www.kogl.or.kr/
+
+- id: KOGL-2
+  name: 공공누리 제2유형 (출처표시 + 상업적 이용금지)
+  commercial_use: false
+  redistribution: true
+  url: https://www.kogl.or.kr/
+
+- id: KOGL-3
+  name: 공공누리 제3유형 (출처표시 + 변경금지)
+  commercial_use: true
+  redistribution: true
+  no_derivatives: true
+  url: https://www.kogl.or.kr/
+
+- id: KOGL-4
+  name: 공공누리 제4유형 (출처표시 + 상업적 이용금지 + 변경금지)
+  commercial_use: false
+  redistribution: true
+  no_derivatives: true
+  url: https://www.kogl.or.kr/
+
+- id: OGL-UK-3.0
+  name: Open Government Licence v3.0 (UK)
+  commercial_use: true
+  redistribution: true
+  url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+# ── 소프트웨어: 허용적 ───────────────────────────────────────────────────
+- id: MIT
+  name: MIT License
+  commercial_use: true
+  redistribution: true
+
+- id: BSD-2-Clause
+  name: BSD 2-Clause License
+  commercial_use: true
+  redistribution: true
+
+- id: BSD-3-Clause
+  name: BSD 3-Clause License
+  commercial_use: true
+  redistribution: true
+
+- id: BSD-3-Clause-LBNL
+  name: BSD 3-Clause LBNL 변형 (mp-api 등)
+  commercial_use: true
+  redistribution: true
+
+- id: Apache-2.0
+  name: Apache License 2.0
+  commercial_use: true
+  redistribution: true
+
+- id: NIST-software
+  name: NIST 소프트웨어 공개 조건
+  commercial_use: true
+  redistribution: true
+  note: 미국 내 퍼블릭 도메인, 무보증 고지 (ALIGNN 등 — 저장소 표기가 불명확하면 unknown 사용)
+
+# ── 소프트웨어: 카피레프트 ───────────────────────────────────────────────
+- id: MPL-2.0
+  name: Mozilla Public License 2.0
+  commercial_use: true
+  redistribution: true
+  copyleft: weak
+  note: 파일 단위 카피레프트
+
+- id: LGPL-2.1
+  name: GNU LGPL 2.1 (or later 포함)
+  commercial_use: true
+  redistribution: true
+  copyleft: weak
+  note: 동적 import·교체 가능 상태 유지, 라이브러리 수정분 공개
+
+- id: LGPL-3.0
+  name: GNU LGPL 3.0
+  commercial_use: true
+  redistribution: true
+  copyleft: weak
+
+- id: GPL-2.0
+  name: GNU GPL 2.0 (or later 포함)
+  commercial_use: true
+  redistribution: true
+  copyleft: strong
+  note: Python import 는 링크로 간주될 수 있음 → 격리 워커 전용
+
+- id: GPL-3.0
+  name: GNU GPL 3.0
+  commercial_use: true
+  redistribution: true
+  copyleft: strong
+
+- id: AGPL-3.0
+  name: GNU AGPL 3.0
+  commercial_use: true
+  redistribution: true
+  copyleft: network
+  note: 네트워크 서비스 이용자에게도 소스 공개 의무 → 서버 제품 제외
+
+# ── 모델 가중치·벤더 자체 약관 ───────────────────────────────────────────
+- id: ASL
+  name: Academic Software License (ICAMS GRACE, MACE 비-MP 가중치 등)
+  commercial_use: false
+  redistribution: null
+  note: 비상업·학술 전용
+
+- id: FAIR-Chemistry-License-v1
+  name: FAIR Chemistry License v1 (Meta UMA)
+  commercial_use: true
+  redistribution: null
+  note: 이용정책(AUP) 준수, HF 게이트, 제재 지역 제외. 가중치 재배포 범위 미확인 → restricted
+
+- id: OMat24-model-license
+  name: Meta OMat24 모델 약관 (eSEN, eqV2)
+  commercial_use: true
+  redistribution: null
+  note: 이용정책 준수. 재배포 범위 미확인 → restricted
+
+# ── 제한·허가 필요 ───────────────────────────────────────────────────────
+- id: academic-only
+  name: 학술·비상업 전용 (개별 약관)
+  commercial_use: false
+  redistribution: null
+  note: AFLOW, ORCA 학술판, GEM-Selektor GUI 등
+
+- id: noncommercial-custom
+  name: 비상업 조건의 개별 약관
+  commercial_use: false
+  redistribution: true
+  note: 무료·인용 조건이지만 판매·상업 출판 금지 (Burcat 등)
+
+- id: NIST-SRD
+  name: NIST Standard Reference Data (SRD Act 저작권)
+  commercial_use: null
+  redistribution: false
+  note: 복제·재배포에 NIST 허가 필요 → 내부 검증 전용
+
+- id: permission-required
+  name: 사전 허가·협약 필요
+  commercial_use: null
+  redistribution: false
+  note: KRISS 참조표준, KOMIS, NIMS CPDDB, Thermoddem 등
+
+- id: terms-restricted
+  name: 사이트 약관상 대량 추출·재배포 금지
+  commercial_use: null
+  redistribution: false
+  note: ChemSpider, ECHA CHEM 등 개별 조회만 허용
+
+- id: proprietary
+  name: 상용 (계약 조건)
+  commercial_use: null
+  redistribution: false
+  note: ICSD, CSD, VASP, Thermo-Calc, FactSage 등 — 교차검증 기준으로만
+
+# ── 미확인 ───────────────────────────────────────────────────────────────
+- id: citation-only
+  name: 명시 라이선스 없음, 인용만 요구
+  commercial_use: null
+  redistribution: null
+  note: AMCSD, RRUFF 등 — 확인 전까지 restricted
+
+- id: unknown
+  name: 미확인
+  commercial_use: null
+  redistribution: null
+  note: 확인 전까지 restricted. license_note 에 현재 파악된 내용을 적는다

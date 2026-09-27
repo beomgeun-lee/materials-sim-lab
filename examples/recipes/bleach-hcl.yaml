@@ -1,0 +1,18 @@
+# 사용 장면 2 — 수용액 혼합의 안전 판정 (계획서 1절). 기대: S0 부적합(염소 기체 발생)
+id: rcp-bleach-hcl
+name: 차아염소산나트륨 수용액 + 염산
+components:
+  - ref: cas:7681-52-9       # 차아염소산나트륨
+    amount: 0.05 mol
+    state: aqueous
+  - ref: cas:7647-01-0       # 염화수소
+    amount: 0.1 mol
+    state: aqueous
+  - ref: cas:7732-18-5       # 물
+    amount: 1 L
+    state: liquid
+conditions:
+  T: 25 °C
+  P: 1 atm
+assays: [S0, A4, A10]
+notes: 가정용 세정제 혼합 사고의 대표 사례. 위험을 알리는 검증용 레시피다.

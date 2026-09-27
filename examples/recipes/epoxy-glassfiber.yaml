@@ -1,0 +1,13 @@
+# 사용 장면 5 — 블렌드·복합재 물성 (계획서 1절). 기대: 강성·밀도의 Hashin–Shtrikman 경계
+id: rcp-epoxy-glassfiber
+name: 에폭시 + 유리섬유 30 vol%
+components:
+  - ref: material:epoxy-generic
+    amount: 70 vol%
+    state: solid
+  - ref: material:e-glass-fiber
+    amount: 30 vol%
+    state: solid
+conditions:
+  T: 25 °C
+assays: [S0, A8]

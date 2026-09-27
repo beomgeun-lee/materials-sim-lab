@@ -1,0 +1,621 @@
+<title>가상 조합 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #EDF1F2;
+  --surface: #FFFFFF;
+  --surface-2: #F5F7F8;
+  --ink: #14212A;
+  --muted: #56666E;
+  --line: #D3DCE0;
+  --accent: #2A55C9;
+  --accent-soft: #E2E9FA;
+  --ok: #1B7A52;
+  --ok-soft: #DFF1E8;
+  --warn: #9A6200;
+  --warn-soft: #FAEFD8;
+  --bad: #B3302A;
+  --bad-soft: #F8E1DF;
+  --idle: #66737B;
+  --idle-soft: #E9EDEF;
+  --f-L0: #4A5A65;
+  --f-L1: #0E7780;
+  --f-L2: #6843BE;
+  --f-L3: #86388B;
+  --f-T: #9C4F28;
+  --tile: #FBFCFC;
+  --font-display: "Hahmlet", "Noto Serif KR", "AppleMyungjo", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0E1519; --surface: #152028; --surface-2: #1A2731; --ink: #E2EBEE; --muted: #93A3AB; --line: #2A3A45;
+    --accent: #86A3FF; --accent-soft: #1F2E52;
+    --ok: #5FCB98; --ok-soft: #133526; --warn: #E8B454; --warn-soft: #3A2C10; --bad: #F08A80; --bad-soft: #3E1A18;
+    --idle: #9AA7AE; --idle-soft: #22303A;
+    --f-L0: #A9B8C2; --f-L1: #5CC9D1; --f-L2: #B39BF2; --f-L3: #D78FDB; --f-T: #E59A6E; --tile: #182430;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0E1519; --surface: #152028; --surface-2: #1A2731; --ink: #E2EBEE; --muted: #93A3AB; --line: #2A3A45;
+  --accent: #86A3FF; --accent-soft: #1F2E52;
+  --ok: #5FCB98; --ok-soft: #133526; --warn: #E8B454; --warn-soft: #3A2C10; --bad: #F08A80; --bad-soft: #3E1A18;
+  --idle: #9AA7AE; --idle-soft: #22303A;
+  --f-L0: #A9B8C2; --f-L1: #5CC9D1; --f-L2: #B39BF2; --f-L3: #D78FDB; --f-T: #E59A6E; --tile: #182430;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 18px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+sub { font-size: 0.72em; line-height: 0; }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* 머리 */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.brand h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 3.4vw, 34px); letter-spacing: -0.01em; }
+.brand p { color: var(--muted); margin-top: 4px; }
+.mock-note {
+  display: flex; gap: 10px; align-items: center; padding: 8px 12px; border: 1px dashed var(--warn);
+  background: var(--warn-soft); color: var(--ink); border-radius: 6px; font-size: 13px; max-width: 460px;
+}
+.mock-note b { color: var(--warn); white-space: nowrap; }
+
+/* 레시피 선택 */
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.preset {
+  text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 8px; padding: 10px 12px; cursor: pointer; font: inherit; display: grid; gap: 2px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.preset:hover { border-color: var(--accent); }
+.preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.preset[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.preset .p-title { font-weight: 600; }
+.preset .p-sub { font-size: 12.5px; color: var(--muted); }
+.preset .p-kind { font-size: 11px; letter-spacing: .06em; color: var(--accent); font-weight: 600; }
+
+/* 작업 영역 */
+.work { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 18px; align-items: start; }
+@media (max-width: 880px) { .work { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; }
+.panel h2 { font-family: var(--font-display); font-weight: 500; font-size: 19px; }
+
+/* 성분 타일 — 주기율표 칸 모양 */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.tile {
+  border: 1.5px solid var(--ink); background: var(--tile); border-radius: 3px; padding: 6px 8px 7px;
+  display: grid; grid-template-rows: auto 1fr auto; min-height: 104px;
+}
+.tile .ns { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 4px; }
+.tile .sym { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.15; align-self: center; overflow-wrap: anywhere; }
+.tile .nm { font-size: 11.5px; color: var(--muted); line-height: 1.3; }
+.tile .amt { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.tile .amt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; }
+.tile .st { font-size: 10.5px; color: var(--muted); }
+
+dl.cond { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 13.5px; }
+dl.cond dt { color: var(--muted); }
+dl.cond dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+details.yaml { border-top: 1px solid var(--line); padding-top: 10px; }
+details.yaml summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--accent); }
+details.yaml summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details.yaml pre {
+  margin: 10px 0 0; padding: 12px; background: var(--surface-2); border-radius: 6px; border: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.55; overflow-x: auto; white-space: pre;
+}
+.yaml-ok { font-size: 12px; color: var(--ok); margin-top: 6px; font-family: var(--font-mono); }
+
+/* 흐름 */
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+.flow .step { padding: 4px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); white-space: nowrap; }
+.flow .step.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.flow .arr { color: var(--muted); }
+
+.route { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 9px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--line); }
+.chip .code { font-family: var(--font-mono); font-weight: 600; }
+.route-why { font-size: 12.5px; color: var(--muted); }
+
+/* 안전 게이트 */
+.gate { border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; border: 1px solid; }
+.gate.ok { background: var(--ok-soft); border-color: var(--ok); }
+.gate.warn { background: var(--warn-soft); border-color: var(--warn); }
+.gate.bad { background: var(--bad-soft); border-color: var(--bad); }
+.gate.na { background: var(--idle-soft); border-color: var(--line); }
+.gate .g-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.gate .g-verdict { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.gate.ok .g-verdict { color: var(--ok); } .gate.warn .g-verdict { color: var(--warn); }
+.gate.bad .g-verdict { color: var(--bad); } .gate.na .g-verdict { color: var(--idle); }
+.gate ul { margin: 0; padding-left: 18px; font-size: 13px; }
+
+/* 시험 카드 */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 10px; align-content: start; }
+.card.wide { grid-column: 1 / -1; }
+.c-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.c-code { font-family: var(--font-mono); font-weight: 600; font-size: 13px; }
+.c-name { font-weight: 600; font-size: 15px; margin-right: auto; }
+.badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 3px; border: 1px solid currentColor; font-family: var(--font-mono); white-space: nowrap; }
+.f-L0 { color: var(--f-L0); } .f-L1 { color: var(--f-L1); } .f-L2 { color: var(--f-L2); } .f-L3 { color: var(--f-L3); } .f-T { color: var(--f-T); }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.wait, .pill.na { background: var(--idle-soft); color: var(--idle); }
+.stage { font-size: 11px; color: var(--muted); }
+.c-sum { font-size: 14px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+.meta { display: grid; gap: 4px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.meta .row { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.meta .mono { color: var(--ink); }
+.srcs { display: flex; flex-wrap: wrap; gap: 5px; }
+.src { font-size: 11.5px; padding: 1px 7px; border-radius: 3px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+.src .part { font-weight: 600; }
+.src .part.open { color: var(--ok); } .src .part.restricted { color: var(--warn); }
+.caveat { font-size: 12.5px; color: var(--muted); display: grid; gap: 2px; }
+.caveat span::before { content: "한계 · "; color: var(--warn); font-weight: 600; }
+
+table.phases { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.phases th, table.phases td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+table.phases th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.tbl { overflow-x: auto; }
+
+.chart { overflow-x: auto; }
+.chart svg { display: block; width: 100%; max-width: 560px; height: auto; }
+.chart svg text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+.chart svg .lbl { fill: var(--ink); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.chart svg .axis { stroke: var(--line); }
+.chart svg .grid { stroke: var(--line); stroke-dasharray: 2 3; }
+.chart-cap { font-size: 12px; color: var(--muted); }
+
+/* 범례 */
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 16px; font-size: 12.5px; }
+.legend div { display: flex; gap: 8px; align-items: baseline; }
+.legend .badge { flex: none; }
+
+footer.foot { font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 14px; }
+footer.foot b { color: var(--ink); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">materials-sim-lab · 교육용 첫 화면</div>
+      <h1>가상 조합 실험실</h1>
+      <p>성분을 작업대에 올리면 안전 판정부터 여러 시험 결과까지 출처·신뢰도와 함께 나옵니다.</p>
+    </div>
+    <div class="mock-note" role="note"><b>화면 목업</b><span>레시피와 출처·라이선스는 실제 프로젝트 파일 그대로입니다. 시험 결과 수치는 화면 설명용 예시값이며, 실제 계산은 2단계부터 붙습니다.</span></div>
+  </header>
+
+  <nav class="presets" id="presets" aria-label="데모 레시피"></nav>
+
+  <main class="work">
+    <section class="panel" aria-labelledby="bench-title">
+      <div>
+        <div class="eyebrow">작업대</div>
+        <h2 id="bench-title">레시피</h2>
+      </div>
+      <div class="tiles" id="tiles"></div>
+      <dl class="cond" id="cond"></dl>
+      <details class="yaml" id="yaml-box">
+        <summary>레시피 파일 보기 (YAML)</summary>
+        <pre id="yaml"></pre>
+        <div class="yaml-ok" id="yaml-ok"></div>
+      </details>
+    </section>
+
+    <section class="panel" aria-labelledby="report-title">
+      <div>
+        <div class="eyebrow">리포트</div>
+        <h2 id="report-title">시험 결과</h2>
+      </div>
+      <div class="flow" id="flow" aria-label="처리 순서"></div>
+      <div>
+        <div class="route" id="route"></div>
+        <p class="route-why" id="route-why"></p>
+      </div>
+      <div id="gate"></div>
+      <div class="cards" id="cards"></div>
+      <div class="legend" aria-label="충실도 범례">
+        <div><span class="badge f-L0">L0</span><span>조회·규칙 — 공공 DB 값과 규칙. 즉시</span></div>
+        <div><span class="badge f-L1">L1</span><span>ML 대리모델 — 빠른 추정. 안정성 확정에는 쓰지 않음</span></div>
+        <div><span class="badge f-L2">L2</span><span>범용 원자간 포텐셜 — 새 조성 계산. 구조당 초~분</span></div>
+        <div><span class="badge f-L3">L3</span><span>DFT·상용 도구 — 경계 사례 확인. 시간~일</span></div>
+        <div><span class="badge f-T">T</span><span>평형 트랙 — 열역학 DB로 평형 계산. 초 단위</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p><b>지금 실제로 동작하는 것</b> — 레시피 형식 검증(<span class="mono">msl recipe check</span>), 데이터 소스 102개·엔진 115개 레지스트리와 라이선스 정책 검사(<span class="mono">msl registry check</span>).</p>
+    <p><b>다음</b> — 1단계 데이터 적재 → 2단계에서 S0·A1·A2·A9·A10 실제 계산 → 3단계 평형 트랙(A3~A6, A8) → 4단계 uMLIP(L2).</p>
+  </footer>
+</div>
+
+<script>
+const LIC = {
+  mp: ["Materials Project v2026.04.13", "CC BY 4.0", "open"],
+  cea: ["NASA CEA thermo.inp", "Apache-2.0", "open"],
+  cod: ["COD", "CC0", "open"],
+  cameo: ["CAMEO 반응성 그룹", "확인 중", "restricted"],
+  pubchem: ["PubChem", "퍼블릭 도메인", "open"],
+  usgs: ["USGS MCS 2026", "CC0", "open"],
+  wb: ["World Bank Pink Sheet", "CC BY 4.0", "open"],
+  keco: ["한국환경공단 화학물질·GHS", "data.go.kr 제한 없음", "open"],
+  kosha: ["KOSHA MSDS", "확인 중", "restricted"],
+  phreeqc: ["PHREEQC DB (llnl.dat)", "USGS", "open"],
+  tdb: ["공개 TDB (Cu–Ni)", "확인 예정", "restricted"],
+  mendeleev: ["mendeleev 1.3.0", "확인 중", "restricted"],
+  user: ["사용자 입력 소재 물성", "사용자 소유", "restricted"],
+};
+const PART = { open: "배포 가능", restricted: "연구용" };
+
+const RECIPES = [
+  {
+    key: "limestone", kind: "광물 고상반응", title: "석회석 + 석영", sub: "1,000 °C 소성 · 혼합비 스윕",
+    file: "limestone-quartz.yaml",
+    yaml: `# 사용 장면 1 — 광물 고상반응 (계획서 1절). 기대: CaSiO3(규회석) + CO2 가 열역학적으로 유리
+id: rcp-limestone-quartz
+name: 석회석 + 석영 소성
+components:
+  - ref: mineral:calcite     # CaCO3
+    amount: 1 mol
+    state: solid
+  - ref: mineral:quartz      # SiO2
+    amount: 1 mol
+    state: solid
+conditions:
+  T: 1,000 °C
+  P: 1 atm
+  atmosphere: air
+sweep:                       # A2: 혼합비 x(석회석 비율)를 0~1 로 훑어 반응에너지 곡선을 그린다
+  param: ratio
+  start: 0.0
+  stop: 1.0
+  steps: 11
+assays: auto`,
+    tiles: [
+      { ns: "mineral", idx: "1", sym: "CaCO<sub>3</sub>", nm: "calcite · 방해석(석회석)", amt: "1 mol", st: "고체" },
+      { ns: "mineral", idx: "2", sym: "SiO<sub>2</sub>", nm: "quartz · 석영", amt: "1 mol", st: "고체" },
+    ],
+    cond: [["온도", "1,000 °C (1,273.15 K)"], ["압력", "1 atm"], ["분위기", "공기"], ["스윕", "혼합비 x 0 → 1, 11점"]],
+    auto: true,
+    route: ["S0", "A1", "A2", "A9"],
+    why: "assays: auto — 고체 무기 성분만 있음 → A1·A2, 항상 S0·A9. 물·기체·금속 단독이 아니므로 A3~A6은 제외.",
+    gate: { v: "ok", verdict: "적합", title: "위험 반응 규칙에 해당하지 않음",
+      items: ["탄산염 × 규산염(산화물) 쌍 — 발열·유독 기체 규칙 없음", "고온에서 CO₂가 나오므로 밀폐 용기에서는 압력 상승에 주의"] },
+    cards: [
+      { code: "A2", name: "고상·계면 반응", stage: "2단계", status: "ok", statusText: "유리", fid: "L0", wide: true,
+        sum: "1,273 K에서 <b>CaSiO<sub>3</sub>(규회석) + CO<sub>2</sub></b>가 열역학적으로 유리합니다. 0 K 에너지만 보면 불리하지만, 기체 CO<sub>2</sub>의 엔트로피를 넣으면 부호가 바뀝니다.",
+        kv: [["ΔG (1,273 K, 예시)", "≈ −117 kJ/mol"], ["0 K 반응에너지만 (예시)", "양수 — 불리"], ["곡선의 최저점 (예시)", "x ≈ 0.67 → Ca<sub>2</sub>SiO<sub>4</sub>"]],
+        chart: "rxn", engine: "pymatgen 2026.9.24", eref: "MP2020 + CEA 기체 G(T)", basis: "입력 조건 1,273 K",
+        src: ["mp", "cea"], cav: ["동역학(반응 속도·핵생성)은 반영하지 않음 — '일어날 수 있다'까지만 판정", "고체는 0 K DFT에 유한온도 근사를 더한 값"] },
+      { code: "A1", name: "생성물 안정성", stage: "2단계", status: "ok", statusText: "안정", fid: "L0",
+        sum: "생성물 CaSiO<sub>3</sub>는 공공 DB 기준 hull 위에 있습니다.",
+        kv: [["E<sub>hull</sub> (예시)", "0 meV/atom"], ["경쟁상", "CaO, SiO₂, Ca₂SiO₄ 등"]],
+        engine: "pymatgen 2026.9.24", eref: "MP2020", basis: "0 K DFT",
+        src: ["mp", "cod"], cav: ["0 K 계산 — 고온 다형(유사규회석 등)은 따로 확인 필요"] },
+      { code: "A9", name: "원료 공급", stage: "2단계", status: "ok", statusText: "위험 낮음", fid: "L0",
+        sum: "석회석·규사는 전 세계에 넓게 분포하는 범용 원료입니다.",
+        kv: [["핵심광물 해당", "없음 (예시)"], ["공급 집중도", "낮음 (예시)"]],
+        engine: "msl-supply-risk (자체 구현)", eref: null, basis: "USGS MCS 2026 연간 통계",
+        src: ["usgs", "wb"], cav: ["가격은 국제 원자재 지표 기준 — 국내 조달가와 다를 수 있음"] },
+    ],
+  },
+  {
+    key: "bleach", kind: "수용액 혼합 · 안전", title: "표백제 + 염산", sub: "차아염소산나트륨 수용액 + 염화수소",
+    file: "bleach-hcl.yaml",
+    yaml: `# 사용 장면 2 — 수용액 혼합의 안전 판정 (계획서 1절). 기대: S0 부적합(염소 기체 발생)
+id: rcp-bleach-hcl
+name: 차아염소산나트륨 수용액 + 염산
+components:
+  - ref: cas:7681-52-9       # 차아염소산나트륨
+    amount: 0.05 mol
+    state: aqueous
+  - ref: cas:7647-01-0       # 염화수소
+    amount: 0.1 mol
+    state: aqueous
+  - ref: cas:7732-18-5       # 물
+    amount: 1 L
+    state: liquid
+conditions:
+  T: 25 °C
+  P: 1 atm
+assays: [S0, A4, A10]
+notes: 가정용 세정제 혼합 사고의 대표 사례. 위험을 알리는 검증용 레시피다.`,
+    tiles: [
+      { ns: "cas", idx: "7681-52-9", sym: "NaOCl", nm: "차아염소산나트륨", amt: "0.05 mol", st: "수용액" },
+      { ns: "cas", idx: "7647-01-0", sym: "HCl", nm: "염화수소 (염산)", amt: "0.1 mol", st: "수용액" },
+      { ns: "cas", idx: "7732-18-5", sym: "H<sub>2</sub>O", nm: "물", amt: "1 L", st: "액체" },
+    ],
+    cond: [["온도", "25 °C"], ["압력", "1 atm"]],
+    auto: false,
+    route: ["S0", "A4", "A10"],
+    why: "assays: [S0, A4, A10] — 레시피에 직접 지정. 라우터 자동 선택이라면 물 + 용질 → A4, 분자 성분 → A10도 같은 결과.",
+    gate: { v: "bad", verdict: "부적합", title: "섞으면 안 됩니다 — 염소(Cl₂) 기체 발생",
+      items: ["산 × 차아염소산염(산화제) 쌍 — 유독 기체 발생 규칙에 해당", "발열 반응 · 밀폐 공간에서 특히 위험", "이 판정은 위험을 알리기 위한 것입니다. 발생량·조건 최적화 같은 정보는 제공하지 않습니다"] },
+    cards: [
+      { code: "A4", name: "수용액 평형", stage: "3단계", status: "warn", statusText: "경고와 함께 표시", fid: "T",
+        sum: "산성 조건에서 차아염소산이 염소로 바뀌는 쪽으로 평형이 이동합니다. 결과는 S0 경고와 함께만 보여 줍니다.",
+        kv: [["pH 변화", "산성 쪽으로 이동"], ["우세 염소 화학종", "HOCl → Cl₂(aq) 쪽 (정성)"]],
+        engine: "phreeqpython 1.6.2", eref: null, basis: "25 °C, 1 atm",
+        src: ["phreeqc"], cav: ["안전 게이트가 '부적합'이면 정량 결과(기체 발생량 등)는 표시하지 않는 정책"] },
+      { code: "A10", name: "국내 규제", stage: "2단계", status: "wait", statusText: "키 대기", fid: "L0",
+        sum: "data.go.kr 인증키가 등록되면 한국환경공단 API로 유독물질·사고대비물질 해당 여부와 GHS 분류를 표시합니다.",
+        kv: [["필요한 것", "DATA_GO_KR_SERVICE_KEY + 활용신청 3건"]],
+        engine: "한국환경공단·KOSHA API", eref: null, basis: "국내 고시 기준",
+        src: ["keco", "kosha"], cav: ["KOSHA MSDS는 상업 이용 조건 확인 전까지 연구용"] },
+    ],
+  },
+  {
+    key: "cuni", kind: "합금 상평형", title: "Cu–Ni 합금", sub: "Cu 70 at% · 300 → 1,800 K",
+    file: "cu-ni-alloy.yaml",
+    yaml: `# 사용 장면 3 — 합금 상평형 (계획서 1절). 기대: 전 조성 FCC 고용체, 액상선·고상선
+id: rcp-cu-ni-alloy
+name: Cu-Ni 합금 (Cu 70 at%)
+components:
+  - ref: element:Cu
+    amount: 70 at%
+    state: solid
+  - ref: element:Ni
+    amount: 30 at%
+    state: solid
+conditions:
+  P: 1 atm
+sweep:
+  param: T
+  start: 300 K
+  stop: 1800 K
+  steps: 31
+assays: [S0, A6, A7, A9]`,
+    tiles: [
+      { ns: "element", idx: "29", sym: "Cu", nm: "구리", amt: "70 at%", st: "고체" },
+      { ns: "element", idx: "28", sym: "Ni", nm: "니켈", amt: "30 at%", st: "고체" },
+    ],
+    cond: [["압력", "1 atm"], ["스윕", "온도 300 → 1,800 K, 31점"]],
+    auto: false,
+    route: ["S0", "A6", "A7", "A9"],
+    why: "assays: [S0, A6, A7, A9] — 금속 원소만 있으므로 라우터 자동 선택이어도 A6(합금 상평형)이 핵심.",
+    gate: { v: "ok", verdict: "적합", title: "위험 반응 규칙에 해당하지 않음",
+      items: ["금속 × 금속 — 상온 혼합 위험 없음", "용융 상태 취급은 일반 고온 작업 안전수칙을 따름"] },
+    cards: [
+      { code: "A6", name: "합금 상평형", stage: "3단계", status: "ok", statusText: "계산됨(예시)", fid: "T", wide: true,
+        sum: "Cu–Ni는 전 조성에서 FCC 고용체를 이룹니다. Ni 30 at%에서 약 <b>1,170 °C에 녹기 시작해 1,240 °C에서 모두 녹습니다</b>.",
+        kv: [["고상선 (예시)", "≈ 1,172 °C"], ["액상선 (예시)", "≈ 1,240 °C"], ["고체 상", "α (FCC 고용체) 단상"]],
+        chart: "cuni", engine: "pycalphad 0.11.2", eref: "CALPHAD (TDB 기준 상태)", basis: "1 atm, 온도 스윕",
+        src: ["tdb"], cav: ["약 350 °C 이하의 상분리 구간은 그림에서 생략", "정확도는 TDB 품질이 좌우 — 공개 TDB가 있는 계만 지원"] },
+      { code: "A7", name: "물성 추정", stage: "4단계", status: "ok", statusText: "추정(예시)", fid: "L0",
+        sum: "구성 원소 값을 조성으로 가중한 1차 추정입니다.",
+        kv: [["밀도 (예시)", "≈ 8.9 g/cm³"], ["방법", "원소 물성 조회 + 혼합 규칙"]],
+        engine: "pymatgen · matminer 0.10.1", eref: null, basis: "298 K 원소 값",
+        src: ["mendeleev"], cav: ["mendeleev 수록값은 출처가 섞여 있어 연구용 (D10)"] },
+      { code: "A9", name: "원료 공급", stage: "2단계", status: "warn", statusText: "주의", fid: "L0",
+        sum: "니켈은 생산이 소수 국가에 몰려 있어 공급 집중도가 높습니다.",
+        kv: [["Ni 공급 집중도 (예시)", "높음"], ["Cu 공급 집중도 (예시)", "중간"]],
+        engine: "msl-supply-risk (자체 구현)", eref: null, basis: "USGS MCS 2026",
+        src: ["usgs", "wb"], cav: ["국가별 생산 비중 기준 — 정제·가공 단계 집중도는 별도"] },
+    ],
+  },
+  {
+    key: "licoo", kind: "원소 계 탐색", title: "Li–Co–O 계", sub: "안정한 화합물 찾기",
+    file: "li-co-o-system.yaml",
+    yaml: `# 사용 장면 4 — 원소 계 탐색 (계획서 1절). 기대: LiCoO2 등 안정상, 준안정 후보는 L2 로 승격
+id: rcp-li-co-o-system
+name: Li-Co-O 계 안정 화합물 탐색
+mode: system
+components:
+  - ref: element:Li
+  - ref: element:Co
+  - ref: element:O
+assays: [A1, A7]`,
+    tiles: [
+      { ns: "element", idx: "3", sym: "Li", nm: "리튬", amt: "—", st: "계 탐색" },
+      { ns: "element", idx: "27", sym: "Co", nm: "코발트", amt: "—", st: "계 탐색" },
+      { ns: "element", idx: "8", sym: "O", nm: "산소", amt: "—", st: "계 탐색" },
+    ],
+    cond: [["모드", "system — 양 없이 원소 계 전체를 탐색"]],
+    auto: false,
+    route: ["A1", "A7"],
+    why: "assays: [A1, A7] — 섞는 양이 없는 원소 계 탐색이라 혼합 안전 판정(S0)은 대상이 아닙니다.",
+    gate: { v: "na", verdict: "해당 없음", title: "혼합이 아닌 원소 계 탐색",
+      items: ["실제로 섞는 레시피를 만들면 그때 S0가 실행됩니다"] },
+    cards: [
+      { code: "A1", name: "조성 안정성", stage: "2단계(L0) · 4단계(L2)", status: "ok", statusText: "후보 6", fid: "L0", fid2: "L2", wide: true,
+        sum: "공공 DB에서 안정상을 먼저 찾고, hull에 가까운 준안정 후보만 범용 원자간 포텐셜(L2)로 다시 계산합니다.",
+        table: [["LiCoO₂", "R-3m", "0", "안정", "L0"], ["Co₃O₄", "Fd-3m", "0", "안정", "L0"], ["CoO", "Fm-3m", "0", "안정", "L0"], ["Li₂O", "Fm-3m", "0", "안정", "L0"], ["LiCo₂O₄", "Fd-3m", "≈ 15", "준안정 → L2 재확인", "L2"], ["CoO₂", "P-3m1", "≈ 40", "준안정 → L2 재확인", "L2"]],
+        kv: [["깔때기 (예시)", "조성 필터 1,284 → DB 일치 37 → L2 재확인 2"]],
+        engine: "smact 4.0.2 → pymatgen → orb-v3 + sevennet-omni", eref: "MP2020 / 자기일관(uMLIP)", basis: "0 K",
+        src: ["mp", "cod"], cav: ["L2로 올린 값은 경쟁상까지 같은 모델로 다시 계산해야 비교 가능 — 기준을 섞지 않음"] },
+      { code: "A7", name: "물성 추정", stage: "4단계", status: "ok", statusText: "추정(예시)", fid: "L0",
+        sum: "LiCoO₂의 DB 물성을 불러오고, 없는 값은 ML(L1)로 추정합니다.",
+        kv: [["밴드갭 (예시)", "PBE 값 — 실측보다 약 40% 작게 나옴"], ["체적탄성률", "DB 값 조회"]],
+        engine: "pymatgen · matminer 0.10.1", eref: null, basis: "0 K DFT",
+        src: ["mp"], cav: ["PBE 밴드갭은 체계적으로 과소평가"] },
+    ],
+  },
+  {
+    key: "epoxy", kind: "복합재 블렌드", title: "에폭시 + 유리섬유", sub: "유리섬유 30 vol%",
+    file: "epoxy-glassfiber.yaml",
+    yaml: `# 사용 장면 5 — 블렌드·복합재 물성 (계획서 1절). 기대: 강성·밀도의 Hashin–Shtrikman 경계
+id: rcp-epoxy-glassfiber
+name: 에폭시 + 유리섬유 30 vol%
+components:
+  - ref: material:epoxy-generic
+    amount: 70 vol%
+    state: solid
+  - ref: material:e-glass-fiber
+    amount: 30 vol%
+    state: solid
+conditions:
+  T: 25 °C
+assays: [S0, A8]`,
+    tiles: [
+      { ns: "material", idx: "", sym: "에폭시", nm: "epoxy-generic · 경화 수지", amt: "70 vol%", st: "고체" },
+      { ns: "material", idx: "", sym: "E-유리", nm: "e-glass-fiber · 유리섬유", amt: "30 vol%", st: "고체" },
+    ],
+    cond: [["온도", "25 °C"]],
+    auto: false,
+    route: ["S0", "A8"],
+    why: "assays: [S0, A8] — 사용자 정의 소재(material:)끼리의 블렌드라 원자 수준 시험 대신 혼합 규칙(A8)을 씁니다.",
+    gate: { v: "ok", verdict: "적합", title: "위험 반응 규칙에 해당하지 않음",
+      items: ["경화된 수지 × 유리 — 혼합 위험 없음", "미경화 수지·경화제를 성분으로 넣으면 별도 판정"] },
+    cards: [
+      { code: "A8", name: "블렌드·복합 물성", stage: "3단계", status: "ok", statusText: "계산됨", fid: "L0", wide: true,
+        sum: "영률은 섬유 배열에 따라 <b>4.9 ~ 24.1 GPa</b> 사이에 놓입니다. 섬유 방향으로 당기면 위쪽(Voigt), 수직으로 당기면 아래쪽(Reuss)에 가깝습니다.",
+        kv: [["밀도 (혼합 규칙)", "1.61 g/cm³"], ["영률 상한 · Voigt", "24.1 GPa"], ["영률 하한 · Reuss", "4.9 GPa"], ["입력 물성", "에폭시 3.5 GPa · 1.20 g/cm³ / E-유리 72 GPa · 2.55 g/cm³"]],
+        chart: "bounds", engine: "msl-mixing-rules (자체 구현)", eref: null, basis: "25 °C, 선형 탄성",
+        src: ["user"], cav: ["미세구조(섬유 길이·배향·계면)를 넣지 않으면 경계값만 제시", "Hashin–Shtrikman 경계는 이 범위 안쪽으로 더 좁음"] },
+    ],
+  },
+];
+
+const NAMES = { S0: "혼합 안전", A1: "조성 안정성", A2: "고상·계면 반응", A4: "수용액 평형", A6: "합금 상평형", A7: "물성 추정", A8: "블렌드 물성", A9: "원료 공급", A10: "국내 규제" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function chartRxn() {
+  const W = 540, H = 250, L = 58, R = 18, T = 18, B = 42, pw = W - L - R, ph = H - T - B;
+  const y0 = 0.03, y1 = -0.16;
+  const X = (x) => L + x * pw, Y = (y) => T + (y0 - y) / (y0 - y1) * ph;
+  const pts = [[0, 0], [0.5, -0.110], [0.6, -0.118], [0.667, -0.121], [0.75, -0.095], [1, 0]];
+  const d = pts.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+  let g = "";
+  for (const t of [0, -0.05, -0.10, -0.15]) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${t.toFixed(2)}</text>`;
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) g += `<text x="${X(t)}" y="${H - B + 16}" text-anchor="middle">${t}</text>`;
+  const dots = pts.slice(1, -1).map(p => `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.2" fill="var(--ink)"><title>x=${p[0]}, ${p[1]} eV/atom</title></circle>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="혼합비에 따른 반응에너지 예시 곡선">
+    ${g}
+    <line class="axis" x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}"/>
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+    ${dots}
+    <circle cx="${X(0.5)}" cy="${Y(-0.110)}" r="7" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+    <text class="lbl" x="${X(0.5) + 4}" y="${Y(-0.110) + 24}" text-anchor="end">레시피 1:1 → CaSiO₃</text>
+    <text class="lbl" x="${X(0.667) + 2}" y="${Y(-0.121) + 20}" text-anchor="middle">Ca₂SiO₄</text>
+    <text class="lbl" x="${X(0.75) + 8}" y="${Y(-0.095) + 4}" text-anchor="start">Ca₃SiO₅</text>
+    <text x="${L}" y="${T - 4}">반응에너지 (eV/atom)</text>
+    <text x="${W - R}" y="${H - 6}" text-anchor="end">혼합비 x (석회석 비율) →</text>
+    <text x="${L + 4}" y="${Y(0) - 6}">SiO₂만</text>
+    <text x="${W - R - 4}" y="${Y(0) - 6}" text-anchor="end">CaCO₃만</text>
+  </svg><p class="chart-cap">예시 곡선입니다. 실제로는 pymatgen 계면 반응 계산으로 그립니다. 꺾이는 점마다 다른 생성물이 생깁니다.</p>`;
+}
+
+function chartCuNi() {
+  const W = 540, H = 270, L = 58, R = 18, T = 16, B = 42, pw = W - L - R, ph = H - T - B;
+  const t0 = 1500, t1 = 1000;
+  const X = (x) => L + x * pw, Y = (t) => T + (t0 - t) / (t0 - t1) * ph;
+  const sol = [[0, 1085], [.1, 1112], [.2, 1142], [.3, 1172], [.4, 1202], [.5, 1237], [.6, 1272], [.7, 1312], [.8, 1355], [.9, 1402], [1, 1455]];
+  const liq = [[0, 1085], [.1, 1147], [.2, 1197], [.3, 1240], [.4, 1280], [.5, 1317], [.6, 1351], [.7, 1382], [.8, 1412], [.9, 1435], [1, 1455]];
+  const line = (a) => a.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+  const lens = line(liq) + " " + sol.slice().reverse().map(p => "L" + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ") + " Z";
+  let g = "";
+  for (const t of [1000, 1100, 1200, 1300, 1400, 1500]) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${t.toLocaleString()}</text>`;
+  for (const x of [0, 0.2, 0.4, 0.6, 0.8, 1]) g += `<text x="${X(x)}" y="${H - B + 16}" text-anchor="middle">${x}</text>`;
+  const xr = X(0.3);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cu–Ni 상태도 예시와 Ni 30 at% 위치">
+    ${g}
+    <path d="${lens}" fill="var(--accent-soft)" stroke="none"/>
+    <path d="${line(liq)}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    <path d="${line(sol)}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+    <line x1="${xr}" x2="${xr}" y1="${Y(1500)}" y2="${Y(1000)}" stroke="var(--f-T)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <circle cx="${xr}" cy="${Y(1240)}" r="3.5" fill="var(--f-T)"/><circle cx="${xr}" cy="${Y(1172)}" r="3.5" fill="var(--f-T)"/>
+    <text class="lbl" x="${xr - 8}" y="${Y(1240) - 6}" text-anchor="end">액상선 1,240 °C</text>
+    <text class="lbl" x="${xr + 8}" y="${Y(1172) + 16}" text-anchor="start">고상선 1,172 °C</text>
+    <text class="lbl" x="${X(0.72)}" y="${Y(1455)}" text-anchor="middle">L (액체)</text>
+    <text class="lbl" x="${X(0.62)}" y="${Y(1318)}" text-anchor="middle">L + α</text>
+    <text class="lbl" x="${X(0.72)}" y="${Y(1120)}" text-anchor="middle">α (FCC 고용체)</text>
+    <text x="${L}" y="${T - 4}">온도 (°C)</text>
+    <text x="${W - R}" y="${H - 6}" text-anchor="end">Ni 몰분율 →</text>
+  </svg><p class="chart-cap">예시 상태도입니다. 점선이 이 레시피의 조성(Ni 0.3)입니다.</p>`;
+}
+
+function chartBounds() {
+  const W = 540, H = 150, L = 20, R = 20, pw = W - L - R, max = 80;
+  const X = (v) => L + v / max * pw;
+  let g = "";
+  for (const t of [0, 20, 40, 60, 80]) g += `<line class="grid" x1="${X(t)}" x2="${X(t)}" y1="30" y2="104"/><text x="${X(t)}" y="122" text-anchor="middle">${t}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="복합재 영률의 상한과 하한">
+    ${g}
+    <rect x="${X(4.9)}" y="52" width="${X(24.1) - X(4.9)}" height="26" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+    <text class="lbl" x="${X(4.9)}" y="44" text-anchor="start">Reuss 4.9</text>
+    <text class="lbl" x="${X(24.1)}" y="94" text-anchor="middle">Voigt 24.1</text>
+    <line x1="${X(3.5)}" x2="${X(3.5)}" y1="30" y2="104" stroke="var(--ink)" stroke-width="1.4"/>
+    <line x1="${X(72)}" x2="${X(72)}" y1="30" y2="104" stroke="var(--ink)" stroke-width="1.4"/>
+    <text class="lbl" x="${X(72) - 6}" y="44" text-anchor="end">E-유리 72</text>
+    <text x="${W - R}" y="${H - 6}" text-anchor="end">영률 (GPa) →</text>
+    <text x="${L}" y="${H - 6}">에폭시 3.5</text>
+  </svg><p class="chart-cap">복합재의 영률은 파란 구간 안에 있습니다. 두 세로선은 순수 성분의 값입니다.</p>`;
+}
+const CHARTS = { rxn: chartRxn, cuni: chartCuNi, bounds: chartBounds };
+
+function srcChip(k) {
+  const [name, lic, part] = LIC[k];
+  return `<span class="src">${esc(name)} · ${esc(lic)} · <span class="part ${part}">${PART[part]}</span></span>`;
+}
+
+function card(c) {
+  const fid = `<span class="badge f-${c.fid}">${c.fid}</span>` + (c.fid2 ? `<span class="badge f-${c.fid2}">${c.fid2}</span>` : "");
+  const kv = c.kv ? `<dl class="kv">${c.kv.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>` : "";
+  const table = c.table ? `<div class="tbl"><table class="phases"><thead><tr><th>상</th><th>공간군</th><th>E<sub>hull</sub> (meV/atom, 예시)</th><th>판정</th><th>충실도</th></tr></thead><tbody>${c.table.map(r => `<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="badge f-${r[4]}">${r[4]}</span></td></tr>`).join("")}</tbody></table></div>` : "";
+  const chart = c.chart ? `<div class="chart">${CHARTS[c.chart]()}</div>` : "";
+  const eref = c.eref ? `<span>에너지 기준 <span class="mono">${esc(c.eref)}</span></span>` : "";
+  return `<article class="card${c.wide ? " wide" : ""}">
+    <div class="c-head"><span class="c-code">${c.code}</span><span class="c-name">${c.name}</span>${fid}<span class="pill ${c.status}">${c.statusText}</span></div>
+    <p class="c-sum">${c.sum}</p>
+    ${kv}${table}${chart}
+    <div class="meta">
+      <div class="row"><span>엔진 <span class="mono">${esc(c.engine)}</span></span>${eref}<span>조건 <span class="mono">${esc(c.basis)}</span></span><span class="stage">도입 ${c.stage}</span></div>
+      <div class="srcs">${c.src.map(srcChip).join("")}</div>
+    </div>
+    <div class="caveat">${c.cav.map(x => `<span>${x}</span>`).join("")}</div>
+  </article>`;
+}
+
+function render(i) {
+  const r = RECIPES[i];
+  document.querySelectorAll(".preset").forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+  $("tiles").innerHTML = r.tiles.map(t => `<div class="tile"><div class="ns"><span>${t.ns}</span><span>${t.idx}</span></div><div class="sym">${t.sym}</div><div><div class="nm">${t.nm}</div><div class="amt-row"><span class="amt">${t.amt}</span><span class="st">${t.st}</span></div></div></div>`).join("");
+  $("cond").innerHTML = r.cond.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+  $("yaml").textContent = r.yaml;
+  $("yaml-ok").textContent = `✓ examples/recipes/${r.file} — msl recipe check 통과`;
+  const steps = ["레시피 입력", "식별자 해석", "S0 안전 게이트", r.auto ? "라우터 자동 선택" : "지정된 시험", `시험 ${r.route.filter(c => c !== "S0").length}개`, "리포트"];
+  $("flow").innerHTML = steps.map((s, k) => `<span class="step${k === 2 && r.gate.v === "bad" ? " on" : ""}">${s}</span>`).join('<span class="arr" aria-hidden="true">→</span>');
+  $("route").innerHTML = r.route.map(c => `<span class="chip"><span class="code">${c}</span>${NAMES[c]}</span>`).join("");
+  $("route-why").textContent = r.why;
+  $("gate").innerHTML = `<div class="gate ${r.gate.v}"><div class="g-head"><span class="eyebrow">S0 혼합 안전 게이트</span><span class="g-verdict">${r.gate.verdict}</span><span>${r.gate.title}</span></div><ul>${r.gate.items.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
+  $("cards").innerHTML = r.cards.map(card).join("");
+  try { localStorage.setItem("vlab-preset", r.key); } catch (e) {}
+}
+
+$("presets").innerHTML = RECIPES.map((r, i) => `<button class="preset" type="button" id="preset-${r.key}" aria-pressed="false" data-i="${i}"><span class="p-kind">${r.kind}</span><span class="p-title">${r.title}</span><span class="p-sub">${r.sub}</span></button>`).join("");
+$("presets").addEventListener("click", (e) => {
+  const b = e.target.closest(".preset");
+  if (b) { const i = Number(b.dataset.i); render(i); history.replaceState(null, "", "#" + RECIPES[i].key); }
+});
+
+let start = 0;
+const fromHash = RECIPES.findIndex(r => "#" + r.key === location.hash);
+if (fromHash >= 0) start = fromHash;
+else { try { const k = localStorage.getItem("vlab-preset"); const j = RECIPES.findIndex(r => r.key === k); if (j >= 0) start = j; } catch (e) {} }
+render(start);
+</script>

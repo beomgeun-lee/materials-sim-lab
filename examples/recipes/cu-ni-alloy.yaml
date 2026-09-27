@@ -1,0 +1,18 @@
+# 사용 장면 3 — 합금 상평형 (계획서 1절). 기대: 전 조성 FCC 고용체, 액상선·고상선
+id: rcp-cu-ni-alloy
+name: Cu-Ni 합금 (Cu 70 at%)
+components:
+  - ref: element:Cu
+    amount: 70 at%
+    state: solid
+  - ref: element:Ni
+    amount: 30 at%
+    state: solid
+conditions:
+  P: 1 atm
+sweep:
+  param: T
+  start: 300 K
+  stop: 1800 K
+  steps: 31
+assays: [S0, A6, A7, A9]

@@ -1,0 +1,20 @@
+# 사용 장면 1 — 광물 고상반응 (계획서 1절). 기대: CaSiO3(규회석) + CO2 가 열역학적으로 유리
+id: rcp-limestone-quartz
+name: 석회석 + 석영 소성
+components:
+  - ref: mineral:calcite     # CaCO3
+    amount: 1 mol
+    state: solid
+  - ref: mineral:quartz      # SiO2
+    amount: 1 mol
+    state: solid
+conditions:
+  T: 1,000 °C
+  P: 1 atm
+  atmosphere: air
+sweep:                       # A2: 혼합비 x(석회석 비율)를 0~1 로 훑어 반응에너지 곡선을 그린다
+  param: ratio
+  start: 0.0
+  stop: 1.0
+  steps: 11
+assays: auto

@@ -1,0 +1,2197 @@
+# 데이터 소스 레지스트리 — 계획서 4장 (4.2절 6항 '소스 레지스트리')
+#
+# 근거: docs/00-조사/01-공공데이터-소스.md (기준일 2026-09-26). 새 조사 없이 조사 문서 내용을 옮겼다.
+# 형식: msl.registry.models.SourceEntry
+#   license = kb/licenses.yaml id. 딱 맞지 않거나 불명확하면 보수적인 id 를 쓰고 세부는 license_note 에 적는다
+#   uses    = kb/assays.yaml 시험 코드 (상·중 소스에만 단다)
+# 우선순위: 상 = MVP 적재, 중 = 2차 확장·검증·참조, 하 = 참조만, 제외 = 적재하지 않음 (status: excluded)
+# 조사 문서에 우선순위가 없는 소스는 caveats 에 '우선순위 미표기 → 하로 판단' 이라고 적었다.
+# 라이선스 판단은 공개 문서 해석이며 법률 자문이 아니다.
+
+# ── E 원소 ───────────────────────────────────────────────────────────────
+
+- id: mendeleev
+  name: mendeleev (Python 패키지 내장 원소 DB)
+  layer: E
+  operator: Łukasz Mentel (개인 오픈소스)
+  url: https://github.com/lmmentel/mendeleev
+  data: [원소 118행×83열, 동위원소(NUBASE2020), 이온화에너지(NIST ASD), 이온반경(Shannon·Lundberg), 공유·vdW·금속 반경, 산화수, 상전이, X선 산란인자(Henke), 전기음성도 15종, propertymetadata(단위·인용키)]
+  access: [python-package]
+  auth: none
+  license: unknown
+  license_note: 코드는 MIT. 수록 데이터 라이선스 미명시 — CRC·위키백과(CC BY-SA)·RSC 유래 값 혼재 → 속성별 원출처 기준으로 판단하고 위키백과 유래 값에는 SA 플래그
+  version: 1.3.0 (PyPI 2026-09-10)
+  size: 118원소, SQLite 3.1 MB 테이블 12개 (isotopes 3,557 · ionizationenergies 5,847 · ionicradii 507)
+  update: 2025–2026년 네 차례 릴리스 (1.0.0 → 1.3.0)
+  python_client: mendeleev
+  priority: 상
+  mvp_rank: 1
+  status: planned
+  country: INT
+  uses: []
+  caveats: 원자량이 CIAAW 2024 미반영(Gd·Lu·Zr), 구간값 원소도 단일값 → ciaaw 로 덮어쓴다. Z=104–118 대부분 결측(밀도만 118개 모두 채워진 추정값). 열전도·융해/증발열·격자상수는 인용키 없음
+  refs:
+    - https://pypi.org/pypi/mendeleev/json
+    - https://mendeleev.readthedocs.io/en/stable/data.html
+    - https://mendeleev.readthedocs.io/en/stable/data_access.html
+    - https://mendeleev.readthedocs.io/en/stable/faq.html
+    - https://github.com/lmmentel/mendeleev
+  checked: 2026-09-26
+
+- id: ciaaw
+  name: IUPAC CIAAW 표준원자량
+  layer: E
+  operator: IUPAC 원자량·동위원소존재비 위원회 (CIAAW)
+  url: https://www.ciaaw.org/atomic-weights.htm
+  data: [표준원자량(구간값·5자리 축약값)]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: © CIAAW 표기만 있고 재사용 조건 미명시 → 출처 표기, 문의 대상
+  version: 2024 개정 (Gd 157.249(2), Lu 174.966 69(5), Zr 91.222(3))
+  size: 전 원소
+  update: 비정기 개정 (뉴스 페이지 기준 2025–26 추가 개정 없음)
+  priority: 상
+  mvp_rank: 1
+  status: planned
+  country: INT
+  uses: []
+  caveats: HTML 표만 있고 CSV 없음 → 파싱 필요. 원자량 정본으로 mendeleev·pymatgen 값을 덮어쓴다
+  refs:
+    - https://www.ciaaw.org/atomic-weights.htm
+    - https://iupac.org/standard-atomic-weights-of-three-technology-critical-elements-revised/
+    - https://ciaaw.org/news.htm
+  checked: 2026-09-26
+
+- id: periodictable
+  name: periodictable (Python 패키지)
+  layer: E
+  operator: Paul Kienzle (NIST NCNR 계열) 외
+  url: https://periodictable.readthedocs.io/
+  data: [동위원소 질량(AME2020), 원자량(CIAAW 2021), 반감기(NUBASE2020), 중성자 산란길이·단면적, X선 f1/f2(Henke Z=1–92), 밀도(CRC 80판)]
+  access: [python-package]
+  auth: none
+  license: public-domain
+  license_note: 패키지는 퍼블릭 도메인이나 개별 파일 예외 있음 (예 cromermann.py 는 BSD-3)
+  version: 2.1.0 (2026-02-28)
+  size: Z=0–118
+  python_client: periodictable
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 중성자·X선 산란(SLD)·동위원소 정밀 질량 보강용. 표 export 기능 없음(객체 속성 조회). 밀도가 1999년 CRC 판 기준, 희토류 incoherent 산란 과소평가 이슈
+  refs:
+    - https://periodictable.readthedocs.io/en/latest/guide/license.html
+    - https://periodictable.readthedocs.io/en/latest/guide/data_sources.html
+  checked: 2026-09-26
+
+- id: pymatgen-elements
+  name: pymatgen-core 원소 데이터 (periodic_table.json.gz)
+  layer: E
+  operator: pymatgen 개발팀 (Materials Project)
+  url: https://pypi.org/project/pymatgen-core
+  data: [원소 기계·전기·열 물성 47키(녹는점·열전도·체적탄성률·영률·Mohs·전기저항 등)]
+  access: [python-package]
+  auth: none
+  license: unknown
+  license_note: 패키지는 MIT지만 수록값 출처가 문서화되지 않음 → 원출처 기준으로 판단
+  version: pymatgen 2026.9.24 (pymatgen-core 의존)
+  size: 120엔트리 (118원소 + D·T)
+  python_client: pymatgen
+  priority: 중
+  status: planned
+  country: INT
+  uses: []
+  caveats: 기계·전기 물성 보강용. 단위가 mendeleev 와 다름(Å·kJ/mol·kg/m³). 원자량 2024 개정 미반영. costdb_elements.csv 는 2013년 기준
+  refs:
+    - https://pypi.org/project/pymatgen-core
+  checked: 2026-09-26
+
+- id: pubchem-periodic-table
+  name: PubChem Periodic Table
+  layer: E
+  operator: NIH/NLM/NCBI
+  url: https://pubchem.ncbi.nlm.nih.gov/rest/pug/periodictable/CSV
+  data: [원소 요약 17열, 원소별 CIAAW·NIST·IAEA·LANL 값 병기(PUG-View)]
+  access: [rest-api]
+  auth: none
+  license: public-domain
+  license_note: NLM 생성분만 퍼블릭 도메인. IUPAC IPTEI 기여분은 CC BY-NC-ND 4.0 (PUG-View Reference 필드) → 해당 필드 제외
+  version: 컬렉션 최종 갱신 2026-09-25
+  size: 118행 × 17열
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 교차검증용. 일괄 CSV 원자량은 반올림·구버전 혼재(Gd 157.25, Ar 39.9). AtomicRadius 는 값 패턴상 vdW 반경으로 추정
+  refs:
+    - https://pubchem.ncbi.nlm.nih.gov/rest/pug/periodictable/CSV
+    - https://www.ncbi.nlm.nih.gov/home/about/policies/
+    - https://pubchem.ncbi.nlm.nih.gov/docs/statistics
+  checked: 2026-09-26
+
+- id: nist-asd
+  name: NIST Atomic Spectra Database (SRD 78)
+  layer: E
+  operator: NIST PML
+  url: https://www.nist.gov/pml/atomic-spectra-database
+  data: [에너지 준위, 스펙트럼선, 이온화에너지, 중성원자 기저 준위·IE(SRD 111)]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  license_note: SRD Act 저작권 — 사전 허가 없는 복제·저장·전송 금지, NIST reserves the right to charge 문구
+  version: v5.12 (2024-11), SRD 111 은 2013-09 갱신
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 내부 검증 전용(IE 재검증). REST 없음 — ie.pl format=2 CSV 는 값이 ="..." 로 감싸여 파싱 필요
+  refs:
+    - https://www.nist.gov/pml/atomic-spectra-database
+    - https://pml.nist.gov/PhysRefData/ASD/Html/verhist.shtml
+    - https://www.nist.gov/pml/ground-levels-and-ionization-energies-neutral-atoms
+    - https://www.nist.gov/srd/public-law
+  checked: 2026-09-26
+
+- id: nist-atomic-weights
+  name: NIST Atomic Weights and Isotopic Compositions
+  layer: E
+  operator: NIST PML
+  url: https://physics.nist.gov/PhysRefData/Compositions/
+  data: [동위원소 조성, 원자량]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  license_note: SRD 번호 미확인 — SRD 또는 NIST 저작물이므로 보수적으로 SRD 취급
+  version: 2015-01 갱신
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: Gd 157.25(3) 등 구버전 값. 페이지 스스로 critical evaluation 이 아니라고 명시
+  refs:
+    - https://physics.nist.gov/PhysRefData/Compositions/
+    - https://www.nist.gov/srd/public-law
+  checked: 2026-09-26
+
+- id: nist-xcom
+  name: NIST XCOM 광자 단면적 (SRD 8)
+  layer: E
+  operator: NIST PML
+  url: https://www.nist.gov/pml/xcom-photon-cross-sections-database
+  data: [X선 감쇠(광자 단면적)]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  version: v3.1 (2010-11)
+  size: Z=1–100
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  refs:
+    - https://www.nist.gov/pml/xcom-photon-cross-sections-database
+    - https://www.nist.gov/srd/public-law
+  checked: 2026-09-26
+
+- id: nist-ffast
+  name: NIST FFAST X선 형상인자·감쇠·산란표 (SRD 66)
+  layer: E
+  operator: NIST PML
+  url: https://www.nist.gov/pml/x-ray-form-factor-attenuation-and-scattering-tables
+  data: [X선 형상인자, X선 감쇠·산란 계수]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  version: 2005-01
+  size: Z=1–92
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  refs:
+    - https://www.nist.gov/pml/x-ray-form-factor-attenuation-and-scattering-tables
+    - https://www.nist.gov/srd/public-law
+  checked: 2026-09-26
+
+- id: shannon-radii
+  name: Shannon 이온반경 DB (Imperial College)
+  layer: E
+  operator: Imperial College London
+  url: http://abulafia.mt.ic.ac.uk/shannon/
+  data: [Shannon 유효 이온반경]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: 다운로드 기능·라이선스 명시 없음
+  priority: 하
+  status: planned
+  country: GB
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. 값은 mendeleev·pymatgen 에 이미 수록되어 별도 적재 불필요
+  refs:
+    - http://abulafia.mt.ic.ac.uk/shannon/
+  checked: 2026-09-26
+
+- id: crc-handbook
+  name: CRC Handbook of Chemistry and Physics
+  layer: E
+  operator: CRC Press
+  url: https://hbcp.chemnetbase.com/
+  data: [원소·화합물 물성 편람]
+  access: [web]
+  auth: paid
+  license: proprietary
+  license_note: 유료 저작물
+  priority: 하
+  status: planned
+  uses: []
+  caveats: 참조용으로만. mendeleev·periodictable 값의 다수가 CRC 유래
+  refs: []
+  checked: 2026-09-26
+
+- id: webelements
+  name: WebElements
+  layer: E
+  operator: WebElements (운영 상태 미확인)
+  url: https://www.webelements.com/
+  data: [원소 물성]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: Cloudflare 403 으로 이용조건 확인 불가
+  priority: 제외
+  status: excluded
+  uses: []
+  caveats: 스크래핑 비권장 → 제외
+  refs: []
+  checked: 2026-09-26
+
+# ── C 계산 결정 (ML 학습 데이터 포함) ───────────────────────────────────
+
+- id: materials-project
+  name: Materials Project
+  layer: C
+  operator: LBNL (DOE 지원)
+  url: https://materialsproject.org/
+  data: [결정구조, 형성에너지·hull(thermo), 밴드구조·DOS, 탄성, 유전, 압전, 자성, XAS, 전극(insertion·conversion), 산화수·결합·chemenv, 합금, 상태도, 역 Pourbaix, 포논]
+  access: [rest-api, bulk, optimade]
+  auth: api-key
+  license: CC-BY-4.0
+  license_note: 상업 이용·재배포 가능(출처 표기). 단 GNoME 유래 데이터(batch gnome_r2scan_statics)는 CC BY-NC 4.0 이며 조회에 명시 동의 필요 → 적재에서 제외. 웹 스크레이핑 금지(대량 수집은 API). 현행 약관은 봇 403 이라 legacy 약관으로 확인
+  version: v2026.04.13 (라이브 전환 2026-06-08, emmet 0.87.3.dev)
+  size: S3 current-build summary 280,159건 (라이브 총수 미확인). OPTIMADE 154,387건
+  python_client: mp-api 0.46.5 (v2026.04.13 은 0.46.2 이상 필요)
+  priority: 상
+  mvp_rank: 2
+  status: planned
+  country: US
+  uses: [A1, A2, A5, A7]
+  caveats: thermo 타입(GGA_GGA+U, GGA_GGA+U_R2SCAN, R2SCAN) 공존 — 같은 물질도 0.2 eV/atom 넘게 차이. MP2020 형성엔탈피 MAE 51 meV/atom, PBE 밴드갭 약 40% 과소. OPTIMADE 는 2023-03 에 멈춤 → S3 Delta/parquet 로 적재(--no-sign-request). API 키 없이 401
+  refs:
+    - https://api.materialsproject.org/heartbeat
+    - https://docs.materialsproject.org/changes/database-versions
+    - https://pypi.org/project/mp-api/
+    - https://docs.materialsproject.org/downloading-data/aws-opendata
+    - https://legacy.materialsproject.org/terms
+    - https://docs.materialsproject.org/methodology/materials-methodology/thermodynamic-stability/thermodynamic-stability/gga-gga+u-r2scan-mixing
+    - https://www.nature.com/articles/s41598-021-94550-5
+    - https://docs.materialsproject.org/methodology/materials-methodology/electronic-structure
+    - https://matsci.org/t/general-availability-of-data-release-v2026-04-13/67236
+  checked: 2026-09-26
+
+- id: oqmd
+  name: Open Quantum Materials Database (OQMD)
+  layer: C
+  operator: Northwestern University Wolverton 그룹
+  url: https://oqmd.org/
+  data: [형성에너지, 안정성(hull), 밴드갭, 결정구조]
+  access: [bulk, rest-api, optimade]
+  auth: none
+  license: CC-BY-4.0
+  version: v1.7 (2025-05, 19.2 GB) 확인. v1.8 (2026-02, 21.1 GB)은 서버 502 로 미재확인
+  size: 1,407,395건
+  update: 대략 연 1회
+  python_client: qmpy (PyPI 1.4.0, 서버 1.6.0 보다 구버전)
+  priority: 중
+  status: planned
+  country: US
+  uses: [A1]
+  caveats: 자체 피팅 μ·U 사용 → MP2020 에너지·hull 과 혼합 금지(소스별 hull). 실험 대비 MAE 0.096 eV/atom. 2026-09-26 REST·OPTIMADE 502(가용성 불안정). MySQL dump 불러오면 약 100 GB 추가 필요
+  refs:
+    - https://oqmd.org/
+    - https://oqmd.org/download/
+    - http://web.archive.org/web/20251110042317/https://www.oqmd.org/download/
+    - https://static.oqmd.org/static/docs/restful.html
+    - https://www.nature.com/articles/npjcompumats201510
+  checked: 2026-09-26
+
+- id: alexandria
+  name: Alexandria
+  layer: C
+  operator: Marques/Botti 그룹 (Ruhr-Universität Bochum)
+  url: https://alexandria.icams.rub.de/
+  data: [PBE·PBEsol·SCAN 구조와 에너지, PBEsol 포논, 50 GPa hull, 비평형 구조(sAlex25)]
+  access: [bulk, optimade]
+  auth: none
+  license: CC-BY-4.0
+  version: PBEsol 포논 2025-08, 50 GPa hull 2026-01 추가
+  size: 구조 5.8M (hull 위 175k), sAlex25 14M, PBEsol 415,673건
+  python_client: pymatgen (ComputedStructureEntry JSON, bz2 청크)
+  priority: 중
+  status: planned
+  country: DE
+  uses: [A1]
+  caveats: ML 생성 후보를 DFT 검증한 구조가 대부분이라 준안정상 비중이 큼. correction 필드와 MP2020 호환 미확인. OPTIMADE 는 PBEsol 정상, PBE 는 실측 500 오류. SCAN 건수 미확인
+  refs:
+    - https://alexandria.icams.rub.de/datasets.html
+    - https://alexandria.icams.rub.de/about.html
+    - https://doi.org/10.1088/2515-7639/ae6620
+  checked: 2026-09-26
+
+- id: jarvis-dft
+  name: JARVIS-DFT
+  layer: C
+  operator: NIST
+  url: https://jarvis.nist.gov/
+  data: [OptB88vdW 형성에너지·ehull·밴드갭, TBmBJ·HSE 밴드갭, 탄성텐서, DFPT 압전·유전, Seebeck, SLME, spillage(위상), 박리에너지, 초전도 Tc, 유효질량]
+  access: [bulk, python-package, optimade]
+  auth: none
+  license: CC-BY-4.0
+  license_note: figshare 데이터는 CC BY 4.0. 코드는 NIST 약관(미국 내 저작권 없음, 해외 저작권 가능) → CC BY 로 취급
+  version: figshare jdft_3d-9-24-2025 (2026-05-09 게시)
+  size: 93,902건 (홈페이지 기준 80,000+ 재료·1M+ 물성)
+  python_client: jarvis-tools 2026.6.12
+  priority: 중
+  status: planned
+  country: US
+  uses: [A7]
+  caveats: OptB88vdW 는 PBE 계열과 총에너지 혼합 불가 → 물성(갭·탄성) 레이어로만 사용. jarvis-tools 기본 경로는 여전히 2022 스냅샷(75,993건). NIST OPTIMADE 는 빈 결과·502 → AtomGPT 미러 사용
+  refs:
+    - https://jarvis.nist.gov/
+    - https://jarvis-tools.readthedocs.io/en/master/databases.html
+    - https://doi.org/10.6084/m9.figshare.6815699
+    - https://github.com/usnistgov/jarvis/blob/master/LICENSE.rst
+    - https://atomgpt.org/optimade/v1
+  checked: 2026-09-26
+
+- id: nomad
+  name: NOMAD (FAIRmat)
+  layer: C
+  operator: FAIRmat (NOMAD)
+  url: https://nomad-lab.eu/
+  data: [다코드 원시 계산 저장소]
+  access: [rest-api, optimade, python-package]
+  auth: none
+  license: CC-BY-4.0
+  license_note: 업로드 콘텐츠 CC BY 4.0. 비공개 데이터는 3년 후 자동 공개
+  version: 서버 1.4.3.post1
+  size: 엔트리 19,480,451, 재료 4,344,528, 업로드 11,061
+  python_client: nomad-lab 1.4.3
+  priority: 하
+  status: planned
+  country: DE
+  uses: []
+  caveats: 코드·범함수·수렴 조건이 제각각 → 필터링·중복 제거 필수라 MVP 적재에 부적합
+  refs:
+    - https://nomad-lab.eu/prod/v1/api/v1/info
+    - https://nomad-lab.eu/nomad-lab/terms.html
+  checked: 2026-09-26
+
+- id: aflow
+  name: AFLOW
+  layer: C
+  operator: AFLOW 컨소시엄
+  url: https://aflow.org/
+  data: [결정구조, 탄성(AEL), 프로토타입, 속성 215개]
+  access: [rest-api, optimade]
+  auth: none
+  license: academic-only
+  license_note: free for scientific, academic and non-commercial purposes. Any other use is prohibited → 상업 이용 불가
+  size: 3,929,948건 (OPTIMADE)
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: 제외 또는 상업 라이선스 협의. AFLUX 무인증. 공식 Python 클라이언트 미확인(PyPI aflow 0.0.11 미유지). OPTIMADE v1.0.0 필터 없는 조회는 500
+  refs:
+    - https://aflow.org/API/aflux/
+    - https://aflow.org/API/optimade/
+  checked: 2026-09-26
+
+- id: gnome
+  name: GNoME 공개분 (Google DeepMind)
+  layer: C
+  operator: Google DeepMind
+  url: https://github.com/google-deepmind/materials_discovery
+  data: [안정 결정구조와 에너지, r²SCAN 계산분]
+  access: [bulk]
+  auth: none
+  license: CC-BY-NC-4.0
+  license_note: 데이터 CC BY-NC 4.0 (README 원문), 코드 Apache-2.0 → 상업 이용 불가
+  version: 최종 갱신 2024-12
+  size: stable_materials_summary.csv 554,054행, r²SCAN CSV 139,541행
+  priority: 하
+  status: planned
+  uses: []
+  caveats: GCS gs://gdm_materials_discovery 공개. MP v2026.04.13 에 약 117k 포함(NC 동의 필요) → 상업 DB 에서 제외하고 별도 테이블
+  refs:
+    - https://github.com/google-deepmind/materials_discovery
+  checked: 2026-09-26
+
+- id: omat24
+  name: OMat24 (Meta FAIR Chemistry)
+  layer: C
+  operator: Meta FAIR
+  url: https://huggingface.co/facebook/OMAT24
+  data: [MLIP 학습용 DFT 계산(PBE/PBE+U)]
+  access: [bulk]
+  auth: none
+  license: CC-BY-4.0
+  license_note: 데이터 CC BY 4.0 (HF 게이트 없음). 모델 가중치는 Meta 별도 약관(FAIR Chemistry License) → engines.yaml 에서 따로 관리
+  size: 110M+ 계산
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: ML 단계용. 모델 카드가 MP 계산과 비호환을 명시 → 전용 보정 필요, MP 에너지와 혼합 금지
+  refs:
+    - https://arxiv.org/abs/2410.12771
+    - https://huggingface.co/facebook/OMAT24
+  checked: 2026-09-26
+
+- id: mptrj
+  name: MPtrj (MP 이완 궤적)
+  layer: C
+  operator: CHGNet 저자 (figshare 게시)
+  url: https://figshare.com/articles/dataset/23713842
+  data: [MLIP 학습용 DFT 이완 궤적]
+  access: [bulk]
+  auth: none
+  license: MIT
+  license_note: figshare MIT 표기. 원천 MP 의 CC BY 4.0 표기를 병행 — 두 표기의 관계 미확인
+  version: MP 2022.9 스냅샷 기반
+  size: 약 1.5M 구조
+  priority: 중
+  status: planned
+  uses: []
+  caveats: ML 단계용
+  refs:
+    - https://arxiv.org/abs/2302.14231
+    - https://figshare.com/articles/dataset/23713842
+  checked: 2026-09-26
+
+- id: matpes
+  name: MatPES
+  layer: C
+  operator: MaterialyzeAI
+  url: https://github.com/materialyzeai/matpes
+  data: [MLIP 학습용 DFT 데이터(PBE·r²SCAN)]
+  access: [bulk]
+  auth: none
+  license: BSD-3-Clause
+  version: 2025.2 (2026-04-15)
+  size: 약 400k 구조
+  priority: 중
+  status: planned
+  uses: []
+  caveats: ML 단계용. HF materialyze/matpes 에서 받음
+  refs:
+    - https://arxiv.org/abs/2503.04070
+    - https://github.com/materialyzeai/matpes
+  checked: 2026-09-26
+
+- id: fairchem-datasets
+  name: OMol25 / OC20 / OC22 / ODAC25 / OMC25 (Meta FAIR Chemistry)
+  layer: C
+  operator: Meta FAIR
+  url: https://facebookresearch.github.io/fairchem/omol25
+  data: [분자 DFT(OMol25), 촉매 표면(OC20·OC22), MOF(ODAC25), 분자결정(OMC25)]
+  access: [bulk]
+  auth: application
+  license: CC-BY-4.0
+  license_note: 데이터는 CC BY 4.0. 모델 가중치는 Meta 별도 약관
+  size: 데이터셋별 25M–133M
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: OMol25 는 HF 접근 요청이 필요한 것으로 보임(세부 미확인) → auth 는 보수적으로 application. 분자·촉매 중심이라 관련성 낮음
+  refs:
+    - https://facebookresearch.github.io/fairchem/omol25
+    - https://arxiv.org/abs/2505.08762
+  checked: 2026-09-26
+
+- id: materials-cloud
+  name: Materials Cloud MC3D / MC2D
+  layer: C
+  operator: Materials Cloud
+  url: https://www.materialscloud.org/
+  data: [실험 유래 구조의 PBE/PBEsol 계산(MC3D), 2D 소재 계산(MC2D)]
+  access: [optimade, bulk]
+  auth: none
+  license: CC-BY-4.0
+  size: MC3D PBEsol v2 33,142건, MC3D PBE 34,970건, MC2D 2,683건
+  priority: 하
+  status: planned
+  country: CH
+  uses: []
+  refs:
+    - https://archive.materialscloud.org/records/szjaf-cfv74
+  checked: 2026-09-26
+
+- id: c2db
+  name: C2DB (Computational 2D Materials Database)
+  layer: C
+  operator: DTU
+  url: https://c2db.fysik.dtu.dk/
+  data: [2D 소재 계산 물성]
+  access: [web, bulk]
+  auth: none
+  license: CC-BY-NC-4.0
+  size: 17,001행
+  priority: 제외
+  status: excluded
+  country: DK
+  uses: []
+  caveats: 비교표 우선순위는 하지만 라이선스 리스크 표(9절) 대응이 '제외'라 제외
+  refs:
+    - https://c2db.fysik.dtu.dk/
+  checked: 2026-09-26
+
+- id: cmr
+  name: CMR (Computational Materials Repository)
+  layer: C
+  operator: DTU
+  url: https://cmr.fysik.dtu.dk/
+  data: [2D 소재 등 계산 데이터 모음]
+  access: [web, bulk]
+  auth: none
+  license: CC-BY-SA-4.0
+  priority: 하
+  status: planned
+  country: DK
+  uses: []
+  caveats: 파생물에 SA 조건 전파 → SA 플래그
+  refs:
+    - https://cmr.fysik.dtu.dk/
+  checked: 2026-09-26
+
+- id: 2dmatpedia
+  name: 2DMatPedia
+  layer: C
+  operator: 2DMatPedia
+  url: http://www.2dmatpedia.org/
+  data: [2D 소재 구조·계산 물성]
+  access: [web, bulk]
+  auth: none
+  license: unknown
+  license_note: 데이터 라이선스 미확인
+  size: 6,351개
+  priority: 하
+  status: planned
+  uses: []
+  refs:
+    - http://www.2dmatpedia.org/summary
+  checked: 2026-09-26
+
+- id: matbench
+  name: Matbench / Matbench Discovery
+  layer: C
+  operator: Materials Project (matbench)
+  url: https://matbench.materialsproject.org/
+  data: ["ML 물성예측 벤치마크 13태스크 (mp_e_form 132,752건 등)", uMLIP 안정성 벤치마크(Matbench Discovery)]
+  access: [python-package]
+  auth: none
+  license: unknown
+  license_note: 미확인
+  version: v0.1
+  python_client: matbench
+  priority: 중
+  status: planned
+  uses: [A1, A7]
+  caveats: 평가용. WBM 등 벤치마크 데이터가 학습셋에 섞였는지 점검
+  refs:
+    - https://matbench.materialsproject.org/
+  checked: 2026-09-26
+
+- id: optimade
+  name: OPTIMADE (공통 구조 쿼리 API 표준)
+  layer: C
+  operator: Materials-Consortia (OPTIMADE 컨소시엄)
+  url: https://www.optimade.org/
+  data: [제공자 공통 결정구조 쿼리(필터 문법), 제공자별 비표준 물성 필드]
+  access: [optimade, python-package]
+  auth: none
+  license: unknown
+  license_note: 제공자별 라이선스 — 점검한 11곳 모두 /info 에 라이선스 필드 없음 → 각 소스 항목의 license 를 적용
+  version: 스펙 v1.3.0 (2025-12-16). 실제 배포는 1.0–1.2, 1.3 전면 배포 제공자 미확인
+  size: 제공자 28곳 (providers.json 30항목, 인덱스 URL 등록 22곳)
+  python_client: optimade 1.5.0 (OptimadeClient, optimade-get)
+  priority: 상
+  status: planned
+  country: INT
+  uses: []
+  caveats: 구조 검색 공통창구(접근 계층)로만 사용, 벌크 적재는 각 소스 네이티브 경로로. 제공자당 기본 상한 1,000건. 신선도 제각각(MP 는 2023년에 멈춤), OQMD·Alexandria-PBE 실측 5xx. MVP Top 10 에는 없음
+  refs:
+    - https://github.com/Materials-Consortia/OPTIMADE/releases
+    - https://providers.optimade.org/providers.json
+    - https://www.optimade.org/optimade-python-tools/latest/getting_started/client/
+  checked: 2026-09-26
+
+# 국내 소재 조성–공정–물성 데이터 (ML 학습 데이터 성격이라 C 에 둔다)
+
+- id: k-mds
+  name: 국가소재연구데이터센터 / 국가 소재 데이터 스테이션 (K-MDS)
+  layer: C
+  operator: KRISS (과기정통부 지정, 분야별 KIST·KRISS·KIMS 수행)
+  url: https://kmds.re.kr/
+  data: [촉매·전지·합금·열전 조성–공정–물성 실험·계산 데이터, 표준 스키마 Materials System·표준어휘집 9판]
+  access: [web]
+  auth: registration
+  license: unknown
+  license_note: 데이터 라이선스 미확인 — 기관 문의 대상
+  size: 센터 메인 199만 건(2025.12) vs K-MDS 카운터 합계 약 107.6만 건 (수치 상충)
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  caveats: 웹 검색·DOI·Web Console·Jupyter 제공. 공개 REST API·벌크·로그인 요건 미확인(auth 는 보수적으로 registration). 라이선스 확인 후 우선순위 상향 검토. 스키마는 내부 스키마 설계에 참조. KISTI 구축·운영은 2024년 종료 표기
+  refs:
+    - https://www.ncmrd.re.kr/
+    - https://www.ncmrd.re.kr/page/sub4
+    - https://kmds.re.kr/
+    - http://www.boannews.com/news/articleView.html?idxno=106908
+  checked: 2026-09-26
+
+- id: dataon
+  name: KISTI DataON 연구데이터 플랫폼
+  layer: C
+  operator: KISTI
+  url: https://dataon.kisti.re.kr/
+  data: [국내외 연구데이터셋 메타데이터(데이터셋별 CC 라이선스 필드 포함)]
+  access: [rest-api, web]
+  auth: api-key
+  license: unknown
+  license_note: 데이터셋별 CC (응답 필드 dataset_cc_license_pc) → CC0·CC BY 데이터셋만 선별 수집하고 라이선스 필드 저장
+  size: 총 4,494,785 데이터셋 (국내 45,848, 해외 4,448,937)
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  caveats: 소재·화학 연구데이터 메타 검색 허브. OAI-PMH 도 제공. 현황 페이지는 국내 20,031건·재료 498건으로 수치 상이(기준일 없음). 기본적으로 로그인 필요
+  refs:
+    - https://dataon.kisti.re.kr/
+    - https://dataon.gitbook.io/dataon-user-guide/sharing/openapi/search_api
+    - https://dataon.kisti.re.kr/datause/datauseStatus.do
+  checked: 2026-09-26
+
+- id: ai-hub-materials
+  name: AI Hub 실험기반 재료 물성 데이터
+  layer: C
+  operator: AI Hub
+  url: https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=realm&dataSetSn=71339
+  data: [Co·Al·Ni·Ti·Mg–전이금속 합금 조성, 전기저항, 경도, 비정질 여부]
+  access: [bulk]
+  auth: application
+  license: unknown
+  license_note: 상업 이용·해외 반출 조건 미확인 — 문의 대상
+  version: 2023-11 개방
+  size: 162,276건
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  caveats: 내국인만 신청 가능
+  refs:
+    - https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=realm&dataSetSn=71339
+  checked: 2026-09-26
+
+- id: komap
+  name: KoMaP 소재AI플랫폼
+  layer: C
+  operator: KoMaP
+  url: https://komap.ai/
+  data: [MDF 데이터(원료·조성·공정·시편 물성)]
+  access: [web]
+  auth: registration
+  license: unknown
+  license_note: 공개 범위·라이선스 미확인
+  size: 311,830건
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  refs:
+    - https://komap.ai/front/data_service/data_service
+  checked: 2026-09-26
+
+- id: matcenter
+  name: KIMS 금속소재물성정보 / KRICT 화학소재정보은행(CMiB)
+  layer: C
+  operator: KIMS, KRICT
+  url: https://matcenter.org
+  data: [금속·화학 소재 조성·공정·물성]
+  access: [web]
+  auth: registration
+  license: unknown
+  license_note: 약관 미확인
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: 회원 웹 전용, API·최신성 미확인. KRICT 디지털화학연구센터는 독립 공개 데이터 플랫폼을 찾지 못함
+  refs:
+    - https://www.kims.re.kr/v17/bbx/board.php?bx_table=01_05_08&wr_id=1
+    - https://matcenter.org
+    - https://m.cmib.org/mobile030101
+    - https://www.krict.re.kr/kor/sub02_05_02.do
+  checked: 2026-09-26
+
+- id: kipris-alloy
+  name: KIPRISPlus 특허 합금조성비 API (data.go.kr 15039350)
+  layer: C
+  operator: KIPRIS (KIPRISPlus)
+  url: https://www.data.go.kr/data/15039350/openapi.do
+  data: [특허 기재 합금 조성비]
+  access: [rest-api]
+  auth: application
+  license: unknown
+  license_note: KIPRIS 약관 확인 필요 (이용료 포함 미확인)
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: data.go.kr LINK형 API — 기관 사이트에서 따로 신청
+  refs:
+    - https://www.data.go.kr/data/15039350/openapi.do
+  checked: 2026-09-26
+
+# ── X 실험 결정 구조 ─────────────────────────────────────────────────────
+
+- id: cod
+  name: Crystallography Open Database (COD)
+  layer: X
+  operator: COD 컨소시엄 (Vilnius University 등)
+  url: https://www.crystallography.net/
+  data: [CIF 결정구조(유기·무기·광물), 일부 hkl]
+  access: [bulk, rest-api, optimade]
+  auth: none
+  license: CC0-1.0
+  license_note: 홈페이지에 CC0 명시. 명시 시점은 2019-06~2021-11 사이로 추정(공지 미확인)
+  version: "2026-09-25 기탁분까지 (매일 갱신)"
+  size: 534,973건 (OPTIMADE 535,124건)
+  update: 매일
+  python_client: pymatgen.ext.cod, optimade
+  priority: 상
+  mvp_rank: 3
+  status: planned
+  country: INT
+  uses: [A1]
+  caveats: 9000000번대 약 1.79만 건이 AMCSD 유래. 품질 편차·중복(_cod_duplicateof) → 무기·광물 필터와 중복 제거 필요. 압축 아카이브는 2025-02-09 이후 미갱신 → rsync 권장. 2025-12 서버 복구 흔적
+  refs:
+    - https://www.crystallography.net/cod/
+    - https://www.crystallography.net/cod/optimade/v1/info
+    - https://wiki.crystallography.net/RESTful_API/
+    - https://wiki.crystallography.net/howtoobtaincod/
+    - https://github.com/materialsproject/pymatgen/blob/master/src/pymatgen/ext/cod.py
+  checked: 2026-09-26
+
+- id: amcsd
+  name: American Mineralogist Crystal Structure Database (AMCSD)
+  layer: X
+  operator: RRUFF 프로젝트 (University of Arizona), MSA 지원
+  url: https://www.rruff.net/amcsd/
+  data: [광물 결정구조(AMC·CIF·DIF 형식)]
+  access: [bulk, web]
+  auth: none
+  license: citation-only
+  license_note: 명시 오픈 라이선스 없이 인용 요구. re3data 분류 other
+  version: "2026-06-29 zip"
+  size: 21,503건
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 같은 구조 약 1.79만 건이 COD(CC0)에 들어 있음 → COD 경로로 적재 권장. API 없음. 구 도메인 rruff.geo.arizona.edu 연결 거부(rruff.net 이전 중)
+  refs:
+    - http://www.minsocam.org/msa/crystal_database.html
+    - https://www.rruff.net/AMS/zipped_files/
+    - https://www.rruff.net/amcsd/
+    - https://www.re3data.org/repository/r3d100010765
+  checked: 2026-09-26
+
+- id: icsd
+  name: Inorganic Crystal Structure Database (ICSD)
+  layer: X
+  operator: FIZ Karlsruhe
+  url: https://icsd.products.fiz-karlsruhe.de/
+  data: [무기 결정구조]
+  access: [web, rest-api]
+  auth: paid
+  license: proprietary
+  license_note: AGB 2019 — 제3자 제공·상업 이용·자동 다운로드·텍스트마이닝·파생 DB 구축 금지. 다운로드 상한 기관 20,000건·개인 5,000건
+  version: v5.6.0 (2026-04-02)
+  size: 335,032 구조
+  update: 연 약 12,000건 추가
+  priority: 하
+  status: planned
+  country: DE
+  uses: []
+  caveats: ICSD ID 참조만 저장하거나 사용자가 자기 라이선스로 연동. OPTIMADE 제공자 아님
+  refs:
+    - https://icsd.products.fiz-karlsruhe.de/
+    - https://icsd.products.fiz-karlsruhe.de/en/products/icsd-products
+    - https://icsd.products.fiz-karlsruhe.de/sites/default/files/ICSD/documents/terms/ICSD-AGB-EN-2019.pdf
+  checked: 2026-09-26
+
+- id: csd
+  name: Cambridge Structural Database (CSD)
+  layer: X
+  operator: CCDC
+  url: https://www.ccdc.cam.ac.uk/
+  data: [유기·금속유기 결정구조]
+  access: [web, python-package]
+  auth: paid
+  license: proprietary
+  license_note: 유료. 무료 Access Structures 는 개별 열람만, 체계적 다운로드·재배포 금지. Python API 도 라이선스 필요
+  version: 2026-09 업데이트 (16,180 구조 추가)
+  size: 142만+ 구조
+  priority: 하
+  status: planned
+  country: GB
+  uses: []
+  caveats: 유기·금속유기 중심이라 관련성 낮음
+  refs:
+    - https://www.ccdc.cam.ac.uk/solutions/whats-new/
+    - https://www.ccdc.cam.ac.uk/access-structures-terms/
+    - https://downloads.ccdc.cam.ac.uk/documentation/API/conditions_of_use.html
+  checked: 2026-09-26
+
+- id: mpds
+  name: MPDS / PAULING FILE
+  layer: X
+  operator: MPDS (PAULING FILE)
+  url: https://mpds.io/
+  data: [결정구조, 상태도, 물성]
+  access: [rest-api, optimade, web]
+  auth: paid
+  license: proprietary
+  license_note: 오픈분(문서상 약 5% 미만, 이원 산화물 약 6천 건 등)만 CC BY 4.0(2017년경 공지), 나머지 상용. 익명 OPTIMADE 에서 이원 산화물도 _mpds_data_license=commercial 로 표시되어 오픈분 상태 불명확
+  size: 구조 424,820, 상태도 140,255, 물성 1,101,574건
+  python_client: mpds_client (2020년 이후 미갱신)
+  priority: 하
+  status: planned
+  uses: []
+  caveats: 요금 GUI €1,900/년, API €9,500/년부터(학계). 비공개분은 ID 참조만
+  refs:
+    - https://mpds.io/
+    - https://github.com/mpds-io/mpds-api
+    - https://psi-k.net/general-announcements/mpdspauling-file-big-data-and-machine-learning/
+    - https://developer.mpds.io/
+  checked: 2026-09-26
+
+# ── M 광물 ───────────────────────────────────────────────────────────────
+
+- id: ima-cnmnc
+  name: IMA-CNMNC 광물 목록 (The New IMA List of Minerals)
+  layer: M
+  operator: IMA-CNMNC (국제광물학연합 신광물·명명·분류 위원회)
+  url: https://cnmnc.units.it/
+  data: [유효 광물종 이름, 화학식, 상태(A·G·Rd 등)]
+  access: [pdf]
+  auth: none
+  license: CC-BY-SA-3.0
+  license_note: CC BY-SA 3.0 Unported (PDF 본문 확인) — 상업 이용 가능, 파생물에 SA 조건
+  version: 2026-09판
+  size: 6,239종
+  priority: 상
+  mvp_rank: 8
+  status: fetched  # data/raw/ima-cnmnc/2026-09/ (SHA256SUMS)
+  country: INT
+  uses: []
+  caveats: PDF 만 제공(xlsx 는 광물기호 목록뿐) → 파싱 후 COD·AMCSD 구조와 이름 매칭. 집계 차이 rruff.net 6,187·Wikipedia 6,226. RRUFF IMA DB(rruff.net/odr/ima) CSV 내보내기는 라이선스 미확인
+  refs:
+    - https://cnmnc.units.it/files/editor/IMA_Master_List_(2026-09).pdf
+    - https://cnmnc.units.it/
+    - https://www.rruff.net/odr/ima
+    - https://en.wikipedia.org/wiki/List_of_minerals_recognized_by_the_International_Mineralogical_Association
+  checked: 2026-09-26
+
+- id: mindat
+  name: Mindat / OpenMindat API
+  layer: M
+  operator: Hudson Institute of Mineralogy (비영리), OpenMindat (NSF 지원)
+  url: https://www.mindat.org/
+  data: [광물종(IMA), 산지, 산출(occurrences), 결정계·공간군, Dana-8·Nickel-Strunz-10 분류]
+  access: [rest-api, bulk]
+  auth: application
+  license: CC-BY-NC-SA-4.0
+  license_note: usage of this API is subject to the CC BY-NC-SA 4.0 (Wayback 2025-11 확인) → 상업 이용 불가, 파생물 SA
+  size: 광물종 6,239, 산지 450,167 (스니펫, 원문 403)
+  python_client: openmindat 0.1.3 (2026-01-31)
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 비상업 연구 단계에서만 사용(광물명 정규화·산지·분류 매핑). API 키는 가입 → 용도 기재 신청 → 심사. /minerals-ima/ 는 무인증 조회 가능. /exports 벌크 있음. AI/ML 학습 제한 문구 미확인
+  refs:
+    - https://api.mindat.org/v1/schema/
+    - https://www.mindat.org/a/how_to_get_my_mindat_api_key
+    - http://web.archive.org/web/20251115025228/https://www.mindat.org/a/how_to_get_my_mindat_api_key
+    - https://pypi.org/project/openmindat/
+    - https://rmets.onlinelibrary.wiley.com/doi/10.1002/gdj3.204
+  checked: 2026-09-26
+
+- id: rruff
+  name: RRUFF 프로젝트 (스펙트럼·XRD)
+  layer: M
+  operator: RRUFF 프로젝트 (University of Arizona)
+  url: https://www.rruff.net/
+  data: [라만 스펙트럼, IR, 분말 XRD(원시·DIF), 전자현미분석 화학조성, 사진]
+  access: [bulk, web]
+  auth: none
+  license: citation-only
+  license_note: 명시 없음, Please cite the RRUFF Project 인용 요구만 → 재배포 가능 여부 불명확
+  version: 라만 zip 2026-06-23
+  size: 샘플 9,858 (공개 4,349), IMA 승인 광물 6,187 (2026-09-26)
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 시뮬레이션 라만·XRD 스펙트럼 검증용(내부 참조). API 없음. 도메인 rruff.info → rruff.net(ODR 기반) 이전 중
+  refs:
+    - https://www.rruff.net/about/
+    - https://www.rruff.net/about/download-data/
+  checked: 2026-09-26
+
+- id: kigam-geobigdata
+  name: KIGAM 지오빅데이터 오픈플랫폼
+  layer: M
+  operator: 한국지질자원연구원 (KIGAM)
+  url: https://data.kigam.re.kr/
+  data: [국내 광상, 지구화학 분석값, 광물 조성, 지질도·주제도]
+  access: [rest-api]
+  auth: api-key
+  license: unknown
+  license_note: 데이터셋마다 기탁자가 CC0·BY·BY-SA·BY-NC·BY-ND·BY-NC-ND 중 선택 → CC0·CC BY 데이터셋만 선별하고 데이터셋 라이선스를 레코드에 저장
+  size: 데이터셋 3,012건 (광물자원 985), 주제도 118건, 보고서·논문 133,674건
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  caveats: REST OpenAPI(/openapi/data·/openapi/file·/openapi/wms), 명시된 호출 한도 없음. 하위 조사에서 API 호출이 WAF 400 으로 차단됨. 광물자원 데이터셋별 라이선스 분포 미확인
+  refs:
+    - https://data.kigam.re.kr/about/info?lang=ko
+    - https://data.kigam.re.kr/guide/openapi?lang=ko
+    - https://data.kigam.re.kr/manage/data/license?lang=ko
+  checked: 2026-09-26
+
+- id: usgs-mrds
+  name: USGS Mineral Resources Data System (MRDS)
+  layer: M
+  operator: USGS
+  url: https://mrdata.usgs.gov/mrds/
+  data: [광상 위치, 광종]
+  access: [bulk, rest-api]
+  auth: none
+  license: public-domain
+  license_note: USGS 저작물 퍼블릭 도메인 정책 근거 (MRDS 개별 명시는 미확인, 조사 문서는 '추정')
+  update: 2011년 이후 체계적 갱신 중단
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: CSV·WFS 제공. 갱신 중단으로 최신성 낮음
+  refs:
+    - https://mrdata.usgs.gov/mrds/
+    - https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+  checked: 2026-09-26
+
+- id: webmineral
+  name: webmineral.com
+  layer: M
+  operator: webmineral.com
+  url: https://www.webmineral.com/
+  data: [광물 물성]
+  access: [web]
+  auth: none
+  license: permission-required
+  license_note: 저작권 보유
+  size: 4,714종
+  update: "2012-09-05 이후 갱신 중단"
+  priority: 제외
+  status: excluded
+  uses: []
+  caveats: 저작권 보유·갱신 중단으로 제외
+  refs:
+    - https://www.webmineral.com/
+  checked: 2026-09-26
+
+- id: handbook-of-mineralogy
+  name: Handbook of Mineralogy
+  layer: M
+  operator: Mineralogical Society of America (MSA)
+  url: https://www.handbookofmineralogy.org/
+  data: [광물별 물성 PDF]
+  access: [pdf]
+  auth: none
+  license: permission-required
+  license_note: MSA 저작권 (이용 허가 절차 별도)
+  priority: 제외
+  status: excluded
+  country: US
+  uses: []
+  caveats: 적재 제외, 사람이 검토할 때만 참조
+  refs:
+    - https://www.handbookofmineralogy.org/
+    - https://msa.minsocam.org/permissions.html
+  checked: 2026-09-26
+
+# ── Q 분자·안전 (식별자, GHS, 반응성) ────────────────────────────────────
+
+- id: pubchem
+  name: PubChem
+  layer: Q
+  operator: NIH/NLM/NCBI
+  url: https://pubchem.ncbi.nlm.nih.gov/
+  data: [화합물 구조, 식별자(CID·InChIKey·SMILES), 계산 물성, GHS, 기탁자 주석(PUG-View)]
+  access: [rest-api, bulk]
+  auth: none
+  license: public-domain
+  license_note: 미국 정부(NCBI) 생성분만 퍼블릭 도메인. 기탁자 주석은 출처별 권리 → PUG-View Reference 의 License·LicenseURL 필드로 레코드 단위 판별해 함께 저장
+  version: 물질 2026-09-05 갱신
+  size: 화합물 124,663,543, 물질 349,330,330, 데이터 소스 1,130 (2026-09-26)
+  python_client: PubChemPy 1.0.5 (MIT)
+  priority: 상
+  mvp_rank: 4
+  status: planned
+  country: US
+  uses: [S0]
+  caveats: 요청 초당 5건 이하(API 키로 증량 불가), 초과 시 503·점증 차단(X-Throttling-Control), 2026-08 부터 AI 목적 대량 스크래핑 차단 강화 → 대량은 FTP 벌크에서 대상 CID만 추출. PUG-REST 요청당 30초 제한. CAMEO 반응성 그룹 매핑의 우회 경로
+  refs:
+    - https://pubchem.ncbi.nlm.nih.gov/docs/statistics
+    - https://pubchem.ncbi.nlm.nih.gov/docs/programmatic-access
+    - https://pubchem.ncbi.nlm.nih.gov/docs/dynamic-request-throttling
+    - https://pubchem.ncbi.nlm.nih.gov/docs/downloads
+    - https://www.ncbi.nlm.nih.gov/home/about/policies/
+    - https://pypi.org/project/pubchempy/
+    - https://academic.oup.com/nar/article/46/W1/W563/4990016
+  checked: 2026-09-26
+
+- id: cameo
+  name: NOAA CAMEO Chemicals 반응성 그룹
+  layer: Q
+  operator: NOAA OR&R + EPA
+  url: https://cameochemicals.noaa.gov/
+  data: [반응성 그룹 68개(특수 98·99·100 포함), 그룹 쌍별 호환성(Incompatible·Caution·Compatible)과 위험 코드·발생 가스, 화학물질 데이터시트, 화합물별 Reactivity Profile]
+  access: [web, desktop-app, rest-api]
+  auth: none
+  license: unknown
+  license_note: 무료 제공이나 반응성 데이터의 퍼블릭 도메인 명시 없음. DuPont·CAS 번호·동의어·NFPA·AEGL·ERPG 는 제3자 소유로 서면 허가 없이 복제 불가. 비정부 수령자 면책보상 조항 → NOAA 문의 대상
+  version: 웹 3.1.0 rev 1, 데스크톱 3.1.0 (2024-05, ERG 2024), Android 3.1.1 (2026-01)
+  size: 데이터시트 약 5,094개, UN/NA 2,369개, 쌍별 문서 최대 2,346개, PubChem 경유 CID 매핑 5,093건
+  priority: 상
+  mvp_rank: 5
+  status: planned
+  country: US
+  uses: [S0]
+  caveats: 공식 벌크·API 없음, robots.txt 가 /reactivity·/search 수집 금지 → rest-api 는 PubChem PUG-View(heading=Reactive Group) 경유(요청 6회로 5,093건). 쌍별 매트릭스는 이 경로로 못 얻음 → NOAA(cameo@noaa.gov) 문의 후 적재. 전제는 거의 동량 혼합·1 atm·75–120°F, 3성분 반응·촉매 효과 예측 불가
+  refs:
+    - https://cameochemicals.noaa.gov/
+    - https://cameochemicals.noaa.gov/browse/react
+    - https://cameochemicals.noaa.gov/help/reactivity/how_reactivity_is_predicted.htm
+    - https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm
+    - https://cameochemicals.noaa.gov/robots.txt
+    - https://response.restoration.noaa.gov/oil-and-chemical-spills/chemical-spills/response-tools/cameo-chemicals-development-history.html
+    - https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm
+  checked: 2026-09-26
+
+- id: cameo-crw
+  name: Chemical Reactivity Worksheet (CRW) 4.0
+  layer: Q
+  operator: AIChE CCPS (2016년 NOAA 에서 이관)
+  url: https://response.restoration.noaa.gov/chemical-reactivity-worksheet-transitioned-center-chemical-process-safety-ccps
+  data: [반응성 그룹 기반 혼합 위험 판정, 재질 호환성 판정]
+  access: [desktop-app]
+  auth: none
+  license: unknown
+  license_note: 현행 AIChE 이용조건 미확인
+  version: 4.0.3 (2019-07)
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. Excel 내보내기 기능 있음
+  refs:
+    - https://response.restoration.noaa.gov/chemical-reactivity-worksheet-transitioned-center-chemical-process-safety-ccps
+  checked: 2026-09-26
+
+- id: epa-ctx
+  name: EPA CompTox Chemicals Dashboard / CTX API
+  layer: Q
+  operator: US EPA
+  url: https://www.epa.gov/comptox-tools/computational-toxicology-and-exposure-apis
+  data: [물성·독성 예측값, 식별자]
+  access: [rest-api, web]
+  auth: api-key
+  license: public-domain
+  license_note: free of all copyright restrictions … commercial and non-commercial use (저작권 제한 없음)
+  version: v2.8 (2026-03-17)
+  size: 1,376,722건
+  python_client: ctx-python (R 은 ctxR)
+  priority: 중
+  status: planned
+  country: US
+  uses: [S0]
+  caveats: 무료 키는 ccte_api@epa.gov 로 메일 요청. 요청 한도 미확인
+  refs:
+    - https://www.epa.gov/comptox-tools/comptox-chemicals-dashboard-release-notes
+    - https://www.epa.gov/comptox-tools/computational-toxicology-and-exposure-apis
+  checked: 2026-09-26
+
+- id: wikidata
+  name: Wikidata
+  layer: Q
+  operator: Wikimedia Foundation
+  url: https://www.wikidata.org/
+  data: [화학 엔티티 CAS·CID·InChIKey·광물 ID 크로스워크, 원소 물성(녹는점·전기음성도·밀도)]
+  access: [sparql]
+  auth: none
+  license: CC0-1.0
+  size: 화학 엔티티 1,280,282건, 원소 항목 174개(가상원소 포함)
+  priority: 중
+  status: planned
+  country: INT
+  uses: []
+  caveats: 원소 레이어(E) 보강에도 쓰지만 주 용도가 식별자 크로스워크라 Q 로 분류. 원소는 Z≤118 필터 필요, qualifier 표기가 들쭉날쭉
+  refs:
+    - https://www.wikidata.org/wiki/Wikidata:Licensing
+  checked: 2026-09-26
+
+- id: chembl
+  name: ChEMBL
+  layer: Q
+  operator: EMBL-EBI
+  url: https://www.ebi.ac.uk/chembl/
+  data: [생물활성, 화합물 구조·식별자]
+  access: [rest-api, bulk]
+  auth: none
+  license: CC-BY-SA-3.0
+  license_note: 파생 DB 에 SA 조건
+  version: ChEMBL 37 (2026-05-01)
+  size: 화합물 2,921,148건
+  priority: 하
+  status: planned
+  country: INT
+  uses: []
+  caveats: 생물활성 중심이라 소재 용도 낮음
+  refs:
+    - https://www.ebi.ac.uk/chembl/api/data/status.json
+    - https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/chembl_37_release_notes.txt
+    - https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/README
+  checked: 2026-09-26
+
+- id: cas-common-chemistry
+  name: CAS Common Chemistry
+  layer: Q
+  operator: CAS
+  url: https://commonchemistry.cas.org/
+  data: [CAS RN, 구조]
+  access: [rest-api, web]
+  auth: application
+  license: CC-BY-NC-4.0
+  license_note: 상업 용도는 별도 계약
+  size: 약 50만 물질
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: API 는 양식 제출로 신청. CAS RN 은 PubChem·Wikidata 로 대체(계획서 4.3절). 요청 한도 미확인
+  refs:
+    - https://commonchemistry.cas.org/about
+    - https://www.cas.org/services/commonchemistry-api
+  checked: 2026-09-26
+
+- id: chemspider
+  name: ChemSpider
+  layer: Q
+  operator: Royal Society of Chemistry (RSC)
+  url: https://www.chemspider.com/
+  data: [구조, 식별자]
+  access: [rest-api, web]
+  auth: api-key
+  license: terms-restricted
+  license_note: API 데이터 재배포·재판매·수정 금지, 유사 서비스 구축 금지
+  size: 120M+ 구조
+  priority: 제외
+  status: excluded
+  country: GB
+  uses: []
+  caveats: API 월 1,000건 무료. 비교표 우선순위는 하지만 라이선스 리스크 표(9절) 대응이 '사용 안 함'이라 제외
+  refs:
+    - https://www.chemspider.com/about
+    - https://developer.rsc.org/terms-and-conditions
+  checked: 2026-09-26
+
+- id: echa-chem
+  name: ECHA CHEM (REACH 등록·C&L)
+  layer: Q
+  operator: European Chemicals Agency (ECHA)
+  url: https://echa.europa.eu/
+  data: [REACH 등록 정보, C&L(분류·표시) 정보]
+  access: [web]
+  auth: none
+  license: terms-restricted
+  license_note: 출처 표기 시 복제 가능하나 DB 전체·상당 부분의 체계적 자동 수집 금지 (원문 403, 검색 요약으로 확인)
+  priority: 하
+  status: planned
+  country: INT
+  uses: []
+  caveats: 개별 조회만. EU 규제지만 K 레이어는 국내 중심이라 GHS 분류 성격으로 Q 에 둠
+  refs:
+    - https://echa.europa.eu/legal-notice
+  checked: 2026-09-26
+
+- id: chembank
+  name: 한국화합물은행
+  layer: Q
+  operator: 한국화합물은행
+  url: https://chembank.org/
+  data: [신약 스크리닝 화합물 기탁·분양]
+  access: [web]
+  auth: none
+  license: unknown
+  priority: 제외
+  status: excluded
+  country: KR
+  uses: []
+  caveats: 소재 물성 DB 와 성격이 달라 제외 (조사 문서 우선순위 미표기)
+  refs:
+    - https://chembank.org/
+  checked: 2026-09-26
+
+# ── T 열역학 (물성 참조값 포함) ──────────────────────────────────────────
+
+- id: nasa-cea-thermo
+  name: NASA CEA thermo.inp
+  layer: T
+  operator: NASA Glenn Research Center
+  url: https://github.com/nasa/cea
+  data: [기체·응축상 9계수 열역학 다항식(thermo.inp), 수송물성(trans.inp)]
+  access: [bulk, python-package]
+  auth: none
+  license: Apache-2.0
+  version: nasa/cea 재구현판 (문서 v3.3.4)
+  size: 약 2,100종
+  python_client: cea (pip install cea)
+  priority: 상
+  mvp_rank: 6
+  status: planned
+  country: US
+  uses: [A2, A3]
+  caveats: 고온 반응 ΔG(T)·연소·기상 평형의 기본 DB. GitHub data/thermo.inp 파싱
+  refs:
+    - https://github.com/nasa/cea
+  checked: 2026-09-26
+
+- id: phreeqc-db
+  name: PHREEQC 동봉 열역학 DB
+  layer: T
+  operator: USGS
+  url: https://www.usgs.gov/software/phreeqc-version-3
+  data: [수계 종분화·광물 용해도 DB 파일(phreeqc·wateq4f·llnl·minteq·minteq.v4·pitzer·sit·Amm·core10·Concrete_PHR/PZ·frezchem 등)]
+  access: [bulk]
+  auth: none
+  license: USGS-public
+  license_note: User Rights Notice — 무상 사용·복제·수정·배포, 유상 배포도 허용, 수정본에는 수정 사실 고지. 동봉 PHREEQC_ThermoddemV1.10 은 BRGM 약관과 충돌 가능 → 제외
+  version: PHREEQC 3.8.6 (USGS, 2025-01) / 3.9.0 (GitHub, 2026-05-14)
+  size: 20여 파일
+  python_client: phreeqpy 0.6.0, phreeqcrm 0.0.20
+  priority: 상
+  mvp_rank: 7
+  status: planned
+  country: US
+  uses: [A4]
+  caveats: MVP 적재 대상은 phreeqc.dat·llnl.dat·minteq.v4·pitzer·sit. llnl.dat 는 LLNL thermo.com.V8.R6 파생
+  refs:
+    - https://www.usgs.gov/software/phreeqc-version-3
+    - https://github.com/usgs-coupled/phreeqc3/releases
+    - https://water.usgs.gov/water-resources/software/PHREEQC/Phreeqc_UserRightsNotice.txt
+  checked: 2026-09-26
+
+- id: llnl-thermo
+  name: LLNL thermo.com.V8.R6 (EQ3/6)
+  layer: T
+  operator: LLNL
+  url: https://github.com/LLNL/EQ3_6
+  data: [수계·광물 log K]
+  access: [bulk]
+  auth: none
+  license: BSD-3-Clause
+  license_note: EQ3/6 v8.0a 가 GitHub 에서 BSD-3 로 배포 (LLNL-CODE-2013-683958)
+  version: thermo.com.V8.R6 (EQ3/6 v8.0a)
+  priority: 중
+  status: planned
+  country: US
+  uses: [A4]
+  caveats: 원본 데이터 파일이 GitHub 패키지에 동봉되어 있는지 미확인. PHREEQC llnl.dat·GWB thermo.com.V8.R6+.tdat 이 이 파일에서 파생
+  refs:
+    - https://github.com/LLNL/EQ3_6
+    - https://www.gwb.com/thermo.php
+  checked: 2026-09-26
+
+- id: nist-janaf
+  name: NIST-JANAF 열화학표 (SRD 13)
+  layer: T
+  operator: NIST
+  url: https://janaf.nist.gov/
+  data: [고온 무기종 Cp·S·−(G−H)/T·H−H(Tr)·ΔfH·ΔfG·log Kf 표]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  license_note: Copyright 1986 … All rights reserved, SRD Act → 재배포 허가 필요
+  version: 4판 (1998, 마지막 갱신)
+  size: 약 1,796표
+  priority: 중
+  status: planned
+  country: US
+  uses: [A2, A3]
+  caveats: 내부 검증 전용(고온 산화물·할로겐화물 ΔG(T) 기준값). 최신값은 ANL ATcT 로 연결됨
+  refs:
+    - https://janaf.nist.gov/
+  checked: 2026-09-26
+
+- id: nist-webbook
+  name: NIST Chemistry WebBook (SRD 69)
+  layer: T
+  operator: NIST
+  url: https://webbook.nist.gov/chemistry/
+  data: [열화학(ΔfH·S·Cp), 상변화, 반응 열화학, 이온 에너지, IR/UV/MS 스펙트럼, 헨리 상수]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  license_note: © 2026 … All rights reserved, SRD Act 저작권 — 사전 허가 없는 복제·저장 금지
+  version: 2025-03 갱신
+  python_client: nistchempy 2.0.0 (비공식)
+  priority: 중
+  status: planned
+  country: US
+  uses: [A3]
+  caveats: 기체·유기종 열화학 검증값(내부 참조), 재배포 DB 에는 넣지 않음. 웹 전용, API·전체 데이터 제품 없음. robots.txt Crawl-delay 5·ai-train=no. 조사 문서는 분자·화학물질 표에 두었으나 내용(열화학) 기준으로 T 분류
+  refs:
+    - https://webbook.nist.gov/chemistry/
+    - https://webbook.nist.gov/chemistry/faq/
+    - https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications
+  checked: 2026-09-26
+
+- id: nist-thermoml
+  name: NIST ThermoML 아카이브
+  layer: T
+  operator: NIST TRC
+  url: https://www.nist.gov/mml/acmd/trc/thermoml/thermoml-archive
+  data: [저널 게재 실측 열물성(XML/JSON)]
+  access: [bulk]
+  auth: none
+  license: NIST-SRD
+  license_note: NIST 라이선스 링크 + with permission of the journal publishers 조건 → 재배포 허가 필요로 보수적 취급
+  version: ThermoML.v2020-09-30 (2019년 데이터까지)
+  size: 189 MB (tgz)
+  priority: 중
+  status: planned
+  country: US
+  uses: []
+  caveats: 다섯 개 저널과 협력해 수집. 2020년 이후 벌크 제공 여부 미확인
+  refs:
+    - https://www.nist.gov/mml/acmd/trc/thermoml/thermoml-archive
+    - https://data.nist.gov/od/id/mds2-2422
+  checked: 2026-09-26
+
+- id: nist-srd-free
+  name: NIST 무료 웹 SRD (46·30·138·147 등)
+  layer: T
+  operator: NIST
+  url: https://www.nist.gov/srd/free-srd
+  data: [금속착물 안정도(SRD 46), 구조 세라믹스(SRD 30), 세라믹 파괴인성(SRD 138), 이온성 액체 ILThermo(SRD 147)]
+  access: [web]
+  auth: none
+  license: NIST-SRD
+  license_note: 무료 웹이어도 SRD 저작권 그대로 적용
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단(내부 검증 참고)
+  refs:
+    - https://www.nist.gov/srd/free-srd
+    - https://www.nist.gov/srd/public-law
+  checked: 2026-09-26
+
+- id: nist-srd-paid
+  name: NIST 유료 SRD (TDE·REFPROP·ACerS-NIST PED)
+  layer: T
+  operator: NIST
+  url: https://www.nist.gov/srd/srd-catalog
+  data: [순물질 열물성 평가(TDE SRD 103), 유체 상태방정식(REFPROP), 세라믹 상평형도(PED SRD 31)]
+  access: [desktop-app]
+  auth: paid
+  license: proprietary
+  license_note: 유료 (REFPROP $325, PED $1,950, TDE 가격 미확인)
+  size: TDE 순물질 약 29,000종·870만 점
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  refs:
+    - https://www.nist.gov/srd/srd-catalog
+    - https://www.nist.gov/srd/refprop
+    - https://www.nist.gov/srd/nist-standard-reference-database-31
+  checked: 2026-09-26
+
+- id: sgte-unary
+  name: SGTE Unary 5.0 (순원소 CALPHAD DB)
+  layer: T
+  operator: SGTE (Scientific Group Thermodata Europe)
+  url: https://www.sgte.net/en/free-pure-elements-database
+  data: [순원소 Gibbs 에너지 함수(TDB)]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: 무료 배포 파일이나 라이선스 문구 없음 → 출처 표기, 문의 대상
+  version: unary50.tdb (2009, Dinsdale 1991 기반)
+  size: 원소 전체
+  python_client: pycalphad 0.11.2 (TDB 읽기)
+  priority: 중
+  status: planned
+  country: INT
+  uses: [A6]
+  caveats: 순원소만 → 합금계는 계별 공개 TDB 가 따로 필요(assays.yaml A6 비고)
+  refs:
+    - https://www.sgte.net/en/free-pure-elements-database
+  checked: 2026-09-26
+
+- id: psi-nagra-tdb
+  name: PSI/Nagra 화학 열역학 DB 2020
+  layer: T
+  operator: PSI / Nagra
+  url: https://www.psi.ch/en/les/database
+  data: [수계 열역학(SIT), GEMS·PHREEQC·GWB 형식 파일]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: 라이선스 문구 없음 → 출처 표기, 문의 대상
+  version: TDB 2020 v2-1 (2026-02)
+  size: 원소 53, 수용액종 1,034 (SIT), 고체 358
+  priority: 중
+  status: planned
+  country: CH
+  uses: [A4]
+  refs:
+    - https://www.psi.ch/en/les/database
+  checked: 2026-09-26
+
+- id: burcat
+  name: Burcat 열화학 DB
+  layer: T
+  operator: Burcat (Technion) — RESPECTH(ELTE) 미러
+  url: https://respecth.elte.hu/burcat.php
+  data: [NASA 7계수 열역학 다항식(THERM.DAT·NEWNASA.TXT)]
+  access: [bulk]
+  auth: none
+  license: noncommercial-custom
+  license_note: 인용 조건으로 무료, 판매·상업 출판물 게재는 저자 서면 동의 필요
+  version: 2023-07-23판 (RESPECTH 미러)
+  size: 약 3,746종
+  priority: 중
+  status: planned
+  country: INT
+  uses: [A3]
+  caveats: 원 사이트(Technion) 접속 불가. 미러에 저자 추모 문구 → 향후 유지보수 불확실
+  refs:
+    - https://respecth.elte.hu/burcat.php
+    - https://respecth.elte.hu/burcat/READ.ME.txt
+  checked: 2026-09-26
+
+- id: chemicals-thermo
+  name: chemicals / thermo (Python 패키지)
+  layer: T
+  operator: Caleb Bell
+  url: https://github.com/CalebBell/chemicals
+  data: [2만+ 종 물성 상관식·상수]
+  access: [python-package]
+  auth: none
+  license: unknown
+  license_note: 코드는 MIT지만 수록값(Yaws·CRC 등)의 권리는 별개 → 원출처 기준으로 판단
+  python_client: chemicals, thermo
+  priority: 중
+  status: planned
+  uses: []
+  refs:
+    - https://github.com/CalebBell/chemicals
+  checked: 2026-09-26
+
+- id: coolprop
+  name: CoolProp
+  layer: T
+  operator: CoolProp 개발팀
+  url: http://www.coolprop.org/
+  data: [순물질·유사순물질 유체 상태방정식]
+  access: [python-package]
+  auth: none
+  license: MIT
+  version: 8.0.0
+  size: 약 129 유체
+  python_client: CoolProp
+  priority: 중
+  status: planned
+  country: INT
+  uses: []
+  refs:
+    - http://www.coolprop.org/fluid_properties/PurePseudoPure.html
+  checked: 2026-09-26
+
+- id: chnosz-obigt
+  name: CHNOSZ / OBIGT (HKF 파라미터)
+  layer: T
+  operator: CHNOSZ 개발자 (CRAN 배포)
+  url: https://cran.r-project.org/package=CHNOSZ
+  data: [열수 HKF 파라미터(OBIGT)]
+  access: [bulk]
+  auth: none
+  license: GPL-3.0
+  license_note: R 패키지 GPL-3
+  version: CHNOSZ 2.3.0
+  priority: 중
+  status: planned
+  country: INT
+  uses: [A4]
+  caveats: R 패키지(CRAN)라 access 는 파일 벌크로 표기. slop98/sprons 호스팅 위치 미확인
+  refs:
+    - https://cran.r-project.org/package=CHNOSZ
+  checked: 2026-09-26
+
+- id: nims-cpddb
+  name: NIMS CPDDB (CALPHAD 열역학 DB)
+  layer: T
+  operator: NIMS (물질·재료연구기구)
+  url: https://cpddb.nims.go.jp/
+  data: [CALPHAD TDB 700+]
+  access: [web]
+  auth: application
+  license: permission-required
+  license_note: 대량 다운로드·스크래핑 금지, 무단 복제·제3자 배포 금지
+  version: "2026-03-30 갱신"
+  size: TDB 700+
+  priority: 하
+  status: planned
+  country: JP
+  uses: []
+  caveats: 계정·신청 필요. 내부 참조로만
+  refs:
+    - https://cpddb.nims.go.jp/
+  checked: 2026-09-26
+
+- id: tdbdb
+  name: TDBDB (Brown University 문헌 TDB 색인)
+  layer: T
+  operator: Brown University
+  url: https://doi.org/10.1016/j.calphad.2018.04.003
+  data: [문헌 발표 CALPHAD TDB 색인]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: 개별 TDB 라이선스는 원 논문을 따름
+  size: 766건 (2018년 기준)
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. A6 계별 TDB 조사(계획서 10절 6번)의 출발점 후보. 현재 색인 건수 미확인
+  refs:
+    - https://doi.org/10.1016/j.calphad.2018.04.003
+  checked: 2026-09-26
+
+- id: nist-solder-tdb
+  name: NIST Solder TDB (Ag·Bi·Cu·Pb·Sb·Sn)
+  layer: T
+  operator: NIST Metallurgy
+  url: https://www.metallurgy.nist.gov/phase/solder/solder.html
+  data: [솔더 합금계 CALPHAD TDB(Ag·Bi·Cu·Pb·Sb·Sn)]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: SRD 가 아니므로 퍼블릭 도메인일 것으로 추정되나 명시 없음
+  version: "2017"
+  priority: 하
+  status: planned
+  country: US
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. A6 계별 공개 TDB 후보
+  refs:
+    - https://www.metallurgy.nist.gov/phase/solder/solder.html
+  checked: 2026-09-26
+
+- id: thermoddem
+  name: Thermoddem (BRGM)
+  layer: T
+  operator: BRGM
+  url: https://thermoddem.brgm.fr/
+  data: [수계·광물 열역학 DB]
+  access: [bulk]
+  auth: none
+  license: permission-required
+  license_note: BRGM 사전 서면 허가 없이 복제·배포 불가
+  version: v1.10 (2020-12)
+  priority: 하
+  status: planned
+  country: FR
+  uses: []
+  caveats: PHREEQC 동봉본(PHREEQC_ThermoddemV1.10)도 같은 이유로 적재 제외
+  refs:
+    - https://thermoddem.brgm.fr/page/terms-and-conditions-use
+  checked: 2026-09-26
+
+- id: thereda
+  name: THEREDA
+  layer: T
+  operator: THEREDA 컨소시엄
+  url: https://www.thereda.de/
+  data: [고염 수계 Pitzer 모델 파라미터]
+  access: [bulk]
+  auth: none
+  license: CC-BY-ND-4.0
+  license_note: 변경금지 — 형식 변환본·병합본 배포에 제약 → 원본 링크만
+  version: Release 2026-01
+  priority: 하
+  status: planned
+  country: DE
+  uses: []
+  refs:
+    - https://www.thereda.de/en/data-access/license
+  checked: 2026-09-26
+
+- id: supcrtbl
+  name: SUPCRTBL
+  layer: T
+  operator: Indiana University
+  url: https://hydrogeochem.earth.indiana.edu/
+  data: [HKF 고온고압 열역학 데이터]
+  access: [bulk]
+  auth: none
+  license: CC-BY-NC-ND-4.0
+  license_note: 원문은 CC BY-NC-ND 3.0형 비상업·변경금지 문구 → 가장 가까운 4.0 id 로 매핑
+  priority: 제외
+  status: excluded
+  country: US
+  uses: []
+  caveats: 비교표 우선순위는 하지만 라이선스 리스크 표(9절) 대응이 '제외'라 제외
+  refs:
+    - https://hydrogeochem.earth.indiana.edu/doc/supcrtbl_license.txt
+  checked: 2026-09-26
+
+- id: dew
+  name: Deep Earth Water (DEW) 모델
+  layer: T
+  operator: DEW community
+  url: http://www.dewcommunity.org/
+  data: [HKF 고온고압 수계 열역학(스프레드시트)]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: 라이선스 미표기
+  version: latest_dew2024.xlsm
+  priority: 하
+  status: planned
+  uses: []
+  refs:
+    - http://www.dewcommunity.org/resources.html
+  checked: 2026-09-26
+
+- id: cantera-example-data
+  name: Cantera example-data (반응 메커니즘 모음)
+  layer: T
+  operator: Cantera 개발팀
+  url: https://github.com/Cantera/cantera-example-data
+  data: [예제 반응 메커니즘·열역학 파일]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: 저장소가 반응 메커니즘에 라이선스를 부여하지 않는다고 명시 → 메커니즘별 원출처 확인
+  priority: 하
+  status: planned
+  country: INT
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. Cantera 코드 자체(BSD-3)는 engines.yaml 소관
+  refs:
+    - https://github.com/Cantera/cantera-example-data
+  checked: 2026-09-26
+
+- id: kriss-srd
+  name: KRISS 국가참조표준 데이터
+  layer: T
+  operator: 한국표준과학연구원 (KRISS) 국가참조표준센터
+  url: https://www.srd.re.kr/
+  data: [불확도 평가된 물리·재료·화학공정·에너지자원 참조표준 물성(DOI 부여)]
+  access: [web, rest-api]
+  auth: registration
+  license: permission-required
+  license_note: 사전 허가 없이 재생산·검색 시스템 저장·전송·배포 불가 → DB 적재에 이용협약 필요. data.go.kr 게시분 일부는 공공누리 1유형(kriss-nuclear-fuel)
+  size: 데이터센터 55호, 참조표준 약 59,000건 (2022-06 보도, 현재 미확인)
+  priority: 중
+  status: planned
+  country: KR
+  uses: [A7]
+  caveats: 협약 후 시뮬레이션 검증 벤치마크(가장 적합), 협약 전에는 DOI·메타데이터만 연계. 오픈 API(β)는 마이페이지 키 신청·Swagger, 확인된 오퍼레이션은 메타데이터 중심(물성 값 제공 여부 미확인). 물성 참조값이라 T 로 분류
+  refs:
+    - https://www.srd.re.kr/css/srdinfsrv/S_CSS_010100.do
+    - https://www.srd.re.kr/css/copyrightInfoPolicy.do
+    - https://www.srd.re.kr/v2/api-docs?group=ncsrd
+    - https://edaily.co.kr/News/Read?mediaCodeNo=257&newsId=02263206632364672
+  checked: 2026-09-26
+
+- id: kriss-nuclear-fuel
+  name: KRISS 국가참조표준 핵연료재료물성 (data.go.kr 15053556)
+  layer: T
+  operator: 한국표준과학연구원 (KRISS)
+  url: https://www.data.go.kr/data/15053556/fileData.do
+  data: [핵연료 재료 물성 참조표준]
+  access: [bulk]
+  auth: none
+  license: KOGL-1
+  size: XLSX 56행
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  refs:
+    - https://www.data.go.kr/data/15053556/fileData.do
+  checked: 2026-09-26
+
+# ── G 수급·경제 ──────────────────────────────────────────────────────────
+
+- id: usgs-mcs
+  name: USGS Mineral Commodity Summaries 2026
+  layer: G
+  operator: USGS National Minerals Information Center
+  url: https://pubs.usgs.gov/publication/mcs2026
+  data: [90+ 품목 생산량, 매장량, 가격, 수입의존도]
+  access: [bulk, pdf]
+  auth: none
+  license: CC0-1.0
+  license_note: 데이터 릴리스 메타데이터에 CC0 1.0 / public domain 명시
+  version: MCS 2026 (2026-02-06 발간, 2026-05-27 개정)
+  size: 90+ 품목 (보고서 222쪽)
+  update: 연 1회
+  priority: 상
+  mvp_rank: 9
+  status: planned
+  country: US
+  uses: [A9]
+  caveats: 데이터 릴리스 CSV MCS2026_ALLchapters_Reconcile.csv (DOI 10.5066/P1WKQ63T). ScienceBase 웹은 403 → USGS 데이터 카탈로그 경로 사용. 핵심광물 60종 목록(usgs-critical-minerals)과 연계
+  refs:
+    - https://pubs.usgs.gov/publication/mcs2026
+    - https://data.usgs.gov/datacatalog/data/USGS:69837e43b66b01367d7ec7c7
+    - https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+  checked: 2026-09-26
+
+- id: world-bank-pink-sheet
+  name: World Bank Commodity Price Data (Pink Sheet)
+  layer: G
+  operator: World Bank
+  url: https://www.worldbank.org/en/research/commodity-markets
+  data: [원자재 월간 가격]
+  access: [bulk]
+  auth: none
+  license: CC-BY-4.0
+  version: "2026-09-02 (최종 갱신)"
+  update: 월간
+  priority: 상
+  mvp_rank: 9
+  status: planned
+  country: INT
+  uses: [A9]
+  caveats: 조사 문서 비교표·4.5절은 우선순위 중이지만 MVP Top 10 9위에 USGS MCS 보조로 들어 있어 상으로 올림. 월간 xlsx
+  refs:
+    - https://www.worldbank.org/en/research/commodity-markets
+    - https://datacatalog.worldbank.org/public-licenses
+  checked: 2026-09-26
+
+- id: usgs-critical-minerals
+  name: USGS 2025 핵심광물 목록
+  layer: G
+  operator: USGS
+  url: https://www.usgs.gov/programs/mineral-resources-program/science/about-2025-list-critical-minerals
+  data: [미국 핵심광물 목록]
+  access: [web]
+  auth: none
+  license: public-domain
+  version: 2025 목록 (연방관보 2025-11-07)
+  size: 60종
+  priority: 중
+  status: planned
+  country: US
+  uses: [A9]
+  caveats: 2022년 대비 10종 추가(구리·은·우라늄·규소·칼리 등)
+  refs:
+    - https://www.usgs.gov/programs/mineral-resources-program/science/about-2025-list-critical-minerals
+  checked: 2026-09-26
+
+- id: usgs-ds140
+  name: USGS DS140 Historical Statistics for Mineral and Material Commodities
+  layer: G
+  operator: USGS National Minerals Information Center
+  url: https://www.usgs.gov/centers/national-minerals-information-center/historical-statistics-mineral-and-material-commodities
+  data: [1900년 이후 품목별 통계·가격]
+  access: [bulk]
+  auth: none
+  license: public-domain
+  license_note: USGS 저작물 퍼블릭 도메인 정책 근거 (DS140 개별 명시는 미확인, 조사 문서는 '추정')
+  size: 약 90품목 (XLSX)
+  update: 품목별 최종 갱신 연도가 2014~2023 으로 제각각
+  priority: 중
+  status: planned
+  country: US
+  uses: [A9]
+  refs:
+    - https://www.usgs.gov/centers/national-minerals-information-center/historical-statistics-mineral-and-material-commodities
+    - https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+  checked: 2026-09-26
+
+- id: bgs-world-mineral-statistics
+  name: BGS World Mineral Statistics
+  layer: G
+  operator: British Geological Survey (BGS)
+  url: https://www.bgs.ac.uk/mineralsuk/statistics/world-mineral-statistics/
+  data: [국가별 광물 생산·교역 통계]
+  access: [bulk, rest-api]
+  auth: none
+  license: noncommercial-custom
+  license_note: 표기 상충 — data.gov.uk 는 OGL v3.0, BGS 약관은 비상업·허가 필요 → 조사 문서대로 보수적으로 비상업 간주
+  size: 1970–2024
+  priority: 하
+  status: planned
+  country: GB
+  uses: []
+  caveats: CSV·OGC API 제공. OGL 과 비상업 약관 중 무엇이 우선하는지 미확인
+  refs:
+    - https://www.bgs.ac.uk/mineralsuk/statistics/world-mineral-statistics/
+    - https://www.bgs.ac.uk/mineralsuk/statistics/world-mineral-statistics/bgs-mineral-statistics-terms-and-conditions-ipr/
+    - https://www.data.gov.uk/dataset/3ac64c8c-84f9-4c81-8376-693aec705436/world-mineral-statistics-dataset2
+  checked: 2026-09-26
+
+- id: iea-critical-minerals
+  name: IEA Critical Minerals Dataset
+  layer: G
+  operator: International Energy Agency (IEA)
+  url: https://www.iea.org/data-and-statistics/data-product/critical-minerals-dataset
+  data: [핵심광물 수급 전망]
+  access: [bulk]
+  auth: registration
+  license: unknown
+  license_note: CC BY 4.0 이라는 내용은 검색 스니펫뿐이고 원문 403 → 확인 전까지 unknown
+  priority: 하
+  status: planned
+  country: INT
+  uses: []
+  caveats: 로그인 다운로드(스니펫 근거)
+  refs:
+    - https://www.iea.org/data-and-statistics/data-product/critical-minerals-dataset
+  checked: 2026-09-26
+
+- id: komir-files
+  name: 한국광해광업공단 파일데이터 (data.go.kr)
+  layer: G
+  operator: 한국광해광업공단
+  url: https://www.data.go.kr/data/15143552/fileData.do
+  data: [광종별 가격예측(니켈 등 11개 광종), 파생지수(수급지수), 광종별·국가별 매장량, 광종별 교역현황, 광종별 용도, 시추 정보]
+  access: [bulk]
+  auth: none
+  license: KR-datagokr-unrestricted
+  license_note: 이용허락범위 제한 없음, 무료
+  size: 파일당 수백~천여 행 (광종별 매장량 494행, 국가별 매장량 420행, 교역 1,092행, 용도 74행)
+  update: 대부분 연 1회
+  priority: 중
+  status: planned
+  country: KR
+  uses: [A9]
+  caveats: 가격 데이터는 실제 시장가격이 아니라 공단 예측치. OpenAPI 없음(파일만). data.go.kr 데이터셋 15143552(니켈 가격예측 등)·3077136·3075979·3070586·3075984·3070171·15117592
+  refs:
+    - https://www.data.go.kr/data/15143552/fileData.do
+  checked: 2026-09-26
+
+- id: komis
+  name: KOMIS 한국자원정보서비스
+  layer: G
+  operator: 한국광해광업공단
+  url: https://www.komis.or.kr/
+  data: [광물가격(비철·희소금속·LME 재고), 광물종합지수, 가격전망, 핵심광물 수급, 월간동향]
+  access: [web]
+  auth: none
+  license: permission-required
+  license_note: 무단 복제·배포 금지, 수익 목적은 사전 허락 필요. 윤리강령에 임의 가공·판매·공유·상업적 사용 금지. 가격 일부는 제3자(Institute of Rare Earths and Strategic Metals 등) 라이선스
+  priority: 제외
+  status: excluded
+  country: KR
+  uses: []
+  caveats: 적재 제외 → komir-files·usgs-mcs·world-bank-pink-sheet 로 대체. 공개 OpenAPI 미확인(내부 AJAX만). 2026-01-01부터 갈륨·리튬·코발트·희토류 등 24종 가격 자료원 단계적 변경
+  refs:
+    - https://www.komis.or.kr/Komis/RsrcPrice/BaseMetals
+    - https://www.komis.or.kr/Komis/Policy
+    - https://www.komis.or.kr/Komis/Platform
+    - https://m.ekn.kr/view.php?key=20240321029059342
+  checked: 2026-09-26
+
+# ── K 국내 규제·안전 ─────────────────────────────────────────────────────
+
+- id: keco-chem
+  name: 한국환경공단 화학물질 정보 조회 서비스 (data.go.kr 15149420)
+  layer: K
+  operator: 한국환경공단
+  url: https://www.data.go.kr/data/15149420/openapi.do
+  data: [물질ID, CAS 번호, KE 번호, 국·영문명과 유사명, 분자식, 분자량, 물질분류(유형·고유번호·함량·고시일자)]
+  access: [rest-api]
+  auth: api-key
+  license: KR-datagokr-unrestricted
+  license_note: 이용허락범위 제한 없음 (실측, 등록 2025-09-15·수정 2025-09-16)
+  priority: 상
+  mvp_rank: 10
+  status: planned
+  country: KR
+  uses: [A10]
+  caveats: 엔드포인트 apis.data.go.kr/B552584/kecoapi/ncissbstn/chemSbstnList (JSON/XML). 개발계정 1일 10,000건. 총 레코드 수 미확인. CAS↔KE↔분자식↔규제분류(유독물·사고대비물질 등) 마스터로 PubChem 과 CAS 조인
+  refs:
+    - https://www.data.go.kr/data/15149420/openapi.do
+  checked: 2026-09-26
+
+- id: keco-ghs
+  name: 한국환경공단 유독물 GHS 정보 조회 서비스 (data.go.kr 15149423)
+  layer: K
+  operator: 한국환경공단
+  url: https://www.data.go.kr/data/15149423/openapi.do
+  data: [유독물 GHS 분류]
+  access: [rest-api]
+  auth: api-key
+  license: KR-datagokr-unrestricted
+  license_note: 이용허락범위 제한 없음 (실측)
+  priority: 상
+  mvp_rank: 10
+  status: planned
+  country: KR
+  uses: [S0, A10]
+  caveats: 엔드포인트 apis.data.go.kr/B552584/kecoapi/ncisghs/ghsList (JSON/XML). 개발계정 1일 10,000건. 총 레코드 수 미확인
+  refs:
+    - https://www.data.go.kr/data/15149423/openapi.do
+  checked: 2026-09-26
+
+- id: kosha-msds
+  name: 한국산업안전보건공단 물질안전보건자료(MSDS) 조회 서비스 (data.go.kr 15157612)
+  layer: K
+  operator: 한국산업안전보건공단 (KOSHA)
+  url: https://www.data.go.kr/data/15157612/openapi.do
+  data: [MSDS 16개 항목 상세(물리화학적 특성·안정성·반응성·유해성·위험성 등), 물질 목록(chemId·CAS·KE/UN/EN 번호·국문명·최종갱신일)]
+  access: [rest-api]
+  auth: api-key
+  license: unknown
+  license_note: 문구 상충 — data.go.kr 포털은 이용허락범위 제한 없음(수정 2026-09-17), KOSHA 사이트는 MSDS 작성·검토 시 참고용으로만이며 상업적·외부 용도 사용 시 저작권법 등 위배 가능 → KOSHA 확인 전까지 내부용
+  version: data.go.kr 15157612 (수정 2026-09-17)
+  size: 20,568종 (KOSHA 사이트 표시)
+  priority: 상
+  mvp_rank: 10
+  status: planned
+  country: KR
+  uses: [S0, A10]
+  caveats: 엔드포인트 apis.data.go.kr/B552468/msdschem1 (XML) — 목록 getChemList001, 항목별 상세 getChemDetail011~161. 목록 조회에 검색어 필수 → CAS 목록으로 반복 조회. 개발계정 1일 2,000건(운영계정은 심의 후 증량). 값이 자유 텍스트라 파싱·정규화 필요. 구 서비스 15001197 은 404
+  refs:
+    - https://www.data.go.kr/data/15157612/openapi.do
+    - https://msds.kosha.or.kr/MSDSInfo/kcic/msdssearchMsds.do
+  checked: 2026-09-26
+
+- id: kosha-exposure-limits
+  name: KOSHA 화학물질의 노출기준 (data.go.kr 3038258)
+  layer: K
+  operator: 한국산업안전보건공단 (KOSHA)
+  url: https://www.data.go.kr/data/3038258/fileData.do
+  data: [화학물질 노출기준]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: 조사 문서에 이용허락범위 기재 없음. 같은 기관 MSDS 가 문구 상충 사례라 확인 전까지 unknown
+  priority: 중
+  status: planned
+  country: KR
+  uses: [A10]
+  caveats: CSV. URL 은 조사 문서의 data.go.kr 데이터셋 번호로 구성
+  refs: []
+  checked: 2026-09-26
+
+- id: nics-safety-info
+  name: 화학물질안전원 화학물질안전관리정보
+  layer: K
+  operator: 화학물질안전원 (기후에너지환경부)
+  url: https://www.data.go.kr/data/15072442/openapi.do
+  data: [노출경로별 응급조치, 방제 정보]
+  access: [rest-api, bulk]
+  auth: api-key
+  license: KR-datagokr-unrestricted
+  version: CSV 2026-05 등록
+  size: 7,241행 (CSV)
+  update: 연 1회
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  caveats: API 15072442·CSV 15024880. 물성보다 안전·규제 보조 데이터
+  refs:
+    - https://www.data.go.kr/data/15072442/openapi.do
+    - https://www.data.go.kr/data/15024880/fileData.do
+  checked: 2026-09-26
+
+- id: nics-accident-info
+  name: 화학물질안전원 화학사고정보
+  layer: K
+  operator: 화학물질안전원 (기후에너지환경부)
+  url: https://www.data.go.kr/data/15072446/openapi.do
+  data: [화학사고 정보]
+  access: [rest-api, bulk]
+  auth: api-key
+  license: KR-datagokr-unrestricted
+  size: 1,026행 (CSV 15069200)
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: 조사 문서는 7.3절 전체를 '중 또는 하'로 표기 — 비교표에 없는 항목이라 하로 판단. URL 은 데이터셋 번호로 구성
+  refs: []
+  checked: 2026-09-26
+
+- id: nics-prtr
+  name: 화학물질 배출·이동량 정보 (PRTR)
+  layer: K
+  operator: 화학물질안전원 (기후에너지환경부)
+  url: https://www.data.go.kr/data/15024756/openapi.do
+  data: [화학물질 배출·이동량]
+  access: [rest-api]
+  auth: application
+  license: KR-datagokr-unrestricted
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: data.go.kr LINK형(15024756) — 기관 사이트에서 따로 신청. 비교표에 없는 항목이라 하로 판단. URL 은 데이터셋 번호로 구성
+  refs: []
+  checked: 2026-09-26
+
+- id: kgs-toxic-gas
+  name: 한국가스안전공사 독성가스 물성정보 (data.go.kr 15067783)
+  layer: K
+  operator: 한국가스안전공사
+  url: https://www.data.go.kr/data/15067783/fileData.do
+  data: [독성가스 물성]
+  access: [bulk]
+  auth: none
+  license: KR-datagokr-unrestricted
+  size: 191종
+  priority: 중
+  status: planned
+  country: KR
+  uses: [S0]
+  caveats: 내용은 물성이지만 국내 안전 데이터라 K 로 분류
+  refs:
+    - https://www.data.go.kr/data/15067783/fileData.do
+  checked: 2026-09-26
+
+- id: kgs-hazardous-chem
+  name: 한국가스안전공사 유해화학물질정보 (data.go.kr 15066848)
+  layer: K
+  operator: 한국가스안전공사
+  url: https://www.data.go.kr/data/15066848/fileData.do
+  data: [유해화학물질 정보]
+  access: [bulk]
+  auth: none
+  license: KR-datagokr-unrestricted
+  size: 82행
+  priority: 중
+  status: planned
+  country: KR
+  uses: []
+  refs:
+    - https://www.data.go.kr/data/15066848/fileData.do
+  checked: 2026-09-26
+
+- id: kreach
+  name: 화학물질정보처리시스템 (kreach)
+  layer: K
+  operator: 한국환경공단
+  url: https://kreach.mcee.go.kr/
+  data: [CAS·고유번호 통합검색, 유해성·사고대비·제한·금지·허가 물질 정보]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: 조사 문서에 라이선스 기재 없음
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: 웹 조회 전용 — API 경로는 keco-chem·keco-ghs. 구 NCIS(ncis.nier.go.kr)는 2026-09-26 접속 불가, kreach 통합 안내는 스니펫뿐(통합 일자 미확인)
+  refs:
+    - https://kreach.mcee.go.kr/
+    - https://eiec.kdi.re.kr/policy/materialView.do?num=124649
+  checked: 2026-09-26
+
+- id: icis
+  name: ICIS 화학물질종합정보시스템
+  layer: K
+  operator: 화학물질안전원
+  url: https://icis.mcee.go.kr/
+  data: [화학물질 종합 정보]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: 조사 문서에 라이선스 기재 없음
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: API·벌크 여부 미확인
+  refs:
+    - https://icis.mcee.go.kr/
+  checked: 2026-09-26
+
+- id: env-bigdata-chem
+  name: 환경 빅데이터 플랫폼 연계데이터 (화학물질 기본정보·GHS)
+  layer: K
+  operator: 환경 빅데이터 플랫폼
+  url: https://www.data.go.kr/data/84618/linkedData.do
+  data: [화학물질 기본정보, GHS]
+  access: [web]
+  auth: none
+  license: unknown
+  license_note: data.go.kr 이용허락범위 공란
+  priority: 하
+  status: planned
+  country: KR
+  uses: []
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단
+  refs:
+    - https://www.data.go.kr/data/84618/linkedData.do
+  checked: 2026-09-26
+
+- id: caris
+  name: CARIS 화학사고대응정보시스템
+  layer: K
+  operator: 화학물질안전원
+  url: https://nics.mcee.go.kr/sub.do?menuId=15
+  data: [화학사고 대응 정보]
+  access: [desktop-app]
+  auth: application
+  license: permission-required
+  license_note: 유관기관 전용 비공개 소프트웨어
+  priority: 제외
+  status: excluded
+  country: KR
+  uses: []
+  caveats: 활용 불가
+  refs:
+    - https://nics.mcee.go.kr/sub.do?menuId=15
+  checked: 2026-09-26

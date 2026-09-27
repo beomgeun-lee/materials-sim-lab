@@ -1,0 +1,15 @@
+# 수용액 평형 데모 — 방해석을 물에 넣고 대기 CO2 와 평형. 기대: pH 약 8.2, Ca 약 0.5 mmol/kgw
+id: rcp-calcite-water
+name: 방해석 + 물 (대기 평형)
+components:
+  - ref: mineral:calcite     # CaCO3
+    amount: 1 g
+    state: solid
+  - ref: cas:7732-18-5       # 물
+    amount: 1 L
+    state: liquid
+conditions:
+  T: 25 °C
+  P: 1 atm
+  atmosphere: air
+assays: auto
