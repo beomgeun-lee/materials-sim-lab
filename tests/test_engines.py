@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from msl.assays import blend, equilibrium, safety
@@ -80,6 +82,52 @@ def test_a4_calcite_water_equilibrium() -> None:
     assert out.status is Status.OK
     ph = next(v.value for v in out.values if v.name == "pH")
     assert ph == pytest.approx(8.2, abs=0.1)  # 대기 CO₂ 와 평형인 방해석 포화 용액
+
+
+def _reaktoro() -> bool:
+    from msl.engines import reaktoro_bridge
+
+    return reaktoro_bridge.available()
+
+
+@pytest.mark.skipif(not _reaktoro(), reason="Reaktoro 환경 없음 (~/micromamba/envs/reaktoro)")
+@pytest.mark.parametrize("T, ph", [("25 °C", 9.91), ("75 °C", 8.87)])
+def test_a4_reaktoro_cross_check_closed_calcite(T: str, ph: float) -> None:
+    """닫힌계 방해석 + 물 — 같은 phreeqc.dat 로 푼 PHREEQC 와 Reaktoro 의 pH 가 0.1 안에서 맞아야 한다 (D22)."""
+    c = ctx([comp("mineral:calcite", "CaCO3", "1 g", State.SOLID), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)], T=T)
+    out = equilibrium.a4(c)
+    v = {x.name: x.value for x in out.values}
+    assert v["pH"] == pytest.approx(ph, abs=0.05)
+    assert v["pH (Reaktoro 교차검증)"] == pytest.approx(v["pH"], abs=equilibrium.PH_CROSS_TOL)
+    assert not any("차이" in cv for cv in out.caveats)
+
+
+@pytest.mark.skipif(not _reaktoro(), reason="Reaktoro 환경 없음 (~/micromamba/envs/reaktoro)")
+def test_a4_reaktoro_cross_check_dissolved_salts() -> None:
+    c = ctx([comp("cas:144-55-8", "NaHCO3", "0.05 mol", State.AQUEOUS), comp("cas:7647-14-5", "NaCl", "0.1 mol", State.AQUEOUS),
+             comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
+    out = equilibrium.a4(c)
+    v = {x.name: x.value for x in out.values}
+    assert v["pH (Reaktoro 교차검증)"] == pytest.approx(v["pH"], abs=equilibrium.PH_CROSS_TOL)
+
+
+def test_a4_skips_reaktoro_under_air_co2() -> None:
+    """대기 CO₂ 고정 조건은 Reaktoro 쪽에 같은 제약을 걸지 않으므로 교차검증을 건너뛴다."""
+    c = ctx([comp("mineral:calcite", "CaCO3", "1 g", State.SOLID), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)],
+            atmosphere="air")
+    out = equilibrium.a4(c)
+    assert "reaktoro" not in out.data
+
+
+def test_reaktoro_input_is_charge_balanced() -> None:
+    import phreeqpython
+
+    from msl.engines import reaktoro_bridge as rb
+
+    db = str(Path(phreeqpython.__file__).parent / "database" / "phreeqc.dat")
+    spec = rb.from_a4({"Na": 0.1, "C": 0.05}, ["Calcite"], db, 1.0, 298.15, 1.0)
+    assert sum(rb._charge(s) * n for s, n in spec["species"].items()) == pytest.approx(0, abs=1e-12)
+    assert {"Ca", "C", "Na"} <= set(spec["elements"]) and spec["minerals"] == {"Calcite": 10.0}
 
 
 def test_a4_refuses_unknown_oxidation_state() -> None:

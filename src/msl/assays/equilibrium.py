@@ -156,8 +156,9 @@ def a4(ctx: Context) -> Outcome:
     from phreeqpython import PhreeqPython
 
     T_c = (ctx.T or 298.15) - 273.15
+    P_atm = ctx.P / 101_325
     pp = PhreeqPython(database="phreeqc.dat")  # 기본값은 vitens.dat(Stimela 파생) — 출처 표기와 맞춘다
-    sol = pp.add_solution({"temp": round(T_c, 2), "units": "mol/kgw", "pH": "7 charge",
+    sol = pp.add_solution({"temp": round(T_c, 2), "pressure": f"{P_atm:.6g}", "units": "mol/kgw", "pH": "7 charge",
                            **{k: f"{v:.8g}" for k, v in totals.items()}})
     eq_phases, targets = list(minerals), [0.0] * len(minerals)
     atm = (ctx.recipe.conditions.atmosphere or "").lower()
@@ -182,6 +183,16 @@ def a4(ctx: Context) -> Outcome:
                 caveats.append(f"{m}: 넣은 양({given:.4g} mol)보다 평형 용해량이 커서 과잉 고체를 가정한 결과와 다름")
     if supersat:
         values.append(val("과포화 광물 (SI>0, 침전 가능)", ", ".join(f"{k} {v:+.2f}" for k, v in supersat)))
+    if T_c > 100 or P_atm > 1.5:
+        caveats.append("phreeqc.dat 의 온도 의존성은 대략 0–100 °C 에서 검증됨 — 고온·고압은 경향만 볼 것 (D22)")
+    cross = _reaktoro_cross(totals, list(minerals), liters, ctx.T or 298.15, P_atm * 1.01325) if "CO2(g)" not in eq_phases else None
+    if cross:
+        if "pH" in cross:
+            values.append(val("pH (Reaktoro 교차검증)", round(cross["pH"], 2)))
+            if abs(cross["pH"] - sol.pH) > PH_CROSS_TOL:
+                caveats.append(f"PHREEQC 와 Reaktoro 의 pH 가 {abs(cross['pH'] - sol.pH):.2f} 차이 — 두 엔진 해석이 갈리는 조건 (결과 신중히)")
+        else:
+            caveats.append(f"Reaktoro 교차검증 실패: {cross['error']}")
     summary = f"pH {sol.pH:.2f}" + (f", {', '.join(minerals)} 와 평형" if minerals else "") + (
         ", 대기 CO₂ 평형" if "CO2(g)" in eq_phases else "")
     return Outcome(
@@ -190,5 +201,27 @@ def a4(ctx: Context) -> Outcome:
         values=values, sources=[("phreeqc-db", "phreeqc.dat (phreeqpython 1.6.2 동봉)")], caveats=caveats,
         summary=summary,
         data={"table": {"columns": ["화학종", "몰랄농도 (mol/kgw)"], "rows": [[k, f"{v:.3e}"] for k, v in species]},
-              "si": {k: round(v, 3) for k, v in sorted(si.items(), key=lambda p: -p[1])[:10]}},
+              "si": {k: round(v, 3) for k, v in sorted(si.items(), key=lambda p: -p[1])[:10]},
+              **({"reaktoro": cross} if cross else {})},
     )
+
+
+PH_CROSS_TOL = 0.1
+
+
+def _reaktoro_cross(totals: dict[str, float], minerals: list[str], liters: float, T_K: float, P_bar: float) -> dict | None:
+    """같은 phreeqc.dat 로 Reaktoro 가 푼 pH (D22). Reaktoro 환경이 없으면 None — 교차검증을 건너뛴다."""
+    from msl.engines import reaktoro_bridge as rb
+
+    if not rb.available():
+        return None
+    import phreeqpython
+
+    db = str(Path(phreeqpython.__file__).parent / "database" / "phreeqc.dat")
+    try:
+        out = rb.solve(rb.from_a4(totals, minerals, db, liters, T_K, P_bar))
+    except Exception as e:  # 교차검증 실패는 A4 결과를 막지 않는다
+        return {"error": str(e)[:200]}
+    if not out.get("ok"):
+        return {"error": "Reaktoro 평형 계산이 수렴하지 않음"}
+    return {"pH": out["pH"], "I": out["I"], "engine": f"reaktoro {rb.version()}", "si": out["si"]}

@@ -1804,7 +1804,7 @@
   access: [bulk]
   auth: none
   license: CC-BY-NC-ND-4.0
-  license_note: 원문은 CC BY-NC-ND 3.0형 비상업·변경금지 문구 → 가장 가까운 4.0 id 로 매핑
+  license_note: 원문은 CC BY-NC-ND 3.0형 비상업·변경금지 문구 → 가장 가까운 4.0 id 로 매핑. Reaktoro 에 동봉돼 있어도 쓰지 않는다 (D22)
   priority: 제외
   status: excluded
   country: US

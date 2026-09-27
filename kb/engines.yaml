@@ -393,13 +393,13 @@
   version: "2.13.0"
   released: 2026-02-19
   code_license: LGPL-2.1
-  isolation: in-process
+  isolation: worker
   allowed_in: [research, product]
   install: conda
   compute: [laptop]
   fit: 상
-  role: 수계 이중화 — 다상(수용액·기체·광물) 평형·동역학, 고온·고압(SUPCRT 계열 DB)
-  caveats: PyPI 미배포(conda 전용). PHREEQC DB·SUPCRTBL DB 사용 가능. LGPL — 동적 import·교체 가능 상태 유지, 수정분 공개
+  role: A4 교차검증 — PHREEQC 와 같은 phreeqc.dat 로 다시 풀어 pH 를 비교 (D22)
+  caveats: PyPI 미배포(conda 전용) → micromamba 환경(~/micromamba/envs/reaktoro, 약 480 MB)을 별도 프로세스로 부른다(MSL_REAKTORO_PYTHON 으로 바꿈, MSL_REAKTORO=0 으로 끔). 수정 없이 씀 — LGPL 의무는 출처·라이선스 고지. 동봉 SUPCRTBL DB 는 CC BY-NC-ND 라 쓰지 않고, SUPCRT98/07 은 라이선스 확인 전까지 쓰지 않는다
   refs:
     - https://anaconda.org/conda-forge/reaktoro
   checked: 2026-09-26
