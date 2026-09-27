@@ -357,3 +357,93 @@ def predict_api(req: PredictRequest) -> dict[str, Any]:
         except Exception as exc:
             results.append({"input": text, "error": str(exc)})
     return {"results": results}
+
+
+# ── 목표 기반 추천 ────────────────────────────────────────────────────────
+
+GOALS = wb.ROOT / "examples" / "goals"
+
+
+@app.get("/recommend", response_class=HTMLResponse)
+def recommend_page() -> str:
+    from msl.report.space import page
+
+    return page("목표 기반 추천", (STATIC / "recommend.html").read_text(encoding="utf-8"))
+
+
+@app.get("/api/goals")
+def goals() -> list[dict[str, Any]]:
+    import yaml
+
+    out = []
+    for path in sorted(GOALS.glob("*.yaml")):
+        try:
+            out.append({"file": path.name, "goal": yaml.safe_load(path.read_text(encoding="utf-8"))})
+        except Exception:
+            continue
+    return out
+
+
+class RecommendRequest(BaseModel):
+    goal: dict[str, Any]
+
+
+@app.post("/api/recommend")
+def recommend_api(req: RecommendRequest) -> dict[str, Any]:
+    from pydantic import ValidationError
+
+    from msl.ml.predict import ModelMissing
+    from msl.recommend import Goal, recommend, save_run
+
+    try:
+        goal = Goal.model_validate(req.goal)
+    except ValidationError as exc:
+        raise HTTPException(422, {"errors": wb.errors_of(exc)}) from exc
+    try:
+        res = recommend(goal)
+    except ModelMissing as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, {"errors": [str(exc)]}) from exc
+    return {"result": res, "file": save_run(res).name}
+
+
+def _run_path(file: str):
+    import re
+
+    from msl.recommend import RUNS
+
+    if not re.fullmatch(r"[0-9]{14}-goal-[a-z0-9\-]+\.json", file):
+        raise HTTPException(404, "실행 기록이 없음")
+    path = RUNS / file
+    if not path.exists():
+        raise HTTPException(404, "실행 기록이 없음")
+    return path
+
+
+@app.get("/api/recommend/runs")
+def recommend_runs() -> list[dict[str, Any]]:
+    from msl.recommend import list_runs
+
+    return list_runs()
+
+
+@app.get("/api/recommend/run/{file}")
+def recommend_run(file: str) -> dict[str, Any]:
+    import json
+
+    return json.loads(_run_path(file).read_text(encoding="utf-8"))
+
+
+@app.get("/api/recommend/run/{file}/csv")
+def recommend_run_csv(file: str):
+    import json
+
+    from fastapi.responses import Response
+
+    from msl.recommend import to_csv
+
+    res = json.loads(_run_path(file).read_text(encoding="utf-8"))
+    name = file.removesuffix(".json") + ".csv"
+    return Response("\ufeff" + to_csv(res), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})

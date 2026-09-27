@@ -1,0 +1,15 @@
+# 경량 합금 — Al 에 Mg·Li·Ti 를 더한 금속간 화합물 중 가볍고 안정한 조성 (밀도 낮은 순)
+id: goal-light-alloy
+name: Al 계 경량 금속간 화합물
+description: Al–Mg–Li–Ti 에서 hull 0.03 eV/atom 이내, 금속, 밀도 3.0 g/cm³ 이하 — 가벼운 순
+required: [Al]
+optional: [Mg, Li, Ti]
+max_elements: 3
+max_atoms: 8
+charge_balanced: false
+constraints:
+  - {prop: ehull, max: 0.03}
+  - {prop: p_metal, min: 0.5}
+  - {prop: density, max: 3.0}
+objective: {prop: density, direction: min}
+top_k: 30

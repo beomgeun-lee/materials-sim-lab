@@ -1,0 +1,12 @@
+# 양극재 후보 — Li·Mn·O 에 Ni·Co 를 더해 안정·준안정 조성 찾기 (가장 안정한 순)
+id: goal-li-mn-o-cathode
+name: Li–Mn(–Ni/Co)–O 양극재 후보
+description: 리튬 망간 산화물 계에 Ni·Co 를 섞은 조성 중 hull 0.05 eV/atom 이내 (DB 의 DFT 값 + 새 조성은 L1 예측)
+required: [Li, Mn, O]
+optional: [Ni, Co]
+max_elements: 4
+max_atoms: 10
+constraints:
+  - {prop: ehull, max: 0.05}
+objective: {prop: ehull, direction: min}
+top_k: 30

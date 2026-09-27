@@ -1,0 +1,178 @@
+<p class="eyebrow"><a href="/">← 가상 조합 실험실</a> · <a href="/spaces">조합 공간</a> · <a href="/predict">물성 예측</a></p>
+<h1>목표 기반 추천</h1>
+<p class="sub">원소와 원하는 조건을 주면 만들 수 있는 조성을 모두 나열해 평가하고 순위를 매깁니다. DB 에 있는 조성은 DFT 계산값, 없는 조성은 L1 예측값(80% 구간)을 씁니다.</p>
+
+<section class="rc-form">
+  <div class="run-row"><span class="sub">예제로 시작:</span><span class="shelf" id="rc-examples"></span></div>
+  <div class="rc-grid">
+    <label for="rc-name">이름</label><input id="rc-name" value="내 추천">
+    <label for="rc-req">필수 원소</label><input id="rc-req" placeholder="예: Li, Mn, O — 모든 후보에 들어감">
+    <label for="rc-opt">선택 원소</label><input id="rc-opt" placeholder="예: Ni, Co — 들어갈 수도 있음">
+    <label for="rc-maxel">원소 수 최대</label><div class="pair"><input id="rc-maxel" type="number" min="1" max="6" value="4"><span class="sub">화학식당 원자 수 최대</span><input id="rc-maxat" type="number" min="2" max="24" value="10"></div>
+    <label>포함</label><div class="pair">
+      <label><input type="checkbox" id="rc-known" checked> DB 에 있는 조성 (DFT)</label>
+      <label><input type="checkbox" id="rc-new" checked> 새 조성 (L1 예측)</label>
+      <label><input type="checkbox" id="rc-charge" checked> 전하 균형 가능한 조성만</label>
+    </div>
+  </div>
+  <div class="sec-h"><span>조건</span><button class="linkish" type="button" id="rc-add">+ 조건 추가</button></div>
+  <div id="rc-cons" class="rc-cons"></div>
+  <div class="sec-h"><span>정렬</span></div>
+  <div class="pair">
+    <select id="rc-oprop"></select>
+    <select id="rc-odir"><option value="min">낮은 순</option><option value="max">높은 순</option><option value="target">목표값에 가까운 순</option></select>
+    <input id="rc-oval" type="number" step="any" placeholder="목표값" style="width:100px" hidden>
+    <span class="sub">보여 줄 후보</span><input id="rc-topk" type="number" min="1" max="500" value="30" style="width:80px">
+  </div>
+  <div class="run-row"><button class="run" type="button" id="rc-run">추천</button><span class="busy" id="rc-busy" aria-live="polite"></span></div>
+  <div class="errbox" id="rc-errors" hidden></div>
+</section>
+
+<section id="rc-out"></section>
+
+<h2 class="sec">지난 실행</h2>
+<ul class="spaces" id="rc-runs"><li class="sub">불러오는 중…</li></ul>
+
+<style>
+.rc-form { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.rc-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; font-size: 13px; }
+.rc-grid > label { color: var(--muted); }
+.pair { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; }
+.pair input[type=number] { width: 80px; }
+.rc-cons { display: grid; gap: 6px; }
+.rc-cons .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+.rc-cons input { width: 90px; }
+.rc-sum { font-size: 13px; display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.rc-sum .warn { color: var(--warn); }
+table.rc td .src { font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+table.rc td .src.dft { background: var(--accent-soft); color: var(--accent); }
+table.rc td .src.l1 { background: var(--idle-soft); color: var(--f-L1); }
+table.rc td.st-충족 { color: var(--ok); font-weight: 600; }
+table.rc td.st-가능성 { color: var(--warn); font-weight: 600; }
+table.rc td.note { white-space: normal; min-width: 220px; font-size: 12px; color: var(--muted); }
+table.rc td.note .flag { color: var(--warn); }
+table.rc td .iv { color: var(--muted); font-size: 11px; }
+.rc-chart { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin-top: 6px; }
+</style>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const sub = (f) => esc(f).replace(/(\d+(?:\.\d+)?)/g, "<sub>$1</sub>");
+  const PROPS = [["ehull", "hull 거리 (eV/atom)"], ["gap", "밴드갭 (eV)"], ["density", "밀도 (g/cm³)"], ["ef", "형성에너지 (eV/atom)"], ["p_metal", "금속일 확률 (0~1)"]];
+  const opts = (sel) => PROPS.map(([k, n]) => `<option value="${k}"${k === sel ? " selected" : ""}>${n}</option>`).join("");
+  const list = (s) => s.split(/[,\s]+/).map(x => x.trim()).filter(Boolean);
+  const num = (v) => (v === "" || v === null || v === undefined ? null : Number(v));
+  let goals = [];
+
+  $("rc-oprop").innerHTML = opts("ehull");
+  $("rc-odir").addEventListener("change", () => { $("rc-oval").hidden = $("rc-odir").value !== "target"; });
+
+  function consRow(c = { prop: "ehull", min: null, max: 0.05 }) {
+    const d = document.createElement("div");
+    d.className = "row";
+    d.innerHTML = `<select data-k="prop">${opts(c.prop)}</select><span class="sub">최소</span><input data-k="min" type="number" step="any" value="${c.min ?? ""}"><span class="sub">최대</span><input data-k="max" type="number" step="any" value="${c.max ?? ""}"><button class="linkish" type="button" data-del>빼기</button>`;
+    d.querySelector("[data-del]").addEventListener("click", () => d.remove());
+    $("rc-cons").appendChild(d);
+  }
+  $("rc-add").addEventListener("click", () => consRow({ prop: "gap", min: null, max: null }));
+
+  function fill(g) {
+    $("rc-name").value = g.name; $("rc-req").value = (g.required || []).join(", "); $("rc-opt").value = (g.optional || []).join(", ");
+    $("rc-maxel").value = g.max_elements ?? 4; $("rc-maxat").value = g.max_atoms ?? 10;
+    $("rc-known").checked = g.include_known ?? true; $("rc-new").checked = g.include_new ?? true; $("rc-charge").checked = g.charge_balanced ?? true;
+    $("rc-cons").innerHTML = ""; (g.constraints || []).forEach(consRow);
+    const o = g.objective || { prop: "ehull", direction: "min" };
+    $("rc-oprop").value = o.prop; $("rc-odir").value = o.direction; $("rc-oval").value = o.value ?? ""; $("rc-oval").hidden = o.direction !== "target";
+    $("rc-topk").value = g.top_k ?? 30;
+  }
+
+  function readGoal() {
+    const d = new Date(), z = (n) => String(n).padStart(2, "0");
+    const cons = [...$("rc-cons").querySelectorAll(".row")].map(r => ({ prop: r.querySelector('[data-k="prop"]').value,
+      min: num(r.querySelector('[data-k="min"]').value), max: num(r.querySelector('[data-k="max"]').value) })).filter(c => c.min !== null || c.max !== null);
+    const o = { prop: $("rc-oprop").value, direction: $("rc-odir").value };
+    if (o.direction === "target") o.value = num($("rc-oval").value);
+    return { id: `goal-web-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`,
+      name: $("rc-name").value.trim() || "내 추천", required: list($("rc-req").value), optional: list($("rc-opt").value),
+      max_elements: Number($("rc-maxel").value), max_atoms: Number($("rc-maxat").value), charge_balanced: $("rc-charge").checked,
+      include_known: $("rc-known").checked, include_new: $("rc-new").checked, constraints: cons, objective: o, top_k: Number($("rc-topk").value) };
+  }
+
+  function scatter(res) {
+    const pts = res.scatter.filter(p => p.g !== null);
+    if (!pts.length) return "";
+    const W = 620, H = 300, L = 52, R = 16, T = 18, B = 40, pw = W - L - R, ph = H - T - B;
+    const x0 = Math.max(-0.3, Math.min(...pts.map(p => p.e))), x1 = Math.min(0.5, Math.max(0.1, ...pts.map(p => p.e)));
+    const y1 = Math.min(8, Math.max(1, ...pts.map(p => p.g)) * 1.05);
+    const X = v => L + (Math.min(Math.max(v, x0), x1) - x0) / (x1 - x0) * pw, Y = v => T + (1 - Math.min(v, y1) / y1) * ph;
+    const col = { "충족": "var(--ok)", "가능성 있음": "var(--warn)", "불충족": "var(--idle)" };
+    let g = "";
+    for (let i = 0; i <= 4; i++) { const v = y1 * i / 4; g += `<line class="grid" x1="${L}" x2="${L + pw}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`; }
+    for (let i = 0; i <= 4; i++) { const v = x0 + (x1 - x0) * i / 4; g += `<text x="${X(v)}" y="${H - B + 16}" text-anchor="middle">${v.toFixed(2)}</text>`; }
+    g += `<line x1="${X(0)}" x2="${X(0)}" y1="${T}" y2="${T + ph}" stroke="var(--ink)" stroke-width="1"/>`;
+    for (const c of res.goal.constraints) {
+      if (c.prop === "ehull" && c.max !== null) g += `<line x1="${X(c.max)}" x2="${X(c.max)}" y1="${T}" y2="${T + ph}" stroke="var(--ok)" stroke-dasharray="5 4"/>`;
+      if (c.prop === "gap") for (const v of [c.min, c.max]) if (v !== null) g += `<line x1="${L}" x2="${L + pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--ok)" stroke-dasharray="5 4"/>`;
+    }
+    for (const p of [...pts].sort((a, b) => (a.s === "불충족") - (b.s === "불충족")).reverse()) {
+      const filled = p.src === "DFT";
+      g += `<circle cx="${X(p.e).toFixed(1)}" cy="${Y(p.g).toFixed(1)}" r="${filled ? 4 : 3.5}" fill="${filled ? col[p.s] : "none"}" stroke="${col[p.s]}" stroke-width="1.4" opacity="${p.s === "불충족" ? 0.45 : 0.9}"><title>${esc(p.f)} · ${p.src} · hull ${p.e.toFixed(3)} · 갭 ${p.g.toFixed(2)} · ${p.s}</title></circle>`;
+    }
+    g += `<text x="${L}" y="${T - 5}">밴드갭 (eV)</text><text x="${L + pw}" y="${H - 5}" text-anchor="end">hull 거리 (eV/atom) → 오른쪽일수록 불안정</text>`;
+    return `<div class="rc-chart chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="후보 분포">${g}</svg>
+      <div class="legend-line"><span><i class="box" style="background:var(--ok)"></i>충족</span><span><i class="box" style="background:var(--warn)"></i>가능성 있음</span><span><i class="box" style="background:var(--idle)"></i>불충족</span><span>● 채운 점 = DB(DFT) · ○ 빈 점 = 새 조성(L1 예측) · 점선 = 조건 경계</span></div></div>`;
+  }
+
+  function render(res, file) {
+    const c = res.counts, iv = (x) => x ? ` <span class="iv">(${x[0].toFixed(2)}~${x[1].toFixed(2)})</span>` : "";
+    const rows = res.results.map((r, i) => {
+      const v = r.values, note = [...r.flags.map(f => `<span class="flag">⚠ ${esc(f)}</span>`), ...(r.uncertain.length ? [`불확실: ${esc(r.uncertain.join(", "))}`] : []),
+        ...(r.decomposition ? [`분해되면 ${Object.keys(r.decomposition).map(sub).join(" + ")}`] : [])].join("<br>");
+      return `<tr><td>${i + 1}</td><td><b>${sub(r.formula)}</b></td><td><span class="src ${r.source === "DFT" ? "dft" : "l1"}">${r.source === "DFT" ? "DB·DFT" : "L1 예측"}</span>${r.material_id ? ` <span class="iv">${esc(r.material_id)}</span>` : ""}</td>
+        <td class="st-${r.status.split(" ")[0]}">${esc(r.status)}</td><td>${v.ehull === null ? "—" : (v.ehull > 0 ? "+" : "") + v.ehull.toFixed(3)}${iv(r.intervals.ehull)}</td>
+        <td>${v.gap === null ? "—" : v.gap.toFixed(2)}${iv(r.intervals.gap)}</td><td>${v.density === null ? "—" : v.density.toFixed(2)}</td>
+        <td><a href="/predict?f=${encodeURIComponent(r.formula)}" target="_blank" rel="noopener">상세</a></td><td class="note">${note}</td></tr>`;
+    }).join("");
+    $("rc-out").innerHTML = `<div class="rc-sum"><div><b>${esc(res.goal.name)}</b> · 조건: ${esc(res.constraints_text.join(", ") || "없음")} · 정렬: ${esc(res.objective_text)}</div>
+      <div>후보 ${c.candidates.toLocaleString()}개 → 전하 균형 ${c.charge_balanced.toLocaleString()}개 → 평가 ${c.evaluated.toLocaleString()}개 (DB ${c.known} · 새 조성 ${c.new}) · <b>충족 ${c["충족"]}</b> · 가능성 있음 ${c["가능성 있음"]} · 불충족 ${c["불충족"]}${c.out_of_domain ? ` · 학습 범위 밖 ${c.out_of_domain}` : ""}${c.below_hull_suspicious ? ` · hull 아래 과대평가 의심 ${c.below_hull_suspicious}` : ""}</div>
+      <div class="warn">새 조성은 L1 예측(형성에너지 오차 ±${res.model.ef_mae.toFixed(2)} eV/atom, 안정성 판정 ${(res.model.stability_accuracy * 100).toFixed(0)}%)입니다. 유망 후보는 DFT·실험으로 확인하세요.</div>
+      ${file ? `<div><a href="/api/recommend/run/${encodeURIComponent(file)}/csv">CSV 내려받기</a> · 저장: data/recommendations/${esc(file)}</div>` : ""}</div>
+      ${scatter(res)}
+      <div class="tbl"><table class="t rc"><thead><tr><th>#</th><th>화학식</th><th>출처</th><th>판정</th><th>hull 거리 (80%)</th><th>밴드갭 (80%)</th><th>밀도</th><th></th><th>비고</th></tr></thead><tbody>${rows || `<tr><td colspan="9">조건을 만족하거나 가능성 있는 후보가 없습니다 — 조건을 넓혀 보세요.</td></tr>`}</tbody></table></div>`;
+  }
+
+  async function loadRuns() {
+    const runs = await (await fetch("/api/recommend/runs")).json();
+    $("rc-runs").innerHTML = runs.length ? runs.map(r => `<li><button class="linkish" type="button" data-run="${esc(r.file)}">${esc(r.name)}</button> <span class="sub">· ${esc(r.created.replace("T", " "))} · 평가 ${r.counts.evaluated} · 충족 ${r.counts["충족"]}</span></li>`).join("")
+      : `<li class="sub">아직 없음</li>`;
+  }
+  $("rc-runs").addEventListener("click", async e => {
+    const b = e.target.closest("[data-run]"); if (!b) return;
+    const res = await (await fetch(`/api/recommend/run/${encodeURIComponent(b.dataset.run)}`)).json();
+    fill(res.goal); render(res, b.dataset.run); $("rc-out").scrollIntoView({ block: "start" });
+  });
+
+  $("rc-run").addEventListener("click", async () => {
+    $("rc-errors").hidden = true; $("rc-run").disabled = true;
+    const t0 = Date.now(), tick = setInterval(() => { $("rc-busy").textContent = `평가 중… ${((Date.now() - t0) / 1000).toFixed(0)}초`; }, 500);
+    try {
+      const res = await fetch("/api/recommend", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal: readGoal() }) });
+      const body = await res.json();
+      if (!res.ok) { const d = body.detail; $("rc-errors").innerHTML = (d.errors || [typeof d === "string" ? d : JSON.stringify(d)]).map(x => `<span>${esc(x)}</span>`).join("<br>"); $("rc-errors").hidden = false; $("rc-busy").textContent = ""; return; }
+      render(body.result, body.file); loadRuns();
+      $("rc-busy").textContent = `완료 · ${((Date.now() - t0) / 1000).toFixed(1)}초`;
+    } catch (e) { $("rc-errors").innerHTML = `<span>${esc(e.message)}</span>`; $("rc-errors").hidden = false; $("rc-busy").textContent = ""; }
+    finally { clearInterval(tick); $("rc-run").disabled = false; }
+  });
+
+  fetch("/api/goals").then(r => r.json()).then(list => {
+    goals = list;
+    $("rc-examples").innerHTML = list.map((g, i) => `<button type="button" data-g="${i}">${esc(g.goal.name)}</button>`).join("");
+    $("rc-examples").addEventListener("click", e => { const b = e.target.closest("[data-g]"); if (b) fill(goals[Number(b.dataset.g)].goal); });
+    if (list.length) fill(list[0].goal);
+  });
+  loadRuns();
+})();
+</script>

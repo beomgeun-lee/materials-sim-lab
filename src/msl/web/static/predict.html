@@ -1,4 +1,4 @@
-<p class="eyebrow"><a href="/">← 가상 조합 실험실</a> · <a href="/spaces">조합 공간</a></p>
+<p class="eyebrow"><a href="/">← 가상 조합 실험실</a> · <a href="/spaces">조합 공간</a> · <a href="/recommend">목표 기반 추천</a></p>
 <h1>물성 예측 (L1)</h1>
 <p class="sub">화학식만 넣으면 학습된 대리모델이 형성에너지·안정성·밴드갭·밀도를 몇 초 안에 추정합니다. DB 에 없는 새 조성을 빠르게 걸러 볼 때 씁니다.</p>
 <div class="pd-model" id="pd-model">모델 정보를 읽는 중…</div>
@@ -82,6 +82,8 @@ Fe2O3</textarea>
     </article>`;
   }
 
+  const qf = new URLSearchParams(location.search).get("f");
+  if (qf) { $("pd-text").value = qf; setTimeout(() => $("pd-run").click(), 0); }
   $("pd-run").addEventListener("click", async () => {
     const texts = $("pd-text").value.split("\n").map(s => s.trim()).filter(Boolean);
     if (!texts.length) return;

@@ -355,6 +355,49 @@ def predict_cmd(
         typer.echo(f"저장: {json_out}")
 
 
+@app.command("recommend")
+def recommend_cmd(
+    path: Path,
+    csv_out: Annotated[Path | None, typer.Option("--csv", help="상위 후보를 CSV 로 저장")] = None,
+    show: Annotated[int, typer.Option("--show", help="터미널에 보여 줄 후보 수")] = 20,
+) -> None:
+    """목표(원소·조건·정렬)를 주면 조성 후보를 만들어 평가하고 순위를 매긴다 (DB 는 DFT, 새 조성은 L1 예측)."""
+    import yaml
+    from pydantic import ValidationError
+
+    from msl.ml.predict import ModelMissing
+    from msl.recommend import Goal, recommend, save_run, to_csv
+
+    try:
+        goal = Goal.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+    except ValidationError as exc:
+        from msl.web.workbench import errors_of
+
+        typer.secho("목표 정의 오류\n" + "\n".join(errors_of(exc)), fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    try:
+        res = recommend(goal, progress=typer.echo)
+    except (ModelMissing, ValueError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    saved = save_run(res)
+    c = res["counts"]
+    typer.secho(f"\n{goal.name}", bold=True)
+    typer.echo(f"조건: {', '.join(res['constraints_text']) or '없음'} · 정렬: {res['objective_text']}")
+    typer.echo(f"후보 {c['candidates']:,} → 전하 균형 {c['charge_balanced']:,} → 평가 {c['evaluated']:,} (DB {c['known']} · 새 조성 {c['new']}) · "
+               f"충족 {c['충족']} · 가능성 있음 {c['가능성 있음']} · 불충족 {c['불충족']}\n")
+    typer.echo(f"{'':3} {'화학식':14} {'출처':4} {'판정':8} {'hull':>8} {'밴드갭':>7} {'밀도':>6}  비고")
+    for i, r in enumerate(res["results"][:show], 1):
+        v = r["values"]
+        note = "; ".join(r["flags"] + ([f"불확실: {', '.join(r['uncertain'])}"] if r["uncertain"] else []))
+        typer.echo(f"{i:>3} {r['formula']:14} {r['source']:4} {r['status']:8} {v['ehull']:+8.3f} {v['gap']:7.2f} "
+                   f"{(v['density'] or 0):6.2f}  {r['material_id'] or ''} {note}")
+    typer.echo(f"\n저장: {saved}")
+    if csv_out:
+        csv_out.write_text(to_csv(res), encoding="utf-8-sig")
+        typer.echo(f"CSV: {csv_out}")
+
+
 @app.command("resolve-check")
 def resolve_check(
     path: Annotated[Path, typer.Option("--list", help="시험 목록")] = KB_DIR / "validation" / "resolver_v1.yaml",

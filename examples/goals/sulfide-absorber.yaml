@@ -1,0 +1,13 @@
+# 태양전지 흡수층 후보 — 황화물 중 밴드갭이 적당하고 안정한 조성 (PBE 밴드갭 기준 — 실측은 보통 이보다 큼)
+id: goal-sulfide-absorber
+name: 황화물 태양전지 흡수층 후보
+description: Cu·Zn·Sn·Ba 황화물 중 안정(hull ≤ 0.05)하고 PBE 밴드갭 0.8~2.0 eV, 1.3 eV 에 가까운 순
+required: [S]
+optional: [Cu, Zn, Sn, Ba]
+max_elements: 4
+max_atoms: 8
+constraints:
+  - {prop: ehull, max: 0.05}
+  - {prop: gap, min: 0.8, max: 2.0}
+objective: {prop: gap, direction: target, value: 1.3}
+top_k: 30

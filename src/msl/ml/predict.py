@@ -81,11 +81,13 @@ def predict(formula: str) -> dict[str, Any]:
     cq = m.get("conformal", {})  # 분할 등각 보정량 (구간을 넓혀 80% 포함률을 맞춘다)
     ef_lo = float(md[f"ef_q{q_lo}"].predict(x)[0]) - cq.get("ef", 0.0)
     ef_hi = float(md[f"ef_q{q_hi}"].predict(x)[0]) + cq.get("ef", 0.0)
+    ef_lo, ef_hi = min(ef_lo, ef), max(ef_hi, ef)  # 분위수·점 모델을 따로 학습해 어긋날 때 구간이 점을 포함하도록
     p_metal = float(md["metal"].predict_proba(x)[0, 1])
     gap_raw = float(md["gap"].predict(x)[0])
     gap = 0.0 if p_metal > 0.5 else max(gap_raw, 0.0)
     gap_lo = max(float(md[f"gap_q{q_lo}"].predict(x)[0]) - cq.get("gap", 0.0), 0.0)
     gap_hi = max(float(md[f"gap_q{q_hi}"].predict(x)[0]) + cq.get("gap", 0.0), 0.0)
+    gap_lo, gap_hi = min(gap_lo, gap), max(gap_hi, gap)
     vpa = float(md["vpa"].predict(x)[0])
     density = comp.weight / comp.num_atoms / vpa * AMU_PER_A3 if vpa > 0 else None
 
@@ -118,4 +120,82 @@ def predict(formula: str) -> dict[str, Any]:
             out["ehull"] = round(ef - hull_e, 3)
             out["stability"] = stability_label(ef - hull_e, known=out["known"] is not None)
             out["decomposition"] = decomp
+    return out
+
+
+@cache
+def _pd_for(elements: tuple[str, ...]):
+    """원소 집합의 로컬 상태도 (알려진 바닥 다형 전부). 일괄 예측에서 계 마다 한 번만 만든다."""
+    import warnings
+    from itertools import combinations
+
+    from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
+
+    h = _hull()
+    entries = [PDEntry(Composition(e), 0.0, name=e) for e in elements]
+    for k in range(2, len(elements) + 1):
+        for sub in combinations(elements, k):
+            for f, amt, ef in h.by_set.get(frozenset(sub), []):
+                c = Composition(amt)
+                entries.append(PDEntry(c, ef * c.num_atoms, name=f))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return PhaseDiagram(entries)
+
+
+def predict_batch(formulas: list[str], chunk: int = 256) -> list[dict[str, Any]]:
+    """여러 조성을 한 번에 — 모델 예측·최근접 거리를 묶어서 계산 (추천에서 수천 개).
+
+    predict() 와 같은 값을 내되, 분해 생성물·비슷한 물질 목록은 빼고 최근접 거리만 준다 (필요하면 predict() 로 자세히).
+    DB 에 있는 조성은 known 에 DFT 값을 붙인다. hull 거리는 DB 에 없는 조성만 계산한다 (있는 조성은 DFT 값 사용).
+    """
+    from msl.ml.features import featurize_many
+
+    if not formulas:
+        return []
+    m = model()
+    md, cq = m["models"], m.get("conformal", {})
+    comps = [Composition(f) for f in formulas]
+    X = featurize_many(formulas)
+    q_lo, q_hi = QUANTILES
+    ef = md["ef"].predict(X)
+    ef_lo, ef_hi = md[f"ef_q{q_lo}"].predict(X) - cq.get("ef", 0.0), md[f"ef_q{q_hi}"].predict(X) + cq.get("ef", 0.0)
+    p_metal = md["metal"].predict_proba(X)[:, 1]
+    gap = np.where(p_metal > 0.5, 0.0, np.clip(md["gap"].predict(X), 0, None))
+    gap_lo = np.clip(md[f"gap_q{q_lo}"].predict(X) - cq.get("gap", 0.0), 0, None)
+    gap_hi = np.clip(md[f"gap_q{q_hi}"].predict(X) + cq.get("gap", 0.0), 0, None)
+    vpa = md["vpa"].predict(X)
+    ef_lo, ef_hi = np.minimum(ef_lo, ef), np.maximum(ef_hi, ef)
+    gap_lo, gap_hi = np.minimum(gap_lo, gap), np.maximum(gap_hi, gap)
+
+    Xs = m["scaler"].transform(X).astype(np.float32)
+    B = m["nn_X"]
+    b2 = (B * B).sum(axis=1)
+    dmin = np.empty(len(Xs), dtype=np.float32)
+    for i in range(0, len(Xs), chunk):
+        a = Xs[i:i + chunk]
+        d2 = (a * a).sum(axis=1)[:, None] + b2[None, :] - 2 * a @ B.T
+        dmin[i:i + chunk] = np.sqrt(np.clip(d2.min(axis=1), 0, None))
+
+    known = _known()
+    out = []
+    for i, c in enumerate(comps):
+        key = formula_key(c)
+        k = known.get(key)
+        density = c.weight / c.num_atoms / vpa[i] * AMU_PER_A3 if vpa[i] > 0 else None
+        rec: dict[str, Any] = {
+            "formula": key, "elements": sorted(str(e) for e in c.elements),
+            "ef": float(ef[i]), "ef_interval": [float(ef_lo[i]), float(ef_hi[i])],
+            "gap": float(gap[i]), "gap_interval": [float(gap_lo[i]), float(gap_hi[i])], "p_metal": float(p_metal[i]),
+            "density": None if density is None else float(density), "nn_distance": float(dmin[i]),
+            "in_domain": bool(dmin[i] <= m["nn_threshold"]), "known": None, "ehull": None, "ehull_interval": None,
+        }
+        if k is not None:
+            rec["known"] = {"material_id": k["material_id"], "ef": float(k["ef"]), "ehull": float(k["ehull"]), "gap": float(k["gap"]),
+                            "density": None if k["density_g_cm3"] is None else float(k["density_g_cm3"]), "theoretical": bool(k["theoretical"])}
+        elif len(c.elements) >= 2:
+            h = float(_pd_for(tuple(rec["elements"])).get_hull_energy_per_atom(c))
+            rec["ehull"] = float(ef[i]) - h
+            rec["ehull_interval"] = [float(ef_lo[i]) - h, float(ef_hi[i]) - h]
+        out.append(rec)
     return out
