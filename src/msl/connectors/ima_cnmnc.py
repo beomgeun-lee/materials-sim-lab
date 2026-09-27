@@ -6,8 +6,9 @@
 - 쪽마다 열 경계를 데이터에서 잰다 (표 머리는 첫 쪽에만 있다).
 - 위·아래 첨자는 작은 글씨 낱말이다. 가까운 줄에 붙여 x 순서로 이으면 원문 표기 'Cu2+Mn3+6O8' 이 된다.
 
-매칭 테이블 mineral_structures(match())는 COD structures_exp 가 적재된 뒤 만든다. IMA 목록의 파생물이므로
-SA 조건을 그대로 이어 CC-BY-SA-3.0 으로 둔다.
+매칭 테이블 mineral_structures(match())는 COD structures_exp 가, mineral_mp(match_mp())는 MP phases_calc 가 적재된 뒤
+만든다 (refresh_matches() 가 적재된 것만 골라 다시 만든다). IMA 목록의 파생물이므로 SA 조건을 그대로 이어
+CC-BY-SA-3.0 으로 둔다 (MP 의 CC-BY-4.0 보다 SA 쪽이 더 제한적이다).
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ import unicodedata
 import warnings
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 
 import pandas as pd
@@ -29,7 +31,7 @@ from pymatgen.core import Composition, Element
 from msl.db import connect, download, raw_dir, record_checksums, tables, with_provenance, write_table
 
 SOURCE = "ima-cnmnc"
-TABLES = ["minerals", "mineral_structures"]
+TABLES = ["minerals", "mineral_structures", "mineral_mp"]
 VERSION = "2026-09"
 LICENSE = "CC-BY-SA-3.0"
 URL = "https://cnmnc.units.it/files/editor/IMA_Master_List_(2026-09).pdf"
@@ -353,9 +355,23 @@ def load() -> dict[str, dict[str, int]]:
     retrieved = dt.datetime.fromtimestamp(pdf.stat().st_mtime, dt.UTC).isoformat(timespec="seconds")
     df = with_provenance(df, source=SOURCE, version=VERSION, license=LICENSE, method="compiled",
                          id_column="name", retrieved_at=retrieved)
-    out = {"minerals": write_table("minerals", df)}
-    if "structures_exp" in tables():
+    return {"minerals": write_table("minerals", df)} | refresh_matches()
+
+
+def refresh_matches() -> dict[str, dict[str, int]]:
+    """광물 목록에서 파생되는 매칭 테이블을 지금 적재된 입력으로 다시 만든다.
+
+    IMA·COD·MP 어느 것을 먼저 적재해도 마지막 적재 뒤에는 최신이 된다. mineral_mp 는 대표 COD 구조의 공간군을
+    쓰므로 mineral_structures 뒤에 만든다.
+    """
+    have = set(tables())
+    out: dict[str, dict[str, int]] = {}
+    if "minerals" not in have:
+        return out
+    if "structures_exp" in have:
         out["mineral_structures"] = match()
+    if "phases_calc" in have:
+        out["mineral_mp"] = match_mp()
     return out
 
 
@@ -460,33 +476,58 @@ def pick_best(cod: pd.DataFrame, ima_elements: str | None, ima_formula: str | No
     return min(cod.itertuples(), key=lambda r: _rank(r, ima_els, ima_formula, modal_sg))
 
 
+def common_fits(cod_elements: str | None, ima_elements: str | None, exact: bool) -> bool:
+    """commonname 으로만 이름이 맞은 COD 항목을 받을지. commonname 은 화학 관용명이라 같은 이름의 합성 유사체
+    (GeO₂ 'quartz')나 조성이 다른 것이 섞이므로 원소 구성이 IMA 와 맞을 때만 받는다 (H 제외).
+    축약식이 있는 광물은 원소 집합이 같아야 하고, 치환식 광물은 COD 원소가 IMA 원소 목록 안에 있어야 한다.
+    IMA 원소 목록을 모르면(REE 같은 자리표시) 받지 않는다."""
+    if not isinstance(ima_elements, str):
+        return False
+    cod, ima = _els(cod_elements), _els(ima_elements)
+    return bool(cod) and (cod == ima if exact else cod <= ima)
+
+
 def match() -> dict[str, int]:
     """minerals × structures_exp → mineral_structures (IMA 광물마다 COD 구조 목록과 대표 구조).
 
+    COD 이름은 광물명(mineral)을 먼저 보고, 없으면 commonname 을 본다 (commonname 항목은 common_fits 를 통과할 때만).
+    commonname 항목은 R 값이 있어 AMCSD 광물 항목(R 값 없음)보다 앞서기 쉬우므로, 대표 구조는 광물명 항목이 하나도
+    없는 광물에서만 commonname 항목 중에 고른다.
     formula_check: IMA 축약식과 대표 COD 구조의 원소 집합이 같은가. X선 구조는 H 위치를 자주 빼므로 H 는 비교에서 뺀다.
     IMA 화학식을 축약식으로 못 바꾼 광물(치환식 등)은 None.
     """
     con = connect()
     minerals = con.execute("SELECT name, formula_reduced, elements FROM minerals").df()
-    cod = con.execute("SELECT * FROM structures_exp WHERE mineral IS NOT NULL").df()
+    common = "commonname" in {r[0] for r in con.execute("DESCRIBE structures_exp").fetchall()}  # 옛 적재본에는 없다
+    cod = con.execute("SELECT * FROM structures_exp WHERE mineral IS NOT NULL"
+                      + (" OR commonname IS NOT NULL" if common else "")).df()
     cod_version = str(cod["source_version"].iloc[0]) if len(cod) else "none"
     index = build_index(list(minerals["name"]))
-    names = {m: match_name(m, index) for m in cod["mineral"].unique()}
-    cod["ima_name"] = cod["mineral"].map(names)
+    cod["from_common"] = cod["mineral"].isna()
+    cod["cod_name"] = cod["mineral"].fillna(cod["commonname"]) if common else cod["mineral"]
+    names = {m: match_name(m, index) for m in cod["cod_name"].unique()}
+    cod["ima_name"] = cod["cod_name"].map(names)
+    ima = minerals.set_index("name")
+    rejected = [r.from_common and isinstance(r.ima_name, str) and not common_fits(
+        r.elements, ima.at[r.ima_name, "elements"], isinstance(ima.at[r.ima_name, "formula_reduced"], str))
+        for r in cod.itertuples()]
+    cod.loc[rejected, "ima_name"] = None
     groups = {k: g for k, g in cod.dropna(subset=["ima_name"]).groupby("ima_name")}
 
     rows = []
     for m in minerals.itertuples():
         g = groups.get(m.name)
-        base = {"name": m.name, "n_cod": 0, "cod_ids": [], "cod_names": None, "best_cod_id": None,
-                "best_formula": None, "best_sg": None, "formula_check": None}
+        base = {"name": m.name, "n_cod": 0, "n_cod_commonname": 0, "cod_ids": [], "cod_names": None,
+                "best_cod_id": None, "best_formula": None, "best_sg": None, "formula_check": None}
         if g is None:
             rows.append(base)
             continue
         exact = isinstance(m.formula_reduced, str)
-        best = pick_best(g, m.elements, m.formula_reduced)
-        rows.append({**base, "n_cod": len(g), "cod_ids": sorted(int(i) for i in g["cod_id"]),
-                     "cod_names": "; ".join(sorted(g["mineral"].unique())),
+        named = g[~g["from_common"]]  # 대표는 광물명 항목에서 고른다. commonname 항목은 광물명 항목이 없을 때만
+        best = pick_best(named if len(named) else g, m.elements, m.formula_reduced)
+        rows.append({**base, "n_cod": len(g), "n_cod_commonname": int(g["from_common"].sum()),
+                     "cod_ids": sorted(int(i) for i in g["cod_id"]),
+                     "cod_names": "; ".join(sorted(g["cod_name"].unique())),
                      "best_cod_id": int(best.cod_id), "best_formula": best.formula_reduced, "best_sg": best.sg,
                      "formula_check": (_els(best.elements) == _els(m.elements)) if exact and isinstance(m.elements, str)
                      else None})
@@ -496,3 +537,160 @@ def match() -> dict[str, int]:
     df = with_provenance(df, source=SOURCE, version=f"{VERSION}+cod-{cod_version}", license=LICENSE,
                          method="compiled", id_column="name")
     return write_table("mineral_structures", df)
+
+
+# ── 광물 ↔ MP 계산 구조 매칭 ──────────────────────────────────────────────
+
+LEVEL_SG = "formula+spacegroup"  # 축약식 + 대표 COD 구조와 같은 공간군
+LEVEL_SUPER = "formula+supergroup"  # 축약식 + MP 공간군이 대표 COD 공간군의 바로 위 군
+LEVEL_FORMULA = "formula"  # 축약식만
+# 거울상 쌍(좌·우형). 같은 구조라 DFT 에너지가 같고, MP 와 COD 가 서로 다른 쪽을 올린 경우가 많다 (석영 P3₁21 ↔ P3₂21)
+ENANTIOMORPHS = {76: 78, 91: 95, 92: 96, 144: 145, 151: 153, 152: 154, 169: 170, 171: 172, 178: 179, 180: 181,
+                 212: 213}
+_ENANTIO = {n: min(a, b) for a, b in ENANTIOMORPHS.items() for n in (a, b)}
+
+
+def sg_key(number) -> int | None:
+    """공간군 비교 키. 번호로 비교하므로 H-M 기호의 설정·표기 차이(Pnma = Pmcn = Pbnm = 62번)는 따로 맞출 필요가
+    없고, 거울상 쌍은 한 번호로 묶는다. 번호가 없으면 None."""
+    if number is None or pd.isna(number):
+        return None
+    return _ENANTIO.get(int(number), int(number))
+
+
+@cache
+def _maximal_subgroups() -> dict[int, frozenset[int]]:
+    from pymatgen.symmetry.groups import SYMM_DATA
+
+    return {int(k): frozenset(int(v) for v in vs) for k, vs in SYMM_DATA["maximal_subgroups"].items()}
+
+
+def sg_tier(mp_sg, cod_sg) -> int:
+    """0 같은 공간군 · 1 MP 공간군이 COD 공간군의 바로 위 군 (COD 군이 MP 군의 극대 부분군) · 2 그 밖·모름.
+
+    1 은 옛 정밀화가 대칭을 낮춰 기술한 구조(흑연 P6₃mc ↔ P6₃/mmc, NiAs 형 황화물)나 DFT 이완이 대칭을 올린 경우다.
+    """
+    a, b = sg_key(mp_sg), sg_key(cod_sg)
+    if a is None or b is None:
+        return 2
+    if a == b:
+        return 0
+    return 1 if int(cod_sg) in _maximal_subgroups().get(int(mp_sg), ()) else 2
+
+
+@cache
+def _reduced(formula: str) -> str | None:
+    try:
+        with warnings.catch_warnings():  # 비활성 기체(MP 의 Ar·He·Ne 단체)의 전기음성도 경고
+            warnings.simplefilter("ignore")
+            return Composition(formula).reduced_formula
+    except Exception:  # 원소가 아닌 기호 등
+        return None
+
+
+def mp_formula(ima_formula, ima_elements, cod_formula) -> tuple[str | None, str | None]:
+    """MP 와 비교할 축약식과 그 출처 ('ima' · 'cod').
+
+    IMA 축약식이 있으면 그것만 쓴다 (COD 식은 X선 구조라 H 가 빠진 경우가 많아 Mg(OH)2 가 MgO2 에 붙는다).
+    치환식이라 IMA 축약식이 없으면 대표 COD 구조의 식을 쓰되, COD 원소가 IMA 원소 목록 안에 있고 H 유무가 같을 때만.
+    """
+    if isinstance(ima_formula, str):
+        return _reduced(ima_formula), "ima"
+    if not isinstance(cod_formula, str) or (f := _reduced(cod_formula)) is None:
+        return None, None
+    if isinstance(ima_elements, str):
+        ima_els, cod_els = set(ima_elements.split(",")), {str(e) for e in Composition(f).elements}
+        if not cod_els <= ima_els or ("H" in ima_els) != ("H" in cod_els):
+            return None, None
+    return f, "cod"
+
+
+def match_mp_frame(minerals: pd.DataFrame, mp: pd.DataFrame) -> pd.DataFrame:
+    """광물마다 MP 후보 목록과 대표 하나 (match_mp 의 계산 부분 — DB·네트워크 없음).
+
+    minerals: name, formula_reduced, elements, best_formula(대표 COD 식), cod_sg_number(대표 COD 공간군 번호)
+    mp: material_id, formula_pretty, spacegroup_symbol, spacegroup_number, energy_above_hull_eV, deprecated
+
+    후보는 축약식이 같고 deprecated 가 아닌 MP 항목이다. 순서: 대표 COD 구조와 같은 공간군 → 바로 위 군 → 나머지,
+    그 안에서 energy_above_hull 낮은 순 → material_id.
+    대표(best_mp_id):
+    - 같은 공간군 후보가 있으면 그 첫째 (formula+spacegroup).
+    - 없으면, 같은 축약식의 다른 광물이 공간군까지 맞춰 대표로 잡은 항목은 건너뛴다 (vaterite 가 calcite 의 항목을
+      갖지 않게).
+    - 공간군 근거 없이 축약식만 맞았는데 같은 축약식의 IMA 광물이 둘 이상이면(다형) 대표를 두지 않는다
+      (polymorph_ambiguous). 이때도 후보 목록 mp_ids 는 남긴다.
+    mp_shared_with 는 대표가 같은 다른 광물이다. 축약식·공간군이 모두 같은 다른 구조(규회석·브레이석)는 공간군으로
+    가를 수 없어서 생긴다.
+    """
+    live = mp[~mp["deprecated"].fillna(False).astype(bool)]
+    live = live.assign(key=live["formula_pretty"].map(lambda f: _reduced(f) if isinstance(f, str) else None),
+                       e_sort=live["energy_above_hull_eV"].fillna(float("inf")))
+    by_formula = {f: g for f, g in live.groupby("key")}
+    basis = [mp_formula(m.formula_reduced, m.elements, m.best_formula) for m in minerals.itertuples()]
+    n_same = Counter(f for f, _ in basis if f)
+
+    ranked: dict[str, list] = {}
+    for m, (f, _) in zip(minerals.itertuples(), basis):
+        g = by_formula.get(f)
+        tiers = [] if g is None else [sg_tier(sg, m.cod_sg_number) for sg in g["spacegroup_number"]]
+        ranked[m.name] = [] if g is None else sorted(
+            zip(tiers, g.itertuples()), key=lambda c: (c[0], c[1].e_sort, c[1].material_id))
+    claimed = {c[0][1].material_id for c in ranked.values() if c and c[0][0] == 0}
+
+    rows = []
+    for m, (f, src) in zip(minerals.itertuples(), basis):
+        cands = ranked[m.name]
+        best, level, ambiguous = None, None, None
+        if cands:
+            tier, best = cands[0] if cands[0][0] == 0 else \
+                next((c for c in cands if c[1].material_id not in claimed), (2, None))
+            level, ambiguous = (LEVEL_SG, LEVEL_SUPER, LEVEL_FORMULA)[tier], False
+            if tier == 2 and n_same[f] > 1:
+                best, ambiguous = None, True
+        rows.append({
+            "name": m.name, "formula_basis": src, "match_formula": f,
+            "cod_sg_number": None if pd.isna(m.cod_sg_number) else int(m.cod_sg_number),
+            "n_mp": len(cands), "mp_ids": [c[1].material_id for c in cands],
+            "best_mp_id": None if best is None else best.material_id, "match_level": level,
+            "polymorph_ambiguous": ambiguous,
+            "mp_sg": None if best is None else best.spacegroup_symbol,
+            "mp_sg_number": None if best is None else best.spacegroup_number,
+            "mp_e_above_hull_summary_eV": None if best is None else best.energy_above_hull_eV,
+        })
+    df = pd.DataFrame(rows)
+    owners = df.dropna(subset=["best_mp_id"]).groupby("best_mp_id")["name"].agg(list)
+    df["mp_shared_with"] = ["; ".join(n for n in owners[b] if n != name) or None if isinstance(b, str) else None
+                            for name, b in zip(df["name"], df["best_mp_id"])]
+    for col in ("cod_sg_number", "mp_sg_number"):
+        df[col] = df[col].astype("Int64")
+    df["polymorph_ambiguous"] = df["polymorph_ambiguous"].astype("boolean")
+    df["mp_e_above_hull_summary_eV"] = df["mp_e_above_hull_summary_eV"].astype("Float64")
+    return df
+
+
+def match_mp() -> dict[str, int]:
+    """minerals (+ mineral_structures · structures_exp) × phases_calc → mineral_mp.
+
+    배포용(open) 입력만 읽는다. 파생 테이블이 SA 로 open 파티션에 가므로 NC 항목(GNoME)이 섞이면 안 된다.
+    mp_e_above_hull_summary_eV 는 MP summary 기준(GGA/GGA+U/r²SCAN 혼합)이라 조회용이다. 안정성 판정(A1·A2)은
+    best_mp_id 로 GGA/GGA+U 엔트리를 찾아 쓴다 (결정 D12). COD 매칭이 없으면 축약식만으로 맞춘다.
+    """
+    con = connect(include_restricted=False)
+    have = {r[0] for r in con.execute("SELECT table_name FROM information_schema.tables").fetchall()}
+    with_cod = {"mineral_structures", "structures_exp"} <= have
+    minerals = con.execute(
+        "SELECT m.name, m.formula_reduced, m.elements, s.best_formula, e.sg_number AS cod_sg_number FROM minerals m "
+        "LEFT JOIN mineral_structures s USING (name) LEFT JOIN structures_exp e ON e.cod_id = s.best_cod_id"
+        if with_cod else
+        "SELECT name, formula_reduced, elements, NULL AS best_formula, NULL AS cod_sg_number FROM minerals").df()
+    mp = con.execute("SELECT material_id, formula_pretty, spacegroup_symbol, spacegroup_number, energy_above_hull_eV, "
+                     "deprecated FROM phases_calc").df()
+    mp_version, scheme = con.execute(
+        "SELECT any_value(source_version), any_value(correction_scheme) FROM phases_calc").fetchone()
+    version = VERSION
+    if with_cod:
+        version += f"+cod-{con.execute('SELECT any_value(source_version) FROM structures_exp').fetchone()[0]}"
+    df = with_provenance(match_mp_frame(minerals, mp), source=SOURCE, version=f"{version}+mp-{mp_version}",
+                         license=LICENSE, method="compiled", id_column="name",
+                         correction_scheme=f"mp_e_above_hull_summary_eV: {scheme}")
+    return write_table("mineral_mp", df)

@@ -128,4 +128,9 @@ def load() -> dict[str, dict[str, int]]:
     df = with_provenance(df, source=SOURCE, version=VERSION, license=LICENSE, method=METHOD, id_column="material_id",
                          retrieved_at=manifest["retrieved_at"], correction_scheme=CORRECTION)
     df["license"] = lic.values
-    return {"phases_calc": write_table("phases_calc", df)}
+    out = {"phases_calc": write_table("phases_calc", df)}
+    from msl.connectors import ima_cnmnc  # 광물 목록이 이미 있으면 광물 ↔ MP 매칭도 새로 만든다
+
+    if ima_cnmnc.minerals_loaded():
+        out["mineral_mp"] = ima_cnmnc.match_mp()
+    return out

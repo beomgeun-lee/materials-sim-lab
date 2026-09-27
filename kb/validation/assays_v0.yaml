@@ -1,0 +1,138 @@
+# 검증 세트 v0 — 계획서 7절. 결과가 알려진 조합으로 시험 전체를 점검한다.
+# 기준(8절): S0 위험 사례(hazard: true) 재현율 100%, 나머지 통과율 90% 이상.   실행: uv run msl validate
+# checks: status_in · verdict_in · value_between{name,range} · value_contains{name,text} · summary_contains ·
+#         table_contains · curve_min_below · curve_min_above · product_contains(A2 곡선 최저점 생성물) ·
+#         recipe_products_contains(A2 레시피 혼합비의 평형 생성물)
+
+# ── S0 혼합 안전 게이트 ─────────────────────────────────────────────────
+- id: s0-bleach-acid
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-1, name: 표백제+염산, components: [{ref: "cas:7681-52-9", amount: 0.05 mol, state: aqueous}, {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}]}
+  checks: [{verdict_in: [부적합]}, {summary_contains: "Cl₂"}]
+- id: s0-bleach-ammonia
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-2, name: 표백제+암모니아수, components: [{ref: "cas:7681-52-9", amount: 0.05 mol, state: aqueous}, {ref: "cas:1336-21-6", amount: 0.05 mol, state: aqueous}]}
+  checks: [{verdict_in: [부적합]}]
+- id: s0-sodium-water
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-3, name: 나트륨+물, components: [{ref: "cas:7440-23-5", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 0.1 L, state: liquid}]}
+  checks: [{verdict_in: [부적합]}]
+- id: s0-hydrogen-oxygen
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-4, name: 수소+산소, components: [{ref: "cas:1333-74-0", amount: 2 mol, state: gas}, {ref: "cas:7782-44-7", amount: 1 mol, state: gas}]}
+  checks: [{verdict_in: [부적합, 주의]}]
+- id: s0-methane-oxygen
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-5, name: 메탄+산소, components: [{ref: "cas:74-82-8", amount: 1 mol, state: gas}, {ref: "cas:7782-44-7", amount: 2 mol, state: gas}]}
+  checks: [{verdict_in: [부적합, 주의]}]
+- id: s0-acid-base
+  assay: S0
+  hazard: true
+  recipe: {id: rcp-v-s0-6, name: 염산+수산화나트륨, components: [{ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}, {ref: "cas:1310-73-2", amount: 0.1 mol, state: aqueous}]}
+  checks: [{verdict_in: [주의, 부적합]}]
+- id: s0-salt-water-negative
+  assay: S0
+  recipe: {id: rcp-v-s0-7, name: 소금물, components: [{ref: "cas:7647-14-5", amount: 0.1 mol, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}]}
+  checks: [{verdict_in: [규칙 해당 없음, 판정 불가]}]
+- id: s0-limestone-quartz-negative
+  assay: S0
+  recipe: {id: rcp-v-s0-8, name: 석회석+석영, components: [{ref: "mineral:calcite", amount: 1 mol, state: solid}, {ref: "mineral:quartz", amount: 1 mol, state: solid}]}
+  checks: [{verdict_in: [규칙 해당 없음, 판정 불가]}]
+
+# ── A1 조성 안정성 ───────────────────────────────────────────────────────
+- id: a1-corundum-stable
+  assay: A1
+  recipe: {id: rcp-v-a1-1, name: 알루미나, components: [{ref: "formula:Al2O3", amount: 1 mol, state: solid}, {ref: "formula:MgO", amount: 1 mol, state: solid}]}
+  checks: [{value_between: {name: "Al2O3 E_hull", range: [0, 1]}}, {value_between: {name: "MgO E_hull", range: [0, 1]}}]
+
+- id: a1-calcite-aragonite-polymorph
+  assay: A1
+  recipe: {id: rcp-v-a1-2, name: 방해석+아라고나이트, components: [{ref: "mineral:calcite", amount: 1 mol, state: solid}, {ref: "mineral:aragonite", amount: 1 mol, state: solid}]}
+  checks: [{value_between: {name: "Calcite (CaCO3) E_hull", range: [0, 1]}}, {value_between: {name: "Aragonite (CaCO3) E_hull", range: [0.5, 60]}}]  # 상압에서 아라고나이트는 준안정 (크기는 GGA 가 과대평가)
+
+# ── A2 고상·계면 반응 ────────────────────────────────────────────────────
+- id: a2-spinel
+  assay: A2
+  recipe: {id: rcp-v-a2-1, name: MgO+Al2O3, components: [{ref: "formula:MgO", amount: 1 mol, state: solid}, {ref: "formula:Al2O3", amount: 1 mol, state: solid}], conditions: {T: 1400 °C}}
+  checks: [{curve_min_below: -1}, {product_contains: MgAl2O4}]
+- id: a2-wollastonite
+  assay: A2
+  recipe: {id: rcp-v-a2-2, name: 석회석+석영, components: [{ref: "formula:CaCO3", amount: 1 mol, state: solid}, {ref: "formula:SiO2", amount: 1 mol, state: solid}], conditions: {T: 1000 °C}}
+  checks: [{curve_min_below: -1}, {product_contains: [CaSiO3, Ca2SiO4, Ca3Si2O7, Ca3SiO5]}, {recipe_products_contains: CaSiO3}]
+- id: a2-barium-titanate
+  assay: A2
+  recipe: {id: rcp-v-a2-3, name: BaCO3+TiO2, components: [{ref: "formula:BaCO3", amount: 1 mol, state: solid}, {ref: "formula:TiO2", amount: 1 mol, state: solid}], conditions: {T: 1100 °C}}
+  checks: [{curve_min_below: -1}, {recipe_products_contains: BaTiO3}]  # 1:1 레시피 → BaTiO3 (곡선 최저점은 BaTi2O5 로 0.7 meV 차이)
+- id: a2-franklinite
+  assay: A2
+  recipe: {id: rcp-v-a2-4, name: ZnO+Fe2O3, components: [{ref: "formula:ZnO", amount: 1 mol, state: solid}, {ref: "formula:Fe2O3", amount: 1 mol, state: solid}], conditions: {T: 1000 °C}}
+  checks: [{curve_min_below: -1}, {product_contains: ZnFe2O4}]
+- id: a2-nickel-aluminate
+  assay: A2
+  recipe: {id: rcp-v-a2-5, name: NiO+Al2O3, components: [{ref: "formula:NiO", amount: 1 mol, state: solid}, {ref: "formula:Al2O3", amount: 1 mol, state: solid}], conditions: {T: 1300 °C}}
+  checks: [{curve_min_below: -1}, {product_contains: NiAl2O4}]
+- id: a2-gold-silica-negative
+  assay: A2
+  recipe: {id: rcp-v-a2-6, name: Au+SiO2, components: [{ref: "element:Au", amount: 1 mol, state: solid}, {ref: "formula:SiO2", amount: 1 mol, state: solid}], conditions: {T: 1000 °C}}
+  checks: [{curve_min_above: -1}]
+
+# ── A3 기체 평형 ─────────────────────────────────────────────────────────
+- id: a3-methane-air
+  assay: A3
+  recipe: {id: rcp-v-a3-1, name: 메탄+공기, components: [{ref: "cas:74-82-8", amount: 1 mol, state: gas}, {ref: "cas:7782-44-7", amount: 2 mol, state: gas}, {ref: "cas:7727-37-9", amount: 7.52 mol, state: gas}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "단열 평형 온도", range: [2200, 2250]}}]
+- id: a3-hydrogen-oxygen
+  assay: A3
+  recipe: {id: rcp-v-a3-2, name: 수소+산소, components: [{ref: "cas:1333-74-0", amount: 2 mol, state: gas}, {ref: "cas:7782-44-7", amount: 1 mol, state: gas}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "단열 평형 온도", range: [2950, 3200]}}]
+
+# ── A4 수용액 평형 ───────────────────────────────────────────────────────
+- id: a4-calcite-water
+  assay: A4
+  recipe: {id: rcp-v-a4-1, name: 방해석+물, components: [{ref: "mineral:calcite", amount: 1 g, state: solid}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C, atmosphere: air}}
+  checks: [{value_between: {name: "pH", range: [8.1, 8.35]}}]
+- id: a4-hydrochloric-acid
+  assay: A4
+  recipe: {id: rcp-v-a4-2, name: 0.1 M 염산, components: [{ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "pH", range: [0.95, 1.2]}}]
+- id: a4-salt-water
+  assay: A4
+  recipe: {id: rcp-v-a4-3, name: 소금물, components: [{ref: "cas:7647-14-5", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "pH", range: [6.5, 7.5]}}]
+
+# ── A8 블렌드 ───────────────────────────────────────────────────────────
+- id: a8-epoxy-glass
+  assay: A8
+  recipe: {id: rcp-v-a8-1, name: 에폭시+유리섬유, components: [{ref: "material:epoxy-generic", amount: 70 vol%, state: solid}, {ref: "material:e-glass-fiber", amount: 30 vol%, state: solid}]}
+  checks: [{value_between: {name: "밀도", range: [1.60, 1.61]}}, {value_between: {name: "영률 상한", range: [24.0, 24.1]}}]
+
+# ── A9 공급·경제성 ───────────────────────────────────────────────────────
+- id: a9-nickel-critical
+  assay: A9
+  recipe: {id: rcp-v-a9-1, name: 니켈, components: [{ref: "element:Ni", amount: 1 mol, state: solid}, {ref: "element:Cu", amount: 1 mol, state: solid}]}
+  checks: [{status_in: [warning]}, {value_contains: {name: "Ni · 공급 위험", text: "핵심광물"}}]
+
+# ── A10 국내 규제 ────────────────────────────────────────────────────────
+- id: a10-hcl-concentrated
+  assay: A10
+  recipe: {id: rcp-v-a10-1, name: 진한 염산 36%, components: [{ref: "cas:7647-01-0", amount: 10 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 0.65 L, state: liquid}]}
+  checks: [{status_in: [warning]}, {value_contains: {name: "염화 수소 · 국내 규제", text: 사고대비물질}}]
+- id: a10-hcl-dilute-below-threshold
+  assay: A10
+  recipe: {id: rcp-v-a10-3, name: 묽은 염산 0.1 M, components: [{ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}]}
+  checks: [{status_in: [ok]}, {table_contains: "기준 10% 미만"}]
+- id: a10-limestone-negative
+  assay: A10
+  recipe: {id: rcp-v-a10-2, name: 석회석, components: [{ref: "mineral:calcite", amount: 1 mol, state: solid}, {ref: "mineral:quartz", amount: 1 mol, state: solid}]}
+  checks: [{status_in: [ok]}]
+
+# ── A6 합금 상평형 (TDB 는 라이선스 미확인 → 연구용) ─────────────────────
+- id: a6-cupronickel-70-30
+  assay: A6
+  recipe: {id: rcp-v-a6-1, name: Cu-Ni 70/30, components: [{ref: "element:Cu", amount: 70 at%, state: solid}, {ref: "element:Ni", amount: 30 at%, state: solid}], conditions: {P: 1 atm}, sweep: {param: T, start: 1300 K, stop: 1600 K, steps: 31}}
+  checks: [{value_between: {name: "고상선 (평형, 액상 첫 출현)", range: [1413, 1473]}}, {value_between: {name: "액상선 (평형, 고상 소멸)", range: [1483, 1543]}}]  # C71500 용융 범위 1170–1240 °C ± 30 K (K 단위 값이 먼저 나옴)

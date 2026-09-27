@@ -73,3 +73,12 @@
   hazards: [발열, 탄산염이면 이산화탄소 발생]
   gases: []
   note: 중화 반응
+
+- id: R8
+  name: 환원제 + 강산화제
+  a: {groups: ["Reducing Agents, *"]}
+  b: {groups: ["Oxidizing Agents, Strong"]}
+  verdict: incompatible
+  hazards: [격렬한 발열, 화재·폭발]
+  gases: []
+  note: 수소·금속분말 등 환원제와 산화제는 점화원이 있으면 폭발적으로 반응한다 (검증 세트 v0 에서 빈틈 발견 → 추가)

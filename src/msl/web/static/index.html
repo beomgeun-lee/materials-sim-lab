@@ -260,7 +260,8 @@ function render(rep) {
   $("tiles").innerHTML = rep.components.map(c => tileHtml(c.ref, c.amount, c.state, c.name, c.formula, c.error)).join("");
   $("resolved").innerHTML = rep.components.map(c => c.error
     ? `<span class="rerr">${esc(c.ref)} — ${esc(c.error)}</span>`
-    : `<span>${esc(c.ref)} → ${esc(c.via)}${c.cid ? ` · CID ${c.cid}` : ""}${c.groups.length ? ` · 반응성 그룹: ${esc(c.groups.join(", "))}` : ""}</span>`).join("");
+    : `<span>${esc(c.ref)} → ${esc(c.via)}${c.cid ? ` · CID ${c.cid}` : ""}${c.groups.length ? ` · 반응성 그룹: ${esc(c.groups.join(", "))}` : ""}</span>`).join("")
+    + balanceHtml(rep.balance);
 
   const s0 = rep.results.find(x => x.assay === "S0");
   const rest = rep.results.filter(x => x.assay !== "S0");
@@ -277,6 +278,32 @@ function render(rep) {
     $("engines").textContent = Object.entries(v).map(([k, x]) => `${k} ${x}`).join(" · ");
     $("prov").textContent = `레시피 ${rep.recipe.id} · 서버 처리 ${rep.elapsed}초 · msl ${any.provenance.msl_version}`;
   }
+}
+
+function balanceHtml(b) {
+  if (!b || !b.rows || !b.rows.length) return b && b.warnings.length ? `<span class="rerr">질량수지: ${esc(b.warnings[0])}</span>` : "";
+  const rows = b.rows.map(r => `${sub(r.formula)} ${fmt(r.moles)}${b.basis === "absolute" ? " mol" : ""} (${fmt(r.mass_fraction * 100)} wt%)`).join(" · ");
+  const els = Object.entries(b.elements).map(([e, n]) => `${e} ${fmt(n)}`).join(" · ");
+  return `<span><b>질량수지</b> ${rows}</span><span>원소 합계${b.basis === "absolute" ? " (mol)" : " (상대)"}: ${els}</span>`;
+}
+
+function chartPhases(pf) {
+  const phases = Object.keys(pf.phases || {}); if (!phases.length) return "";
+  const W = 620, H = 250, L = 52, R = 110, T = 16, B = 40, pw = W - L - R, ph = H - T - B;
+  const t0 = Math.min(...pf.T), t1 = Math.max(...pf.T);
+  const X = t => L + (t - t0) / ((t1 - t0) || 1) * pw, Y = f => T + (1 - f) * ph;
+  const colors = ["var(--accent)", "var(--f-T)", "var(--f-L2)", "var(--ok)", "var(--warn)", "var(--f-L1)", "var(--ink)"];
+  let g = "";
+  for (const f of [0, 0.25, 0.5, 0.75, 1]) g += `<line class="grid" x1="${L}" x2="${L + pw}" y1="${Y(f)}" y2="${Y(f)}"/><text x="${L - 8}" y="${Y(f) + 4}" text-anchor="end">${f}</text>`;
+  const step = niceStep((t1 - t0) / 5 || 1);
+  for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) g += `<text x="${X(t)}" y="${H - B + 16}" text-anchor="middle">${Math.round(t)}</text>`;
+  phases.forEach((p, i) => {
+    const pts = pf.T.map((t, j) => `${X(t).toFixed(1)},${Y(pf.phases[p][j] || 0).toFixed(1)}`).join(" ");
+    g += `<polyline fill="none" stroke="${colors[i % colors.length]}" stroke-width="2" points="${pts}"/>`;
+    g += `<text class="lbl" x="${L + pw + 6}" y="${T + 14 + i * 16}" style="fill:${colors[i % colors.length]}">${esc(p)}</text>`;
+  });
+  g += `<text x="${L}" y="${T - 4}">상분율</text><text x="${L + pw}" y="${H - 6}" text-anchor="end">온도 (K) →</text>`;
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="온도별 상분율">${g}</svg></div>`;
 }
 
 function srcChips(x, rep) {
@@ -301,12 +328,13 @@ function card(x, rep) {
   const [label, cls] = STATUS[x.status] || [x.status, "na"];
   const d = x.data || {};
   const quiet = ["pending", "not-applicable"].includes(x.status);
-  const wide = d.curves || d.bounds || (d.table && d.table.columns.length > 3);
+  const wide = d.curves || d.bounds || d.phase_fractions || (d.table && d.table.columns.length > 3);
   let body = `<p class="c-sum">${esc(d.summary || "")}</p>`;
   if (x.warnings.length && x.status !== "failed") body += x.warnings.map(w => `<div class="warnbox">${esc(w)}</div>`).join("");
   if (x.values.length) body += `<dl class="kv">${x.values.map(v => `<dt>${esc(v.name)}</dt><dd>${fmt(v.value)}${v.unit ? " " + esc(v.unit) : ""}</dd>`).join("")}</dl>`;
   if (d.curves) body += chartCurves(d);
   if (d.bounds) body += chartBounds(d.bounds);
+  if (d.phase_fractions) body += chartPhases(d.phase_fractions);
   if (d.table) body += table(d.table);
   if (d.crosscheck && d.crosscheck.checks && d.crosscheck.checks.length) body += crosscheck(d.crosscheck);
   if (d.kosha && d.kosha.length) body += `<details><summary class="eyebrow">KOSHA MSDS · 15. 법적 규제현황</summary>${d.kosha.map(k => `<div class="xcheck"><b>${esc(k.name)}</b> <span class="mono">MSDS ${esc(k.chem_id)} · 갱신 ${esc(k.updated || "")}</span>${k.items.map(([n, t]) => `<div>${esc(n)}: ${esc(t.split("|").map(x => x.trim()).filter(Boolean).join(" · "))}</div>`).join("")}</div>`).join("")}</details>`;
@@ -380,7 +408,19 @@ function chartBounds(b) {
   return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="복합재 영률 경계">${g}</svg></div><div class="legend-line"><span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>Voigt–Reuss (섬유 배열 극단)</span><span><i style="background:var(--accent-mid)"></i>Hashin–Shtrikman (무작위 등방)</span></div>`;
 }
 
+function initSaved(rep) {
+  const r = rep.recipe;
+  recipes = [{ file: "", id: r.id, name: r.name, mode: r.mode, yaml: rep.recipe_yaml || "",
+    components: r.components.map(c => ({ ref: c.ref, amount: c.amount ? `${c.amount.value} ${c.amount.unit}` : null, state: c.state })),
+    conditions: Object.fromEntries(Object.entries(r.conditions || {}).filter(([, v]) => v !== null).map(([k, v]) => [k, typeof v === "object" ? `${v.value} ${v.unit}` : v])),
+    assays: r.assays }];
+  $("presets").hidden = true; $("run").hidden = true;
+  select(0); render(rep);
+  $("busy").textContent = "저장된 리포트 — 다시 계산하려면 msl run 또는 msl serve";
+}
+
 async function init() {
+  if (window.__REPORT__) return initSaved(window.__REPORT__);
   recipes = await (await fetch("/api/recipes")).json();
   $("presets").innerHTML = recipes.map((r, i) => `<button class="preset" type="button" id="preset-${esc(r.id)}" data-i="${i}" aria-pressed="false"><span class="p-title">${esc(r.name)}</span><span class="p-sub">${esc(r.components.map(c => c.ref).join(" + "))}</span></button>`).join("");
   $("presets").addEventListener("click", e => { const b = e.target.closest(".preset"); if (b) select(Number(b.dataset.i)); });

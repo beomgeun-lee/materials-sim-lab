@@ -1,9 +1,12 @@
 """COD (CC0) — 광물명이 달린 실험 결정 구조의 메타데이터 (계획서 4.1절 X 레이어, 결정 D4).
 
-CIF 전량 미러는 범위 밖이다. 광물명(`_cod_mineral`)이 있는 항목만 OPTIMADE 로 받는다.
+CIF 전량 미러는 범위 밖이다. 광물명(`_cod_mineral`)이 있는 항목과, 광물명 없이 commonname 만 있는 무기물 항목을
+OPTIMADE 로 받는다.
 - REST 검색(/cod/result)에는 광물 필터가 없어 전량(53만 건)을 받거나 이름별로 6천 번 질의해야 한다.
 - OPTIMADE 는 `_cod_mineral IS KNOWN` 필터와 `response_fields` 로 필요한 열만 준다 (페이지 상한 100건).
-응답 JSON 을 받은 그대로 data/raw/cod/{조회일}/page-{offset}.json 에 쌓는다. 끊기면 다시 돌려 이어받는다.
+- commonname 만 있는 항목(5.3만 건)은 대부분 유기물이라 C·H 를 함께 가진 것은 이름에 'ite' 가 있을 때만 받는다
+  (말라카이트·웨웰라이트 같은 탄산염·유기 광물). 이름이 IMA 광물명과 맞는지는 ima_cnmnc.match() 가 본다.
+응답 JSON 을 받은 그대로 data/raw/cod/{조회일}/{page|common}-{offset}.json 에 쌓는다. 끊기면 다시 돌려 이어받는다.
 서버 예의: 요청은 하나씩, 사이에 1초 이상 쉰다 (User-Agent 는 msl.db.download 가 붙인다).
 """
 
@@ -29,6 +32,9 @@ TABLES = ["structures_exp"]
 LICENSE = "CC0-1.0"
 BASE = "https://www.crystallography.net/cod/optimade/v1/structures"
 FILTER = "_cod_mineral IS KNOWN"
+COMMON_FILTER = ('_cod_mineral IS UNKNOWN AND _cod_commonname IS KNOWN AND '
+                 '(NOT (elements HAS ALL "C","H") OR _cod_commonname CONTAINS "ite")')
+QUERIES = {"page": FILTER, "common": COMMON_FILTER}  # 원본 파일 이름 앞머리 → 필터
 FIELDS = [
     "_cod_mineral", "_cod_commonname", "_cod_calcformula", "_cod_sg", "_cod_sgnumber",
     "_cod_a", "_cod_b", "_cod_c", "_cod_alpha", "_cod_beta", "_cod_gamma", "_cod_vol",
@@ -44,8 +50,8 @@ def _snapshots() -> list[Path]:
     return sorted(p for p in raw_dir(SOURCE, "_").parent.glob("*") if p.is_dir() and list(p.glob("page-*.json")))
 
 
-def _url(offset: int) -> str:
-    query = {"filter": FILTER, "page_limit": PAGE, "page_offset": offset, "response_fields": ",".join(FIELDS)}
+def _url(offset: int, flt: str = FILTER) -> str:
+    query = {"filter": flt, "page_limit": PAGE, "page_offset": offset, "response_fields": ",".join(FIELDS)}
     return f"{BASE}?{urllib.parse.urlencode(query)}"
 
 
@@ -60,22 +66,26 @@ def _get(url: str, dest: Path) -> Path:
     return dest
 
 
-def fetch() -> Path:
-    d = raw_dir(SOURCE, dt.date.today().isoformat())
-    started = now()
+def _fetch_query(d: Path, prefix: str, flt: str) -> dict:
     offset = 0
     while True:
-        dest = d / f"page-{offset:06d}.json"
+        dest = d / f"{prefix}-{offset:06d}.json"
         if not dest.exists():
-            _get(_url(offset), dest)
+            _get(_url(offset, flt), dest)
             time.sleep(PAUSE)
         meta = json.loads(dest.read_text(encoding="utf-8"))["meta"]
         if not meta.get("more_data_available"):
             break
         offset += PAGE
+    return {"filter": flt, "data_returned": meta.get("data_returned"), "data_available": meta.get("data_available")}
+
+
+def fetch() -> Path:
+    d = raw_dir(SOURCE, dt.date.today().isoformat())
+    started = now()
+    queries = {prefix: _fetch_query(d, prefix, flt) for prefix, flt in QUERIES.items()}
     (d / "query.json").write_text(json.dumps({
-        "endpoint": BASE, "filter": FILTER, "response_fields": FIELDS, "page_limit": PAGE,
-        "data_returned": meta.get("data_returned"), "data_available": meta.get("data_available"),
+        "endpoint": BASE, "queries": queries, "response_fields": FIELDS, "page_limit": PAGE,
         "started_at": started, "retrieved_at": now(),
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     record_checksums(d)
@@ -112,16 +122,28 @@ def reduced_formula(counts: dict[str, float]) -> str | None:
         return None
 
 
+def _sg_plain(symbol: str) -> str:
+    """번호와 상관없는 꼬리표를 뗀다: 원점 이동 '(a,b+1/2,c)', 설정 ':1'·':H', 'S'·'S1'·'Z1'·'RS',
+    기호 넷(격자+세 방향) 뒤에 붙은 원점 선택 숫자 ('I 41/a m d 1')."""
+    s = re.sub(r"\s*\([^)]*\)\s*$", "", symbol.strip())
+    s = re.sub(r"\s*:\s*\S+$", "", s)
+    s = re.sub(r"\s+(S\d?|Z\d?|RS)$", "", s)
+    parts = s.split()
+    return " ".join(parts[:4]) if len(parts) > 4 and parts[-1].isdigit() else s
+
+
 @cache
 def _sg_from_symbol(symbol: str) -> int | None:
     from pymatgen.symmetry.groups import SpaceGroup
 
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            return SpaceGroup(symbol).int_number
-    except Exception:
-        return None
+    for s in dict.fromkeys((symbol, _sg_plain(symbol))):
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                return SpaceGroup(s).int_number
+        except Exception:
+            continue
+    return None
 
 
 def _sg_number(attrs: dict) -> int | None:
@@ -149,6 +171,7 @@ def _row(entry: dict) -> dict:
     return {
         "cod_id": int(entry["id"]),
         "mineral": (a.get("_cod_mineral") or "").strip() or None,
+        "commonname": (a.get("_cod_commonname") or "").strip() or None,
         "formula_cod": a.get("_cod_calcformula"),
         "formula_reduced": reduced_formula(counts),
         "elements": ",".join(elements) or None,
@@ -174,7 +197,8 @@ def load() -> dict[str, dict[str, int]]:
     snaps = _snapshots()
     d = snaps[-1] if snaps else fetch()
     entries: dict[str, dict] = {}
-    for f in sorted(d.glob("page-*.json")):
+    files = [f for prefix in QUERIES for f in sorted(d.glob(f"{prefix}-*.json"))]  # 옛 스냅샷에는 common- 이 없다
+    for f in files:
         for e in json.loads(f.read_text(encoding="utf-8"))["data"]:
             entries[e["id"]] = e  # 조회 중 DB 가 갱신돼 페이지 경계에서 겹친 항목은 하나로
     df = pd.DataFrame([_row(e) for e in entries.values()]).sort_values("cod_id")
@@ -183,8 +207,6 @@ def load() -> dict[str, dict[str, int]]:
     df = with_provenance(df, source=SOURCE, version=d.name, license=LICENSE, method="experimental",
                          id_column="cod_id", retrieved_at=retrieved)
     out = {"structures_exp": write_table("structures_exp", df)}
-    from msl.connectors import ima_cnmnc  # 광물 목록이 이미 있으면 매칭도 새로 만든다
+    from msl.connectors import ima_cnmnc  # 광물 목록이 이미 있으면 매칭(COD·MP)도 새로 만든다
 
-    if ima_cnmnc.minerals_loaded():
-        out["mineral_structures"] = ima_cnmnc.match()
-    return out
+    return out | ima_cnmnc.refresh_matches()

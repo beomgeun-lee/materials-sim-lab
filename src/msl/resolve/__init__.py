@@ -4,7 +4,8 @@ v0 범위:
 - element, formula : pymatgen 으로 화학식을 정규화하고 PubChem 에서 CID 를 찾는다
 - cas, cid, name   : PubChem 조회. 한글 이름은 KOSHA 국문명 검색으로 CAS 를 찾은 뒤 PubChem (data.go.kr 키 필요)
 - ke               : KOSHA 에서 KE 번호 → CAS → PubChem
-- mineral          : 적재된 IMA 목록(minerals)·COD 매칭(mineral_structures)에서 먼저 찾고, 없으면 PubChem 이름 조회
+- mineral          : 적재된 IMA 목록(minerals)·COD 매칭(mineral_structures)·MP 매칭(mineral_mp)에서 먼저 찾고,
+                     없으면 PubChem 이름 조회
 - material         : kb/materials.yaml 의 사용자 정의 소재
 """
 
@@ -34,6 +35,8 @@ class Resolved:
     formula: str | None  # pymatgen 축약 화학식 (소재는 None)
     cid: int | None = None
     cas: str | None = None  # CAS 등록번호 (cas: 참조거나 PubChem 동의어에서)
+    cod_id: int | None = None  # 광물: 대표 COD 실험 구조
+    mp_id: str | None = None  # 광물: 다형까지 가린 MP material_id (mineral_mp.best_mp_id)
     groups: list[str] = field(default_factory=list)  # CAMEO 반응성 그룹
     state: State | None = None
     amount: Quantity | None = None
@@ -125,7 +128,7 @@ def _mineral_key(name: str) -> str:
 
 @cache
 def mineral_db() -> dict[str, dict[str, Any]]:
-    """적재된 IMA 광물 목록(+COD 매칭) — {광물명 비교 키: 행}. DB 가 비었거나 못 읽으면 빈 dict (PubChem 폴백)."""
+    """적재된 IMA 광물 목록(+COD·MP 매칭) — {광물명 비교 키: 행}. DB 가 비었거나 못 읽으면 빈 dict (PubChem 폴백)."""
     try:
         from msl.connectors.ima_cnmnc import build_index
         from msl.db import connect, tables
@@ -135,26 +138,39 @@ def mineral_db() -> dict[str, dict[str, Any]]:
             return {}
         cols = "s.best_cod_id, s.best_formula" if "mineral_structures" in have else "NULL, NULL"
         join = "LEFT JOIN mineral_structures s USING (name)" if "mineral_structures" in have else ""
+        cols += ", p.best_mp_id, p.match_level" if "mineral_mp" in have else ", NULL, NULL"
+        join += " LEFT JOIN mineral_mp p USING (name)" if "mineral_mp" in have else ""
         rows = connect().execute(
             f"SELECT m.name, m.formula_reduced, m.source_version, {cols} FROM minerals m {join}").fetchall()
     except Exception:
         return {}
     by_name = {r[0]: {"name": r[0], "formula": r[1], "version": r[2],
-                      "best_cod_id": None if r[3] is None else int(r[3]), "best_formula": r[4]} for r in rows}
+                      "best_cod_id": None if r[3] is None else int(r[3]), "best_formula": r[4],
+                      "best_mp_id": r[5], "mp_match": r[6]} for r in rows}
     return {k: by_name[n] for k, n in build_index(list(by_name)).items()}
 
 
+# MP 매칭 근거가 공간군 일치보다 약할 때 via 에 붙이는 표시 (ima_cnmnc.match_mp 의 match_level)
+_MP_MATCH_NOTE = {"formula+supergroup": " (공간군은 상위군 일치)", "formula": " (화학식만 일치)"}
+
+
 def _from_mineral_db(base: dict[str, Any], key: str, hit: dict[str, Any]) -> Resolved:
-    """IMA 정본명·화학식(치환식이라 축약식이 없으면 대표 COD 구조의 화학식). CID·CAS·반응성 그룹은 PubChem 이름 조회로 채운다."""
+    """IMA 정본명·화학식(치환식이라 축약식이 없으면 대표 COD 구조의 화학식). CID·CAS·반응성 그룹은 PubChem 이름 조회로 채운다.
+
+    대표 COD 구조와 MP material_id(다형까지 가린 것, 없으면 None)도 함께 넘긴다.
+    """
     formula = hit["formula"] or hit["best_formula"]
+    mp_id = hit.get("best_mp_id")
     via = f"IMA {hit['version']}" + (f" · COD {hit['best_cod_id']}" if hit["best_cod_id"] else "")
     if not hit["formula"] and formula:
         via += " (화학식은 COD 구조)"
+    if mp_id:
+        via += f" · MP {mp_id}" + _MP_MATCH_NOTE.get(hit.get("mp_match"), "")
     try:
         cid, _, _ = _from_pubchem(pubchem.lookup(key))
     except Exception:  # PubChem 이 안 돼도 광물 해석은 유지한다
         cid = None
-    r = Resolved(**base, name=hit["name"], formula=formula, cid=cid, via=via)
+    r = Resolved(**base, name=hit["name"], formula=formula, cid=cid, cod_id=hit["best_cod_id"], mp_id=mp_id, via=via)
     try:
         return _with_groups(r)
     except Exception:

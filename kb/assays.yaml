@@ -64,9 +64,9 @@
   applies_to: [금속 원소 조합]
   fidelity: [T]
   engines: [pycalphad, scheil]
-  sources: [sgte-unary]
+  sources: [sgte-binary-collection, cost507]
   stage: 3
-  note: 공개 TDB 가 있는 계로 한정. 계별 TDB 소스는 3단계 전 조사(계획서 10절 #6) 후 추가
+  note: 레시피 원소의 모든 쌍이 평가된 TDB 가 있는 계로 한정 (tdb_systems). 조사·라이선스는 docs/00-조사/04-공개-TDB.md. 적재 TDB 는 모두 라이선스 미확인이라 결과는 연구용
 
 - code: A7
   name: 물성 추정

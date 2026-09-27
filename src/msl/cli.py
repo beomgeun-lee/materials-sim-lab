@@ -47,6 +47,7 @@ def run(
     path: Path,
     no_cache: Annotated[bool, typer.Option("--no-cache", help="캐시를 쓰지 않고 다시 계산")] = False,
     json_out: Annotated[Path | None, typer.Option("--json", help="리포트를 JSON 으로 저장")] = None,
+    report_out: Annotated[Path | None, typer.Option("--report", help="리포트 파일 (.html 또는 .md)")] = None,
 ) -> None:
     """레시피 하나를 실행한다: 해석 → 안전 게이트 → 라우팅된 시험들."""
     from msl.runtime.runner import run_recipe, save_report
@@ -77,6 +78,14 @@ def run(
     if json_out:
         save_report(report, reg, json_out)
         typer.echo(f"저장: {json_out}")
+    if report_out:
+        from msl.report import payload, to_html, to_markdown
+
+        body = payload(report, reg, recipe_yaml=Path(path).read_text(encoding="utf-8"))
+        text = to_markdown(body) if report_out.suffix.lower() == ".md" else to_html(body)
+        report_out.parent.mkdir(parents=True, exist_ok=True)
+        report_out.write_text(text, encoding="utf-8")
+        typer.echo(f"리포트: {report_out}")
 
 
 @app.command("serve")
@@ -135,6 +144,30 @@ def db_status() -> None:
     loaded = {r.source for r in rows}
     waiting = [s for s in available() if s not in loaded]
     typer.echo(f"\n적재 {len(loaded)}개 소스 · {sum(r.rows for r in rows):,}행" + (f" · 커넥터만 있음: {', '.join(waiting)}" if waiting else ""))
+
+
+@app.command("validate")
+def validate(
+    path: Annotated[Path, typer.Option("--set", help="검증 세트")] = KB_DIR / "validation" / "assays_v0.yaml",
+    no_cache: Annotated[bool, typer.Option("--no-cache", help="캐시 없이 다시 계산")] = False,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="통과 사례의 검사 내용도 출력")] = False,
+) -> None:
+    """검증 세트를 돌려 채점한다 (계획서 8절: S0 재현율 100%, 나머지 90% 이상)."""
+    from msl.validation import run_set, score
+
+    results = run_set(path, registry=load_registry(), use_cache=not no_cache)
+    for r in results:
+        mark = typer.style("✓", fg=typer.colors.GREEN) if r.passed else typer.style("✗", fg=typer.colors.RED)
+        typer.echo(f"{mark} {r.assay:4} {r.id:30} {r.summary[:70]}")
+        if verbose or not r.passed:
+            for d in r.detail:
+                typer.echo(f"        {d}")
+    s = score(results)
+    typer.echo("\n" + " · ".join(f"{a} {p}/{t}" for a, (p, t) in s["by_assay"].items()))
+    color = typer.colors.GREEN if s["passed"] else typer.colors.RED
+    typer.secho(f"S0 위험 재현율 {s['s0_recall']:.0%} (기준 100%) · 나머지 통과율 {s['other_rate']:.0%} (기준 90%)", fg=color)
+    if not s["passed"]:
+        raise typer.Exit(1)
 
 
 @app.command("resolve-check")

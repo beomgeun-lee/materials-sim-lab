@@ -6,17 +6,12 @@ v0 에서 실제로 계산하는 시험: S0, A1, A2, A3, A4, A7, A8, A10.
 
 from __future__ import annotations
 
-from msl.assays import blend, equilibrium, mp_assays, regulation, safety, supply
+from msl.assays import alloy, blend, equilibrium, mp_assays, regulation, safety, supply
 from msl.assays.base import AssayFn, Context, Outcome, pending
-from msl.schema.result import Fidelity
 
 
 def _a5(ctx: Context) -> Outcome:
     return pending("3단계에서 붙음 — pymatgen Pourbaix + MP 이온 에너지", "pymatgen")
-
-
-def _a6(ctx: Context) -> Outcome:
-    return pending("공개 TDB(합금 열역학 DB) 라이선스 확인 중 — 계획서 10절 #6", "pycalphad", Fidelity.T)
 
 
 ASSAYS: dict[str, AssayFn] = {
@@ -26,7 +21,7 @@ ASSAYS: dict[str, AssayFn] = {
     "A3": equilibrium.a3,
     "A4": equilibrium.a4,
     "A5": _a5,
-    "A6": _a6,
+    "A6": alloy.a6,
     "A7": mp_assays.a7,
     "A8": blend.a8,
     "A9": supply.a9,

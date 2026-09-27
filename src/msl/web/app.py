@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from msl.env import ROOT
 from msl.registry.load import load_registry
+from msl.report import payload
 from msl.runtime.runner import run_recipe
 from msl.schema.recipe import RecipeError, load_recipe
 
@@ -57,8 +58,4 @@ def run(req: RunRequest) -> dict:
         raise HTTPException(404, "레시피 파일이 없음")
     recipe = load_recipe(path, known_assays=set(registry.assays))
     report = run_recipe(recipe, use_cache=not req.no_cache, registry=registry)
-    body = report.to_json(registry)
-    body["licenses"] = {k: {"name": v.name, "partition": v.partition.value} for k, v in registry.licenses.items()}
-    body["source_names"] = {k: v.name for k, v in registry.sources.items()}
-    body["assay_names"] = {k: v.name for k, v in registry.assays.items()}
-    return body
+    return payload(report, registry)

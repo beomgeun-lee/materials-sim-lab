@@ -17,6 +17,7 @@ from msl.assays import ASSAYS
 from msl.assays.base import Context, Outcome, pending
 from msl.env import CACHE_DIR, KB_DIR, load_dotenv
 from msl.recipe import route
+from msl.recipe.balance import Balance, balance
 from msl.registry.load import Registry, load_registry
 from msl.resolve import Resolved, resolve
 from msl.schema.provenance import RunProvenance, canonical_hash
@@ -34,6 +35,7 @@ class Report:
     routed: list[tuple[str, str]]
     results: list[AssayResult]
     elapsed: float
+    balance: Balance | None = None
 
     def to_json(self, registry: Registry) -> dict[str, Any]:
         return {
@@ -47,6 +49,7 @@ class Report:
             "routed": [{"code": code, "reason": why, "name": registry.assays[code].name if code in registry.assays else code}
                        for code, why in self.routed],
             "results": [r.model_dump(mode="json") for r in self.results],
+            "balance": self.balance.to_json() if self.balance else None,
             "elapsed": round(self.elapsed, 2),
         }
 
@@ -96,7 +99,8 @@ def run_recipe(recipe: Recipe, use_cache: bool = True, registry: Registry | None
     t0 = time.monotonic()
     comps = [resolve(c) for c in recipe.components]
     routed = route(recipe, comps)
-    ctx = Context(recipe=recipe, comps=comps, registry=reg)
+    bal = balance(comps)
+    ctx = Context(recipe=recipe, comps=comps, registry=reg, shared={"balance": bal})
     results: list[AssayResult] = []
     data_fp = _data_fingerprint()
     for code, why in routed:
@@ -120,7 +124,8 @@ def run_recipe(recipe: Recipe, use_cache: bool = True, registry: Registry | None
             RESULT_CACHE.mkdir(parents=True, exist_ok=True)
             cached.write_text(res.model_dump_json(), encoding="utf-8")
         results.append(res)
-    return Report(recipe=recipe, components=comps, routed=routed, results=results, elapsed=time.monotonic() - t0)
+    return Report(recipe=recipe, components=comps, routed=routed, results=results,
+                  elapsed=time.monotonic() - t0, balance=bal)
 
 
 def save_report(report: Report, registry: Registry, path: Path) -> None:

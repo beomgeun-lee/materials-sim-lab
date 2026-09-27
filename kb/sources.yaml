@@ -1458,18 +1458,18 @@
   access: [bulk]
   auth: none
   license: unknown
-  license_note: 무료 배포 파일이나 라이선스 문구 없음 → 출처 표기, 문의 대상
-  version: unary50.tdb (2009, Dinsdale 1991 기반)
-  size: 원소 전체
+  license_note: '다운로드 페이지에 이용 제한 문구 — "This database can only be used for extracting data for assessment work or to tabulate or plot data for the pure elements." 재배포·상업 이용 문구 없음 → 문의 대상'
+  version: unary50.tdb (2009-06-02, Dinsdale 1991 기반)
+  size: 87원소
   python_client: pycalphad 0.11.2 (TDB 읽기)
   priority: 중
   status: planned
   country: INT
   uses: [A6]
-  caveats: 순원소만 → 합금계는 계별 공개 TDB 가 따로 필요(assays.yaml A6 비고)
+  caveats: 순원소만 → 합금계는 계별 TDB 가 필요. 순원소 값은 적재한 2원계 TDB(sgte-binary-collection 등)에 이미 들어 있어 따로 적재하지 않음 (조사 문서 04)
   refs:
     - https://www.sgte.net/en/free-pure-elements-database
-  checked: 2026-09-26
+  checked: 2026-09-27
 
 - id: psi-nagra-tdb
   name: PSI/Nagra 화학 열역학 DB 2020
@@ -1587,10 +1587,11 @@
   status: planned
   country: JP
   uses: []
-  caveats: 계정·신청 필요. 내부 참조로만
+  caveats: 계정·신청 필요. 내부 참조로만. pycalphad 0.11.2 테스트 DB 중 9개(cumg·alzn_mey·pbsn·alfe 등)가 'Copyright (C) NIMS' 표기 CPDDB 사본 → 그 파일들도 적재하지 않음 (조사 문서 04)
   refs:
     - https://cpddb.nims.go.jp/
-  checked: 2026-09-26
+    - https://cpddb.nims.go.jp/en/
+  checked: 2026-09-27
 
 - id: tdbdb
   name: TDBDB (Brown University 문헌 TDB 색인)
@@ -1601,16 +1602,17 @@
   access: [web]
   auth: none
   license: unknown
-  license_note: 개별 TDB 라이선스는 원 논문을 따름
-  size: 766건 (2018년 기준)
+  license_note: '파일을 두지 않고 링크만 제공 ("provides links to the data files and acticles [sic] rather than data/article itself"), 색인 내용 복제 금지. 개별 TDB 라이선스는 원출처를 따름'
+  size: 약 811건 (NIMS 412, Calphad 저널 부록 321, NIST 72 — 2026-09-27 집계)
   priority: 하
   status: planned
   country: US
   uses: []
-  caveats: 조사 문서 우선순위 미표기 → 하로 판단. A6 계별 TDB 조사(계획서 10절 6번)의 출발점 후보. 현재 색인 건수 미확인
+  caveats: 조사 문서 우선순위 미표기 → 하로 판단. 현재 주소 https://avdwgroup.engin.brown.edu/ (pycalphad 문서 링크). 최신 수록 논문이 2019년 → 갱신 중단으로 보임. 링크 대상 대부분이 NIMS(재배포 금지)·Elsevier 부록(TDM 약관)이라 적재 소스로는 못 씀
   refs:
     - https://doi.org/10.1016/j.calphad.2018.04.003
-  checked: 2026-09-26
+    - https://avdwgroup.engin.brown.edu/
+  checked: 2026-09-27
 
 - id: nist-solder-tdb
   name: NIST Solder TDB (Ag·Bi·Cu·Pb·Sb·Sn)
@@ -1620,17 +1622,115 @@
   data: [솔더 합금계 CALPHAD TDB(Ag·Bi·Cu·Pb·Sb·Sn)]
   access: [bulk]
   auth: none
-  license: unknown
-  license_note: SRD 가 아니므로 퍼블릭 도메인일 것으로 추정되나 명시 없음
-  version: "2017"
+  license: NIST-SRD
+  license_note: 페이지·파일에 저작권 문구는 없지만 data.nist.gov 에 'SRD 139'(doi:10.18434/T4759N)로 등록 → SRD Act 저작권 대상으로 보수 판단 (1차 조사의 '퍼블릭 도메인 추정'을 바꿈)
+  version: NIST-solder.tdb (2017-08-04 갱신, U.R. Kattner)
   priority: 하
   status: planned
   country: US
   uses: []
-  caveats: 조사 문서 우선순위 미표기 → 하로 판단. A6 계별 공개 TDB 후보
+  caveats: Ag·Bi·Cu·Pb·Sb·Sn 만 (Ni 없음). 평가계와 외삽계를 페이지에서 구분. OpenCalphad 도 1999년판을 배포. 재배포 허가 전까지 내부 검증용
   refs:
     - https://www.metallurgy.nist.gov/phase/solder/solder.html
-  checked: 2026-09-26
+    - https://www.metallurgy.nist.gov/phase/solder/NIST-solder.tdb
+    - https://doi.org/10.18434/T4759N
+    - https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications
+  checked: 2026-09-27
+
+- id: sgte-binary-collection
+  name: SGTE 2원계 데이터셋 모음 (Hallstedt 2025)
+  layer: T
+  operator: SGTE — B. Hallstedt (RWTH Aachen)
+  url: https://doi.org/10.1016/j.calphad.2025.102833
+  data: [평가된 2원계 CALPHAD TDB 2,773개 (논문 부록 mmc3.zip)]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: '논문은 CC BY 4.0 (출판사 메타데이터 openaccessUserLicense·Crossref vor = creativecommons.org/licenses/by/4.0). 부록 zip 과 TDB 파일에는 라이선스 문구가 없고, 본문(403)을 못 읽어 CC BY 가 부록 데이터에도 적용된다는 명시를 확인하지 못함 → unknown. 확인되면 CC-BY-4.0 으로 올린다'
+  version: calphad-89-102833 (2025-05 온라인, zip 7.6 MB)
+  size: 2,773파일 · 1,241계 (pycalphad 0.11.2 로 2,754개 읽힘)
+  python_client: pycalphad 0.11.2
+  priority: 상
+  status: loaded  # 2026-09-27 msl db load (A6)
+  country: INT
+  uses: [A6]
+  caveats: 한 계에 여러 평가가 있으면 -LB(Landolt-Börnstein 수록본) → 최신 평가 순으로 preferred. 파일마다 원 평가 논문과 오식 수정 메모가 머리 주석에 있음. -3g 는 3세대 순원소 기술이라 다른 파일과 섞지 않는다. 같은 파일을 pycalphad 팀이 phasediagrams.org 에도 게시(라이선스 표기 없음)
+  refs:
+    - https://doi.org/10.1016/j.calphad.2025.102833
+    - https://ars.els-cdn.com/content/image/1-s2.0-S0364591625000367-mmc3.zip
+    - https://api.crossref.org/works/10.1016/j.calphad.2025.102833
+    - https://phasediagrams.org/about
+  checked: 2026-09-27
+
+- id: cost507
+  name: COST 507 경합금 열역학 DB (Round II)
+  layer: T
+  operator: EU COST 507 (I. Ansara, A.T. Dinsdale, M.H. Rand 편) — OpenCalphad 배포
+  url: https://www.opencalphad.com/databases.php
+  data: [경합금 다원계 CALPHAD TDB (29원소, 평가 2원계·3원계)]
+  access: [bulk]
+  auth: none
+  license: unknown
+  license_note: '파일 DATABASE_INFO — "It may be used freely but on your own risk". 상업 이용·재배포 명시 없음 → unknown. 보고서 PDF 는 "© European Communities, 1998 / Reproduction is authorised provided the source is acknowledged" (파일에도 적용되는지는 미확인)'
+  version: Round II (1999, 동결판) — COST507.zip 2017-04-21
+  size: 29원소, 1파일 296 KB
+  python_client: pycalphad 0.11.2 (테스트 DB 로 동봉)
+  priority: 중
+  status: loaded  # 2026-09-27 msl db load (A6)
+  country: INT
+  uses: [A6]
+  caveats: Al–Cu·Al–Zn·Cu–Ni·Cu–Zn·Al–Mg·Al–Si 와 Al–Cu–Mg·Al–Mg–Si·Al–Mg–Zn 등 3원계. Fe–Ni 없음. Cu–Ni 의 BM(FCC_A1,CU,NI) 는 오류 가능성 (Hallstedt 메모) — 2원계는 sgte-binary-collection 이 우선
+  refs:
+    - https://www.opencalphad.com/databases.php
+    - https://www.opencalphad.com/databases/COST507.zip
+    - https://www.opencalphad.com/databases/CGNA18499ENC_001.pdf
+  checked: 2026-09-27
+
+- id: librecalphad
+  name: LibreCalphad mf-steel.tdb
+  layer: T
+  operator: Matthew Frichtl (개인 오픈소스)
+  url: https://github.com/mfrichtl/librecalphad
+  data: [문헌 평가 파라미터를 모은 다원계 강 CALPHAD TDB]
+  access: [bulk]
+  auth: none
+  license: MIT
+  license_note: 'TDB 파일 머리에 MIT 허락 문구가 직접 있음 ("This file is part of LibreCalphad. Copyright (c) 2024 Matthew Frichtl / Permission is hereby granted, free of charge…"). 저장소 LICENSE 도 MIT (GitHub 는 NOASSERTION 으로 표시). 같은 저장소의 unary50.tdb(SGTE)는 적재하지 않음'
+  version: mf-steel@a7dace2 (2024-12-23)
+  size: 1.2 MB, 원소 약 90 (2원계 파라미터는 일부)
+  python_client: pycalphad 0.11.2 로 읽히지만 FCC2_L10 상은 모델 생성 실패
+  priority: 중
+  status: planned
+  country: US
+  uses: [A6]
+  caveats: 라이선스가 가장 분명한 다원계 TDB 지만 적재 보류 — pycalphad 0.11.2 평형에서 Cu–Ni 70/30 의 FCC_L12(규칙상)가 2,100 K 에서도 남고 Fe–Ni·Fe–Cr 도 순원소 융점보다 높게 고체가 남음 (LIQUID+FCC_A1 만 넣으면 정상 → 규칙-불규칙 모델 조합 문제로 추정, 2026-09-27 계산). 저자가 진행 중이라 밝히고 알려진 문제 목록을 파일에 적어 둠. Cu–Ni 은 an Mey 1992 를 옮겼는데 fcc 자기 상호작용이 순 Ni 값(TC +633, BMAGN +0.52)으로, 액상 L0 의 T 계수가 1.29093(원문 1.29893)으로 들어가 있음 (2026-09-27 파일 대조) → 2원계는 sgte-binary-collection 이 우선
+  refs:
+    - https://github.com/mfrichtl/librecalphad
+    - https://raw.githubusercontent.com/mfrichtl/librecalphad/a7dace2327a38bf71d2b8f562dc99dc6847d2675/libreCalphad/databases/mf-steel.tdb
+  checked: 2026-09-27
+
+- id: matcalc-open-tdb
+  name: MatCalc 공개 DB (mc_fe·mc_ni·mc_al)
+  layer: T
+  operator: TU Wien / MatCalc Engineering (E. Povoden-Karadeniz)
+  url: https://www.matcalc.at/index.php/databases/open-databases
+  data: [강·Ni 초합금·Al 합금 다원계 CALPHAD TDB, 확산(.ddb)·물리(.pdb) DB]
+  access: [bulk]
+  auth: none
+  license: ODbL-1.0
+  license_note: '원 라이선스는 ODbL 1.0 + DbCL 1.0 (파일 머리 "made available under the Open Database License … Database Contents License"). MatCalc 전용 명령이 있어 pycalphad 변환기 필요'
+  version: mc_fe 2.062 (2024-11-08) · mc_ni 2.036 (2024-08-20) · mc_al 2.037 (2025 개정)
+  size: mc_fe 25원소 · mc_ni 22원소 · mc_al 12원소
+  python_client: pycalphad 0.11.2 는 그대로 못 읽음 (latin-1 인코딩, REFERENCE_ELEMENT·ATTACH_CONTRIBUTION·ADD_COMPOSITION_SET 등 MatCalc 전용 명령, HMVA 파라미터)
+  priority: 중
+  status: planned
+  country: AT
+  uses: [A6]
+  caveats: Cu–Ni·Fe–Ni·Fe–Cr·Al–Cu·Al–Zn 포함 (Cu–Ni 액상은 Jansson 1987, fcc 는 an Mey 값). 재배포 가능한 평가 DB 라 가치가 크지만 pycalphad 변환기(규칙-불규칙 기여를 TYPE_DEF DIS_PART 로 바꾸기 등)가 필요 → 후속. pycalphad 예제의 mc_fe_v2.059.pycalphad.tdb 가 변환 선례
+  refs:
+    - https://www.matcalc.at/index.php/databases/open-databases
+    - https://opendatacommons.org/licenses/odbl/1-0/
+  checked: 2026-09-27
 
 - id: thermoddem
   name: Thermoddem (BRGM)
