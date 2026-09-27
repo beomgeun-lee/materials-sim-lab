@@ -31,6 +31,12 @@ dependencies = [
 [project.scripts]
 msl = "msl.cli:app"
 
+[project.optional-dependencies]
+l2 = [
+    "mace-torch>=0.3.16",
+    "orb-models>=0.7.0",
+]
+
 [dependency-groups]
 dev = ["pytest>=8"]
 

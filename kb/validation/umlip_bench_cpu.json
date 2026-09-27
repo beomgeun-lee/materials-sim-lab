@@ -1,0 +1,647 @@
+{
+ "created": "2026-09-27T15:00:43",
+ "device": "cpu",
+ "threads": 10,
+ "cpu_count": 14,
+ "torch": "2.14.0",
+ "structures": [
+  {
+   "formula": "Cu",
+   "material_id": "mp-30-GGA",
+   "sites": 1,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Al",
+   "material_id": "mp-134-GGA",
+   "sites": 1,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Si",
+   "material_id": "mp-149-GGA",
+   "sites": 2,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Li",
+   "material_id": "mp-1018134-GGA",
+   "sites": 3,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Au",
+   "material_id": "mp-81-GGA",
+   "sites": 1,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "MgO",
+   "material_id": "mp-1265-GGA",
+   "sites": 2,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Al2O3",
+   "material_id": "mp-1143-GGA",
+   "sites": 10,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "SiO2",
+   "material_id": "mp-546794-GGA",
+   "sites": 6,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "TiO2",
+   "material_id": "mp-554278-GGA",
+   "sites": 12,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "NaCl",
+   "material_id": "mp-22862-GGA",
+   "sites": 2,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "LiCoO2",
+   "material_id": "mp-22526-GGA+U",
+   "sites": 4,
+   "kind": "GGA+U LASPH"
+  },
+  {
+   "formula": "LiMn2O4",
+   "material_id": "mp-1272804-GGA+U",
+   "sites": 14,
+   "kind": "GGA+U LASPH"
+  },
+  {
+   "formula": "Fe2O3",
+   "material_id": "mp-19770-GGA+U",
+   "sites": 10,
+   "kind": "GGA+U LASPH"
+  },
+  {
+   "formula": "ZnFe2O4",
+   "material_id": "mp-19313-GGA+U",
+   "sites": 14,
+   "kind": "GGA+U LASPH"
+  },
+  {
+   "formula": "NiO",
+   "material_id": "mp-19009-GGA+U",
+   "sites": 4,
+   "kind": "GGA+U LASPH"
+  },
+  {
+   "formula": "CaCO3",
+   "material_id": "mp-3953-GGA",
+   "sites": 10,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "CaSiO3",
+   "material_id": "mp-5733-GGA",
+   "sites": 60,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "Mg2SiO4",
+   "material_id": "mp-2895-GGA",
+   "sites": 28,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "BaTiO3",
+   "material_id": "mp-5020-GGA",
+   "sites": 5,
+   "kind": "GGA LASPH"
+  },
+  {
+   "formula": "KAlO2",
+   "material_id": "mp-5525-GGA",
+   "sites": 64,
+   "kind": "GGA LASPH"
+  }
+ ],
+ "models": {
+  "mace-mpa-0": {
+   "engine": "mace-torch 0.3.16 / medium-mpa-0",
+   "load_s": 0.9157558750011958,
+   "rows": [
+    {
+     "formula": "Cu",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.00011508399620652199,
+     "sp_ms_per_atom": 0.11508399620652199,
+     "relax_s": 0.25108345795888454,
+     "steps": 2,
+     "converged": true,
+     "de_raw": -0.0005367215168732287,
+     "de_relaxed": -0.0016639191917162677
+    },
+    {
+     "formula": "Al",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.016859291994478554,
+     "sp_ms_per_atom": 16.859291994478554,
+     "relax_s": 0.0765641659963876,
+     "steps": 3,
+     "converged": true,
+     "de_raw": 0.005572852839820452,
+     "de_relaxed": 0.005709863115118008
+    },
+    {
+     "formula": "Si",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.02415466698585078,
+     "sp_ms_per_atom": 12.07733349292539,
+     "relax_s": 0.2519200000097044,
+     "steps": 9,
+     "converged": true,
+     "de_raw": 0.010571135967163414,
+     "de_relaxed": 0.010636882273438175
+    },
+    {
+     "formula": "Li",
+     "sites": 3,
+     "kind": "GGA LASPH",
+     "sp_s": 0.028230249998159707,
+     "sp_ms_per_atom": 9.410083332719902,
+     "relax_s": 0.2137419159989804,
+     "steps": 6,
+     "converged": true,
+     "de_raw": 0.003722240044996994,
+     "de_relaxed": 0.004357185789076068
+    },
+    {
+     "formula": "Au",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.016912082966882735,
+     "sp_ms_per_atom": 16.912082966882735,
+     "relax_s": 0.0556048330035992,
+     "steps": 2,
+     "converged": true,
+     "de_raw": -0.001845425840345527,
+     "de_relaxed": -0.0018527430350343543
+    },
+    {
+     "formula": "MgO",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.027265792014077306,
+     "sp_ms_per_atom": 13.632896007038653,
+     "relax_s": 0.14551266696071252,
+     "steps": 4,
+     "converged": true,
+     "de_raw": 0.0039088485747837964,
+     "de_relaxed": 0.003950170456866964
+    },
+    {
+     "formula": "Al2O3",
+     "sites": 10,
+     "kind": "GGA LASPH",
+     "sp_s": 0.07996833301149309,
+     "sp_ms_per_atom": 7.996833301149309,
+     "relax_s": 1.9087760419934057,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.0014514648690866494,
+     "de_relaxed": 0.0014574912910418902
+    },
+    {
+     "formula": "SiO2",
+     "sites": 6,
+     "kind": "GGA LASPH",
+     "sp_s": 0.049445874989032745,
+     "sp_ms_per_atom": 8.240979164838791,
+     "relax_s": 1.1980170829920098,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.0007069532621661878,
+     "de_relaxed": 0.0007479526080826915
+    },
+    {
+     "formula": "TiO2",
+     "sites": 12,
+     "kind": "GGA LASPH",
+     "sp_s": 0.08655208302661777,
+     "sp_ms_per_atom": 7.212673585551481,
+     "relax_s": 1.915790792030748,
+     "steps": 23,
+     "converged": true,
+     "de_raw": 0.004400908130250514,
+     "de_relaxed": 0.003914627687876759
+    },
+    {
+     "formula": "NaCl",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.026412417006213218,
+     "sp_ms_per_atom": 13.206208503106609,
+     "relax_s": 0.08742412499850616,
+     "steps": 2,
+     "converged": true,
+     "de_raw": 0.0018104288720826034,
+     "de_relaxed": 0.0020368853871426396
+    },
+    {
+     "formula": "LiCoO2",
+     "sites": 4,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.04722704197047278,
+     "sp_ms_per_atom": 11.806760492618196,
+     "relax_s": 0.6903604579856619,
+     "steps": 12,
+     "converged": true,
+     "de_raw": 0.10534238079218472,
+     "de_relaxed": 0.1011357564192501
+    },
+    {
+     "formula": "LiMn2O4",
+     "sites": 14,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.08892304199980572,
+     "sp_ms_per_atom": 6.35164585712898,
+     "relax_s": 2.7577568339766003,
+     "steps": 31,
+     "converged": true,
+     "de_raw": 0.012832209526784766,
+     "de_relaxed": 0.012323893904651051
+    },
+    {
+     "formula": "Fe2O3",
+     "sites": 10,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.07802191702648997,
+     "sp_ms_per_atom": 7.802191702648997,
+     "relax_s": 2.1063502919860184,
+     "steps": 26,
+     "converged": true,
+     "de_raw": 0.14507495907538903,
+     "de_relaxed": 0.1352378862526633
+    },
+    {
+     "formula": "ZnFe2O4",
+     "sites": 14,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.08133850002195686,
+     "sp_ms_per_atom": 5.809892858711204,
+     "relax_s": 1.9699614999699406,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.02054479926204067,
+     "de_relaxed": 0.018168241138656782
+    },
+    {
+     "formula": "NiO",
+     "sites": 4,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.04899962496710941,
+     "sp_ms_per_atom": 12.249906241777353,
+     "relax_s": 0.7654853750136681,
+     "steps": 13,
+     "converged": true,
+     "de_raw": 0.12453536432585821,
+     "de_relaxed": 0.12144268075140552
+    },
+    {
+     "formula": "CaCO3",
+     "sites": 10,
+     "kind": "GGA LASPH",
+     "sp_s": 0.0852478330489248,
+     "sp_ms_per_atom": 8.52478330489248,
+     "relax_s": 2.282335083000362,
+     "steps": 28,
+     "converged": true,
+     "de_raw": 0.003477205353649815,
+     "de_relaxed": 0.0033063427879014284
+    },
+    {
+     "formula": "CaSiO3",
+     "sites": 60,
+     "kind": "GGA LASPH",
+     "sp_s": 0.31126354198204353,
+     "sp_ms_per_atom": 5.187725699700725,
+     "relax_s": 15.06928858300671,
+     "steps": 50,
+     "converged": true,
+     "de_raw": 0.002627320398279842,
+     "de_relaxed": 0.0026273465863519974
+    },
+    {
+     "formula": "Mg2SiO4",
+     "sites": 28,
+     "kind": "GGA LASPH",
+     "sp_s": 0.17954241600818932,
+     "sp_ms_per_atom": 6.412229143149618,
+     "relax_s": 7.313226583995856,
+     "steps": 39,
+     "converged": true,
+     "de_raw": 0.007002226644333476,
+     "de_relaxed": 0.007007995490255325
+    },
+    {
+     "formula": "BaTiO3",
+     "sites": 5,
+     "kind": "GGA LASPH",
+     "sp_s": 0.056831124995369464,
+     "sp_ms_per_atom": 11.366224999073893,
+     "relax_s": 1.0379022089764476,
+     "steps": 16,
+     "converged": true,
+     "de_raw": 0.002856445955718101,
+     "de_relaxed": 0.002607567413379641
+    },
+    {
+     "formula": "KAlO2",
+     "sites": 64,
+     "kind": "GGA LASPH",
+     "sp_s": 0.3047597919940017,
+     "sp_ms_per_atom": 4.761871749906277,
+     "relax_s": 14.706131374987308,
+     "steps": 48,
+     "converged": true,
+     "de_raw": 0.0009677384738191463,
+     "de_relaxed": 0.0009609535476906572
+    }
+   ],
+   "summary": {
+    "sp_ms_per_atom_median": 8.382881234865636,
+    "relax_s_median": 1.1179596459842287,
+    "relax_s_total": 54.80323337484151,
+    "steps_median": 19.0,
+    "converged": 20,
+    "n": 20,
+    "relax_per_hour": 1313.791095272364,
+    "mae_gga": 0.0034305277828913165,
+    "mae_ggau_lasph": 0.08166594259645148,
+    "mae_ggau_nolasph": null
+   }
+  },
+  "orb-v3": {
+   "engine": "orb-models 0.7.0 / orb_v3_conservative_inf_mpa",
+   "load_s": 1.7983384580002166,
+   "rows": [
+    {
+     "formula": "Cu",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.00010129099246114492,
+     "sp_ms_per_atom": 0.10129099246114492,
+     "relax_s": 0.3796777910320088,
+     "steps": 7,
+     "converged": true,
+     "de_raw": 0.00047515220825200544,
+     "de_relaxed": 0.0005068618792725132
+    },
+    {
+     "formula": "Al",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.02447433298220858,
+     "sp_ms_per_atom": 24.47433298220858,
+     "relax_s": 0.1040453749592416,
+     "steps": 3,
+     "converged": true,
+     "de_raw": 0.008892699735717713,
+     "de_relaxed": 0.008911057966308533
+    },
+    {
+     "formula": "Si",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.032924250001087785,
+     "sp_ms_per_atom": 16.462125000543892,
+     "relax_s": 0.3674110419815406,
+     "steps": 9,
+     "converged": true,
+     "de_raw": 0.01010414707687346,
+     "de_relaxed": 0.010158923745422044
+    },
+    {
+     "formula": "Li",
+     "sites": 3,
+     "kind": "GGA LASPH",
+     "sp_s": 0.04758004198083654,
+     "sp_ms_per_atom": 15.86001399361218,
+     "relax_s": 0.3433944170246832,
+     "steps": 6,
+     "converged": true,
+     "de_raw": 0.003033991341145903,
+     "de_relaxed": 0.0033862150553385373
+    },
+    {
+     "formula": "Au",
+     "sites": 1,
+     "kind": "GGA LASPH",
+     "sp_s": 0.02506370801711455,
+     "sp_ms_per_atom": 25.06370801711455,
+     "relax_s": 0.1035106250201352,
+     "steps": 3,
+     "converged": true,
+     "de_raw": 0.009708969146728474,
+     "de_relaxed": 0.009762136489868123
+    },
+    {
+     "formula": "MgO",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.0456780000240542,
+     "sp_ms_per_atom": 22.8390000120271,
+     "relax_s": 0.24958962498931214,
+     "steps": 4,
+     "converged": true,
+     "de_raw": 0.003059900146179295,
+     "de_relaxed": 0.003090536933593846
+    },
+    {
+     "formula": "Al2O3",
+     "sites": 10,
+     "kind": "GGA LASPH",
+     "sp_s": 0.08301391697023064,
+     "sp_ms_per_atom": 8.301391697023064,
+     "relax_s": 2.0142634169897065,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.003442465247315063,
+     "de_relaxed": 0.003468500556152776
+    },
+    {
+     "formula": "SiO2",
+     "sites": 6,
+     "kind": "GGA LASPH",
+     "sp_s": 0.052320666960440576,
+     "sp_ms_per_atom": 8.72011116007343,
+     "relax_s": 1.3874821250210516,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.0020836278885907333,
+     "de_relaxed": 0.0022982046097821396
+    },
+    {
+     "formula": "TiO2",
+     "sites": 12,
+     "kind": "GGA LASPH",
+     "sp_s": 0.07732383295660838,
+     "sp_ms_per_atom": 6.443652746384032,
+     "relax_s": 1.8532149579841644,
+     "steps": 22,
+     "converged": true,
+     "de_raw": 0.001673604379476501,
+     "de_relaxed": 0.0015745811962908363
+    },
+    {
+     "formula": "NaCl",
+     "sites": 2,
+     "kind": "GGA LASPH",
+     "sp_s": 0.030648584011942148,
+     "sp_ms_per_atom": 15.324292005971074,
+     "relax_s": 0.20420637499773875,
+     "steps": 5,
+     "converged": true,
+     "de_raw": -0.0004467147525022419,
+     "de_relaxed": -0.00023774086791972238
+    },
+    {
+     "formula": "LiCoO2",
+     "sites": 4,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.06130870897322893,
+     "sp_ms_per_atom": 15.327177243307233,
+     "relax_s": 1.1129274999839254,
+     "steps": 17,
+     "converged": true,
+     "de_raw": 0.1040873383120724,
+     "de_relaxed": 0.10413913474838221
+    },
+    {
+     "formula": "LiMn2O4",
+     "sites": 14,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.08609449997311458,
+     "sp_ms_per_atom": 6.149607140936756,
+     "relax_s": 2.0781247909762897,
+     "steps": 24,
+     "converged": true,
+     "de_raw": 0.011027729017683008,
+     "de_relaxed": 0.011058553133981519
+    },
+    {
+     "formula": "Fe2O3",
+     "sites": 10,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.07090745901223272,
+     "sp_ms_per_atom": 7.090745901223272,
+     "relax_s": 2.244515958998818,
+     "steps": 29,
+     "converged": true,
+     "de_raw": 0.10398453936523477,
+     "de_relaxed": 0.10175399050659184
+    },
+    {
+     "formula": "ZnFe2O4",
+     "sites": 14,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.07804729195777327,
+     "sp_ms_per_atom": 5.574806568412376,
+     "relax_s": 2.789035666966811,
+     "steps": 33,
+     "converged": true,
+     "de_raw": 0.01664485141531724,
+     "de_relaxed": 0.016563244141670985
+    },
+    {
+     "formula": "NiO",
+     "sites": 4,
+     "kind": "GGA+U LASPH",
+     "sp_s": 0.05785920802736655,
+     "sp_ms_per_atom": 14.464802006841637,
+     "relax_s": 0.7382273330003954,
+     "steps": 12,
+     "converged": true,
+     "de_raw": 0.04625890408142119,
+     "de_relaxed": 0.046175099950866993
+    },
+    {
+     "formula": "CaCO3",
+     "sites": 10,
+     "kind": "GGA LASPH",
+     "sp_s": 0.06643570802407339,
+     "sp_ms_per_atom": 6.643570802407339,
+     "relax_s": 1.8831472499878146,
+     "steps": 27,
+     "converged": true,
+     "de_raw": 0.00464128227807592,
+     "de_relaxed": 0.004832207876220629
+    },
+    {
+     "formula": "CaSiO3",
+     "sites": 60,
+     "kind": "GGA LASPH",
+     "sp_s": 0.17723745899274945,
+     "sp_ms_per_atom": 2.9539576498791575,
+     "relax_s": 10.666556667012628,
+     "steps": 58,
+     "converged": true,
+     "de_raw": 0.0011224165133461028,
+     "de_relaxed": 0.001212951995117173
+    },
+    {
+     "formula": "Mg2SiO4",
+     "sites": 28,
+     "kind": "GGA LASPH",
+     "sp_s": 0.1265876250108704,
+     "sp_ms_per_atom": 4.520986607531086,
+     "relax_s": 5.122095791972242,
+     "steps": 39,
+     "converged": true,
+     "de_raw": 0.005016394701276461,
+     "de_relaxed": 0.005077429857526461
+    },
+    {
+     "formula": "BaTiO3",
+     "sites": 5,
+     "kind": "GGA LASPH",
+     "sp_s": 0.05098037503194064,
+     "sp_ms_per_atom": 10.196075006388128,
+     "relax_s": 0.8737278750049882,
+     "steps": 15,
+     "converged": true,
+     "de_raw": 0.0020788768364248256,
+     "de_relaxed": 0.002060566289550536
+    },
+    {
+     "formula": "KAlO2",
+     "sites": 64,
+     "kind": "GGA LASPH",
+     "sp_s": 0.17749379196902737,
+     "sp_ms_per_atom": 2.7733404995160527,
+     "relax_s": 8.278096750029363,
+     "steps": 45,
+     "converged": true,
+     "de_raw": -0.0019997315490725143,
+     "de_relaxed": -0.0018825488174440963
+    }
+   ],
+   "summary": {
+    "sp_ms_per_atom_median": 8.510751428548247,
+    "relax_s_median": 1.2502048125024885,
+    "relax_s_total": 42.79325133393286,
+    "steps_median": 19.5,
+    "converged": 20,
+    "n": 20,
+    "relax_per_hour": 1682.5082870697345,
+    "mae_gga": 0.0038519982533984807,
+    "mae_ggau_lasph": 0.05640067243834572,
+    "mae_ggau_nolasph": null
+   }
+  }
+ }
+}

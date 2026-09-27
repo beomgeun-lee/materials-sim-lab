@@ -255,6 +255,30 @@ bench_app = typer.Typer(help="엔진 기준 재현 (3단계 완료 기준)", no_
 app.add_typer(bench_app, name="bench")
 
 
+@bench_app.command("umlip")
+def bench_umlip(
+    models: Annotated[str, typer.Option("--models", help="쉼표로 (mace-mpa-0, orb-v3)")] = "mace-mpa-0,orb-v3",
+    save: Annotated[Path | None, typer.Option("--save", help="결과 JSON")] = None,
+) -> None:
+    """uMLIP 처리량·정확도 실측 — 대표 구조 20개, 노트북 CPU (계획서 4단계)."""
+    import json
+
+    from msl.bench.umlip import bench
+
+    res = bench(models.split(","), log=typer.echo)
+    typer.echo(f"\nCPU 스레드 {res['threads']} · torch {res['torch']}")
+    typer.echo(f"{'모델':12} {'불러오기':>8} {'한 번(ms/원자)':>14} {'이완 중앙(s)':>12} {'단계 중앙':>9} {'수렴':>6} {'이완/시간':>9} "
+               f"{'ΔE GGA':>8} {'GGA+U LASPH':>12} {'GGA+U 끔':>9}")
+    for name, m in res["models"].items():
+        s = m["summary"]
+        f = lambda v: "—" if v is None else f"{v:.3f}"
+        typer.echo(f"{name:12} {m['load_s']:7.1f}s {s['sp_ms_per_atom_median']:14.1f} {s['relax_s_median']:12.2f} {s['steps_median']:9.0f} "
+                   f"{s['converged']:>3}/{s['n']:<2} {s['relax_per_hour']:9.0f} {f(s['mae_gga']):>8} {f(s['mae_ggau_lasph']):>12} {f(s['mae_ggau_nolasph']):>9}")
+    if save:
+        save.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {save}")
+
+
 @bench_app.command("phreeqc")
 def bench_phreeqc(
     dist: Annotated[Path, typer.Option("--dist", help="USGS PHREEQC 배포본 폴더 (phreeqc-3.8.6-17100)")],
@@ -396,6 +420,37 @@ def recommend_cmd(
     if csv_out:
         csv_out.write_text(to_csv(res), encoding="utf-8-sig")
         typer.echo(f"CSV: {csv_out}")
+
+
+@app.command("l2")
+def l2_cmd(
+    formula: Annotated[str, typer.Argument(help="화학식 (예: Li6MnNi3O10, LiCoO2)")],
+    models: Annotated[str, typer.Option("--models", help="쉼표로 (mace-mpa-0, orb-v3)")] = "mace-mpa-0,orb-v3",
+    orderings: Annotated[int, typer.Option("--orderings", help="모체마다 무작위 배치 수")] = 6,
+    max_atoms: Annotated[int, typer.Option("--max-atoms", help="후보 구조 원자 수 상한")] = 40,
+    json_out: Annotated[Path | None, typer.Option("--json", help="결과 JSON")] = None,
+) -> None:
+    """L2 안정성 확인 — 치환 구조 → uMLIP 이완 → 자기일관 hull (두 모델). 처음 계는 경쟁 상 이완에 몇 분."""
+    import json
+
+    from msl import l2
+    from msl.engines.umlip import UmlipUnavailable
+
+    try:
+        res = l2.evaluate(formula, models=tuple(models.split(",")), n_orderings=orderings, max_atoms=max_atoms, log=typer.echo)
+    except (UmlipUnavailable, ValueError) as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    typer.secho(f"\n{res['formula']} — L2 hull 거리 {res['ehull_mean']:+.3f} eV/atom (두 모델 차이 {res['ehull_spread']:.3f})", bold=True)
+    if res["known"]:
+        typer.echo(f"  DB 에 있음 {res['known']} · MP(현재 DB) hull 거리 {res['mp_ehull']:.3f}")
+    for m, r in res["models"].items():
+        dec = " + ".join(f"{k} {v:.0%}" for k, v in r["decomposition"].items())
+        typer.echo(f"  {m:10} {r['ehull']:+.3f} · 최저 구조 {r['best']} ({r['space_group']}) · 경쟁 상 {r['n_references']}개 · 분해 {dec}")
+    typer.echo(f"  후보 구조 {res['n_structures']}개 · {res['seconds']:.0f}초")
+    if json_out:
+        json_out.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+        typer.echo(f"저장: {json_out}")
 
 
 @app.command("resolve-check")
