@@ -107,3 +107,27 @@ def kosha_section(chem_id: str, n: int) -> list[tuple[str, str]]:
     """MSDS n번 항목의 (소항목 이름, 내용) 목록. 내용의 '|' 구분은 줄바꿈 목록이다."""
     body = _get(KOSHA_DETAIL.format(n=n), {"chemId": chem_id})
     return [(i.get("msdsItemNameKor", ""), i.get("itemDetail", "")) for i in _xml_items(body) if i.get("itemDetail")]
+
+
+KOSHA_SEARCH = {"korean_name": "0", "cas": "1", "un": "2", "ke": "3"}  # getChemList001 searchCnd (2026-09-27 확인)
+
+
+def kosha_search(term: str, by: str) -> list[dict[str, str]]:
+    """KOSHA 화학물질 목록 검색. by: korean_name / cas / un / ke. 부분 일치 결과가 섞여 온다."""
+    body = _get(KOSHA_LIST, {"pageNo": "1", "numOfRows": "20", "searchWrd": term, "searchCnd": KOSHA_SEARCH[by]})
+    return _xml_items(body)
+
+
+def cas_from_korean_name(name: str) -> str | None:
+    """국문명 → CAS. 띄어쓰기를 무시하고 **정확히 같은 이름**일 때만 돌려준다 (부분 일치는 오해석 위험)."""
+    key = "".join(name.split())
+    for query in dict.fromkeys([name.strip(), key]):  # 검색은 띄어쓰기에 민감하므로 붙여 쓴 이름으로도 찾는다
+        for item in kosha_search(query, "korean_name"):
+            if "".join(item.get("chemNameKor", "").split()) == key and item.get("casNo"):
+                return item["casNo"]
+    return None
+
+
+def cas_from_ke(ke: str) -> str | None:
+    items = kosha_search(ke, "ke")
+    return next((i["casNo"] for i in items if i.get("keNo") == ke and i.get("casNo")), None)

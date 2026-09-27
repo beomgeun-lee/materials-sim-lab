@@ -60,8 +60,15 @@ def _code_hash() -> str:
     """시험·엔진·규칙 코드가 바뀌면 캐시가 무효가 되도록 소스와 kb 규칙 파일을 해시한다."""
     pkg = Path(__file__).resolve().parents[1]
     files = sorted([*pkg.glob("assays/*.py"), *pkg.glob("engines/*.py"), *pkg.glob("resolve/*.py"),
-                    KB_DIR / "safety_rules.yaml", KB_DIR / "materials.yaml"])
+                    *KB_DIR.glob("*.yaml")])
     return canonical_hash({f.name: f.read_text(encoding="utf-8") for f in files})
+
+
+def _data_fingerprint() -> str:
+    """적재 데이터(테이블·소스·버전·행 수)가 바뀌면 캐시가 무효가 되도록 한다. 매 실행 계산 (가볍다)."""
+    from msl.db import status
+
+    return canonical_hash([(s.table, s.source, s.version, s.rows) for s in status()])
 
 
 def _cite(reg: Registry, sid: str, ver: str | None) -> SourceCitation:
@@ -91,10 +98,11 @@ def run_recipe(recipe: Recipe, use_cache: bool = True, registry: Registry | None
     routed = route(recipe, comps)
     ctx = Context(recipe=recipe, comps=comps, registry=reg)
     results: list[AssayResult] = []
+    data_fp = _data_fingerprint()
     for code, why in routed:
         params = {"route_reason": why}
         h = canonical_hash({"recipe": recipe.model_dump(mode="json"), "assay": code, "versions": _versions(),
-                            "msl": __version__, "code": _code_hash(), "components": [(str(c.ref), c.formula, c.groups) for c in comps]})
+                            "msl": __version__, "code": _code_hash(), "data": data_fp, "components": [(str(c.ref), c.formula, c.groups) for c in comps]})
         cached = RESULT_CACHE / f"{h}.json"
         if use_cache and cached.exists():
             results.append(AssayResult.model_validate_json(cached.read_text(encoding="utf-8")))

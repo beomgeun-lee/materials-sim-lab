@@ -1,0 +1,319 @@
+# 원소 → 공급 품목 매핑 (A9 공급·경제성, msl.assays.supply)
+#
+# 원소마다
+#   name:        한글 이름 (리포트 표시)
+#   critical:    USGS 2025 핵심광물 목록의 이름 (critical_minerals.mineral). 목록에 없으면 생략
+#   world_bank:  World Bank Pink Sheet 품목 (commodity_prices.commodity). 가격 없으면 생략
+#   stages:      공급 단계 목록 — USGS MCS 2026 품목 (commodity_stats.commodity)
+#     commodity:   MCS 품목명
+#     label:       단계 이름 (광산·제련 등)
+#     production:  세계 생산 표의 measure_detail (국가 행 기준. 세계 합계 행은 뒤에 ', rounded'·': rounded' 가 붙음)
+#                  생략하면 생산 집중도를 계산하지 않는다 (국가별 표가 없거나 항목이 제각각인 품목)
+#     nir:         미국 순수입 의존도 행이 여러 개일 때 고를 measure_detail 부분 문자열
+#
+# 제외 원소 (공급 위험 평가 대상 아님): 아래 exclude
+# MCS 품목명은 CSV 표기 그대로다 (대소문자 포함). 확인: uv run msl db status → commodity_stats
+
+exclude: [H, C, N, O, Cl, Ne, Ar, Kr, Xe]
+
+elements:
+  Li:
+    name: 리튬
+    critical: Lithium
+    stages:
+      - {commodity: Lithium, label: 광산, production: Mine production}
+  Be:
+    name: 베릴륨
+    critical: Beryllium
+    stages:
+      - {commodity: Beryllium, label: 광산, production: Mine production}
+  B:
+    name: 붕소
+    critical: Boron
+    stages:
+      - {commodity: Boron, label: 붕산염}  # 국가마다 생산 항목(정제 붕산염·원광 등)이 달라 집중도 생략
+  F:
+    name: 플루오린
+    critical: Fluorspar
+    stages:
+      - {commodity: Fluorspar, label: 형석 광산, production: Mine production}
+  Na:
+    name: 나트륨
+    stages:
+      - {commodity: Salt, label: 소금, production: Mine production}
+  Mg:
+    name: 마그네슘
+    critical: Magnesium
+    stages:
+      - {commodity: Magnesium Metal, label: 금속 제련, production: Smelter production}
+      - {commodity: Magnesium Compounds, label: 마그네사이트 광산, production: Mine production}
+  Al:
+    name: 알루미늄
+    critical: Aluminum
+    world_bank: Aluminum
+    stages:
+      - {commodity: Bauxite, label: 보크사이트 광산, production: "Bauxite, mine production"}
+      - {commodity: Alumina, label: 알루미나 정련, production: "Alumina, refinery production"}
+      - {commodity: Aluminum, label: 금속 제련, production: Smelter production}
+  Si:
+    name: 규소
+    critical: Silicon
+    stages:
+      - {commodity: Silicon, label: 금속 규소, production: Silicon metal, nir: Silicon metal}
+      - {commodity: Silicon, label: 페로실리콘, production: Ferrosilicon, nir: Ferrosilicon}
+  P:
+    name: 인
+    critical: Phosphate Rock
+    world_bank: Phosphate rock
+    stages:
+      - {commodity: Phosphate Rock, label: 인광석, production: Mine production}
+  S:
+    name: 황
+    stages:
+      - {commodity: Sulfur, label: 전 형태, production: "Production, all forms"}
+  K:
+    name: 칼륨
+    critical: Potash
+    world_bank: Potassium chloride
+    stages:
+      - {commodity: Potash, label: 칼리 광산, production: Mine production}
+  Ca:
+    name: 칼슘
+    stages:
+      - {commodity: Lime, label: 석회, production: Production}
+  Sc:
+    name: 스칸듐
+    critical: Scandium
+    stages:
+      - {commodity: Scandium, label: 전체}
+  Ti:
+    name: 타이타늄
+    critical: Titanium
+    stages:
+      - {commodity: Titanium Mineral Concentrates, label: 일메나이트 광산, production: "Mine production: Ilmenite"}
+      - {commodity: Titanium Mineral Concentrates, label: 금홍석 광산, production: "Mine production: Rutile"}
+      - {commodity: Titanium Sponge Metal, label: 스펀지 금속, production: Titanium sponge metal production}
+  V:
+    name: 바나듐
+    critical: Vanadium
+    stages:
+      - {commodity: Vanadium, label: 광산, production: Mine production}
+  Cr:
+    name: 크로뮴
+    critical: Chromium
+    stages:
+      - {commodity: Chromium, label: 광산, production: Mine production}
+  Mn:
+    name: 망가니즈
+    critical: Manganese
+    stages:
+      - {commodity: Manganese, label: 광산, production: Mine production}
+  Fe:
+    name: 철
+    world_bank: "Iron ore, cfr spot"
+    stages:
+      - {commodity: Iron Ore, label: 철광석(철 함량), production: "Mine production: Iron content"}
+  Co:
+    name: 코발트
+    critical: Cobalt
+    stages:
+      - {commodity: Cobalt, label: 광산, production: Mine production}
+  Ni:
+    name: 니켈
+    critical: Nickel
+    world_bank: Nickel
+    stages:
+      - {commodity: Nickel, label: 광산, production: Mine production}
+  Cu:
+    name: 구리
+    critical: Copper
+    world_bank: Copper
+    stages:
+      - {commodity: Copper, label: 광산, production: Mine production}
+      - {commodity: Copper, label: 제련, production: Refinery production}
+  Zn:
+    name: 아연
+    critical: Zinc
+    world_bank: Zinc
+    stages:
+      - {commodity: Zinc, label: 광산, production: Mine production, nir: Refined zinc}
+  Ga:
+    name: 갈륨
+    critical: Gallium
+    stages:
+      - {commodity: Gallium, label: 1차 생산, production: Primary production}
+  Ge:
+    name: 저마늄
+    critical: Germanium
+    stages:
+      - {commodity: Germanium, label: 정련}
+  As:
+    name: 비소
+    critical: Arsenic
+    stages:
+      - {commodity: Arsenic, label: 삼산화비소, production: "Production (arsenic trioxide, gross weight)"}
+  Se:
+    name: 셀레늄
+    stages:
+      - {commodity: Selenium, label: 정련, production: Refinery production}
+  Br:
+    name: 브로민
+    stages:
+      - {commodity: Bromine, label: 전체, production: Production}
+  Rb:
+    name: 루비듐
+    critical: Rubidium
+    stages:
+      - {commodity: Rubidium, label: 전체}
+  Sr:
+    name: 스트론튬
+    stages:
+      - {commodity: Strontium, label: 광산, production: Mine production}
+  Y:
+    name: 이트륨
+    critical: Yttrium
+    stages:
+      - {commodity: Yttrium, label: 전체}
+  Zr:
+    name: 지르코늄
+    critical: Zirconium
+    stages:
+      - {commodity: Zirconium, label: 광물 정광, production: "Zirconium mineral concentrates, mine production (thousand metric tons, gross weight)"}
+  Nb:
+    name: 나이오븀
+    critical: Niobium
+    stages:
+      - {commodity: Niobium (Columbium), label: 광산, production: Mine production}
+  Mo:
+    name: 몰리브데넘
+    stages:
+      - {commodity: Molybdenum, label: 광산, production: Mine production}
+  Ru: {name: 루테늄, critical: Ruthenium, stages: [{commodity: Platinum-Group Metals, label: 백금족}]}
+  Rh: {name: 로듐, critical: Rhodium, stages: [{commodity: Platinum-Group Metals, label: 백금족}]}
+  Pd:
+    name: 팔라듐
+    critical: Palladium
+    stages:
+      - {commodity: Palladium, label: 광산, production: "Mine production: Palladium"}
+  Ag:
+    name: 은
+    critical: Silver
+    world_bank: Silver
+    stages:
+      - {commodity: Silver, label: 광산, production: Mine production}
+  Cd:
+    name: 카드뮴
+    stages:
+      - {commodity: Cadmium, label: 정련, production: Refinery production}
+  In:
+    name: 인듐
+    critical: Indium
+    stages:
+      - {commodity: Indium, label: 정련, production: Refinery production}
+  Sn:
+    name: 주석
+    critical: Tin
+    world_bank: Tin
+    stages:
+      - {commodity: Tin, label: 광산, production: Mine production}
+  Sb:
+    name: 안티모니
+    critical: Antimony
+    stages:
+      - {commodity: Antimony, label: 광산, production: Mine production}
+  Te:
+    name: 텔루륨
+    critical: Tellurium
+    stages:
+      - {commodity: Tellurium, label: 정련, production: Refinery production}
+  I:
+    name: 아이오딘
+    stages:
+      - {commodity: Iodine, label: 광산, production: Mine production}
+  Cs:
+    name: 세슘
+    critical: Cesium
+    stages:
+      - {commodity: Cesium, label: 전체}
+  Ba:
+    name: 바륨
+    critical: Barite
+    stages:
+      - {commodity: Barite, label: 중정석 광산, production: Mine production}
+  La: {name: 란타넘, critical: Lanthanum, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Ce: {name: 세륨, critical: Cerium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Pr: {name: 프라세오디뮴, critical: Praseodymium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Nd: {name: 네오디뮴, critical: Neodymium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Sm: {name: 사마륨, critical: Samarium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Eu: {name: 유로퓸, critical: Europium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Gd: {name: 가돌리늄, critical: Gadolinium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Tb: {name: 터븀, critical: Terbium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Dy: {name: 디스프로슘, critical: Dysprosium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Ho: {name: 홀뮴, critical: Holmium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Er: {name: 어븀, critical: Erbium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Tm: {name: 툴륨, critical: Thulium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Yb: {name: 이터븀, critical: Ytterbium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Lu: {name: 루테튬, critical: Lutetium, stages: [{commodity: Rare Earths, label: 희토류 광산, production: Mine production, nir: Compounds and metals}]}
+  Hf:
+    name: 하프늄
+    critical: Hafnium
+    stages:
+      - {commodity: Hafnium, label: 전체}
+  Ta:
+    name: 탄탈럼
+    critical: Tantalum
+    stages:
+      - {commodity: Tantalum, label: 광산, production: Mine production}
+  W:
+    name: 텅스텐
+    critical: Tungsten
+    stages:
+      - {commodity: Tungsten, label: 광산, production: Mine production}
+  Re:
+    name: 레늄
+    critical: Rhenium
+    stages:
+      - {commodity: Rhenium, label: 광산, production: Mine production}
+  Ir: {name: 이리듐, critical: Iridium, stages: [{commodity: Platinum-Group Metals, label: 백금족}]}
+  Pt:
+    name: 백금
+    critical: Platinum
+    world_bank: Platinum
+    stages:
+      - {commodity: Platinum, label: 광산, production: "Mine production: Platinum"}
+  Au:
+    name: 금
+    world_bank: Gold
+    stages:
+      - {commodity: Gold, label: 광산, production: Mine production}
+  Hg:
+    name: 수은
+    stages:
+      - {commodity: Mercury, label: 광산, production: Mine production}
+  Tl:
+    name: 탈륨
+    stages:
+      - {commodity: Thallium, label: 전체}
+  Pb:
+    name: 납
+    critical: Lead
+    world_bank: Lead
+    stages:
+      - {commodity: Lead, label: 광산, production: Mine production}
+  Bi:
+    name: 비스무트
+    critical: Bismuth
+    stages:
+      - {commodity: Bismuth, label: 정련, production: Refinery production}
+  Th:
+    name: 토륨
+    stages:
+      - {commodity: Thorium, label: 전체}
+  U:
+    name: 우라늄
+    critical: Uranium
+    stages: []  # MCS 에 장이 없음 (USGS 가 우라늄 자료를 수집하지 않음)
+  He:
+    name: 헬륨
+    stages:
+      - {commodity: Helium, label: 전체, production: Helium Production}

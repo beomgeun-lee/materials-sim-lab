@@ -114,3 +114,14 @@ class SubstanceRef(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.namespace.value}:{self.key}"
+
+
+def to_pymatgen_formula(formula: str) -> str:
+    """수화물 표기 `CuSO4·5H2O` 를 pymatgen 이 읽는 `CuSO4(H2O)5` 로 바꾼다."""
+    head, *rest = formula.split("·")
+    out = head
+    for part in rest:
+        m = re.match(r"^(\d+(?:\.\d+)?)?(.+)$", part)
+        n, body = (m.group(1) or "1"), m.group(2)
+        out += f"({body}){n}" if n != "1" else f"({body})"
+    return out

@@ -88,6 +88,96 @@ def serve(port: Annotated[int, typer.Option(help="포트")] = 8000) -> None:
     uvicorn.run("msl.web.app:app", host="127.0.0.1", port=port, log_level="warning")
 
 
+db_app = typer.Typer(help="데이터 적재 (1단계 데이터 코어)", no_args_is_help=True)
+app.add_typer(db_app, name="db")
+
+
+def _pick(source: str) -> dict:
+    from msl.connectors import available
+
+    mods = available()
+    if source == "all":
+        return mods
+    if source not in mods:
+        typer.secho(f"커넥터 없음: {source} (있는 것: {', '.join(mods)})", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    return {source: mods[source]}
+
+
+@db_app.command("fetch")
+def db_fetch(source: str) -> None:
+    """원본 스냅샷을 받는다 (source id 또는 all)."""
+    for sid, mod in _pick(source).items():
+        typer.echo(f"↓ {sid} … ", nl=False)
+        path = mod.fetch()
+        typer.secho(f"{path}", fg=typer.colors.GREEN)
+
+
+@db_app.command("load")
+def db_load(source: str) -> None:
+    """스냅샷을 정규화해 적재한다 (source id 또는 all)."""
+    for sid, mod in _pick(source).items():
+        typer.echo(f"⇢ {sid} … ", nl=False)
+        result = mod.load()
+        typer.secho(", ".join(f"{t} {parts}" for t, parts in result.items()), fg=typer.colors.GREEN)
+
+
+@db_app.command("status")
+def db_status() -> None:
+    """적재 현황: 테이블 · 소스 · 파티션 · 행 수 · 버전."""
+    from msl.connectors import available
+    from msl.db import status
+
+    rows = status()
+    typer.echo(f"{'테이블':18} {'소스':24} {'파티션':10} {'행':>9}  버전")
+    for r in rows:
+        typer.echo(f"{r.table:18} {r.source:24} {r.partition:10} {r.rows:>9,}  {r.version[:40]}")
+    loaded = {r.source for r in rows}
+    waiting = [s for s in available() if s not in loaded]
+    typer.echo(f"\n적재 {len(loaded)}개 소스 · {sum(r.rows for r in rows):,}행" + (f" · 커넥터만 있음: {', '.join(waiting)}" if waiting else ""))
+
+
+@app.command("resolve-check")
+def resolve_check(
+    path: Annotated[Path, typer.Option("--list", help="시험 목록")] = KB_DIR / "validation" / "resolver_v1.yaml",
+    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="통과 항목도 출력")] = False,
+) -> None:
+    """해석기 시험 목록으로 성공률을 잰다 (계획서 1단계 완료 기준: 95% 이상)."""
+    import yaml
+    from pymatgen.core import Composition
+
+    from msl.resolve import resolve
+    from msl.schema.recipe import Component
+
+    items = yaml.safe_load(path.read_text(encoding="utf-8"))
+    ok, by_ns, fails = 0, {}, []
+    for it in items:
+        r = resolve(Component(ref=it["ref"]))
+        ns = it["ref"].split(":", 1)[0]
+        good = r.formula is not None and r.error is None
+        if good and it.get("expect_formula"):
+            try:
+                good = Composition(r.formula).reduced_composition.almost_equals(
+                    Composition(it["expect_formula"]).reduced_composition)
+            except Exception:
+                good = False
+        ok += good
+        passed, total = by_ns.get(ns, (0, 0))
+        by_ns[ns] = (passed + good, total + 1)
+        if not good:
+            fails.append(f"  ✗ {it['ref']:32} → {r.formula or '-'} (기대 {it.get('expect_formula', '화학식')}) {r.error or r.via}")
+        elif verbose:
+            typer.echo(f"  ✓ {it['ref']:32} → {r.formula} · {r.via}")
+    for line in fails:
+        typer.echo(line)
+    rate = ok / len(items)
+    typer.echo("\n" + " · ".join(f"{ns} {p}/{t}" for ns, (p, t) in by_ns.items()))
+    color = typer.colors.GREEN if rate >= 0.95 else typer.colors.RED
+    typer.secho(f"해석 성공 {ok}/{len(items)} = {rate:.1%} (기준 95%)", fg=color)
+    if rate < 0.95:
+        raise typer.Exit(1)
+
+
 @recipe_app.command("check")
 def recipe_check(paths: list[Path], kb: KbOption = KB_DIR) -> None:
     """레시피 YAML 을 스키마와 시험 카탈로그로 검증한다."""

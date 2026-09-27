@@ -9,6 +9,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -75,8 +76,25 @@ def by_cid(cid: int) -> dict[str, Any] | None:
     return props[0] if props else None
 
 
+@cache
+def _local_groups() -> dict[int, list[str]]:
+    """적재된 reactive_groups 테이블 (msl db load cameo). 없으면 빈 dict."""
+    try:
+        from msl.db import connect, tables
+
+        if "reactive_groups" not in tables():
+            return {}
+        rows = connect().sql("SELECT cid, list(DISTINCT reactive_group ORDER BY reactive_group) FROM reactive_groups GROUP BY cid").fetchall()
+        return {int(cid): groups for cid, groups in rows}
+    except Exception:
+        return {}
+
+
 def reactive_groups(cid: int) -> list[str]:
-    """CAMEO Chemicals 가 부여한 반응성 그룹 (PubChem 'Reactive Group' 항목)."""
+    """CAMEO Chemicals 가 부여한 반응성 그룹. 적재된 로컬 테이블을 먼저 보고, 없으면 PubChem 에 묻는다."""
+    local = _local_groups()
+    if cid in local:
+        return local[cid]
     data = _get(f"{BASE}/pug_view/data/compound/{cid}/JSON?heading=Reactive+Group")
     found: set[str] = set()
 

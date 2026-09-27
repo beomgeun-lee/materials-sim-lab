@@ -9,24 +9,28 @@
 
 | | |
 |---|---|
-| 단계 | 0단계 완료 → **실행 가능한 최소 버전(v0)** 가동. 2단계 일부를 앞당김 ([D11](docs/03-결정-기록.md)) |
-| 실제 계산 시험 | S0 안전 게이트 · A1 조성 안정성 · A2 고상반응 · A3 기체 평형 · A4 수용액 평형 · A7 물성 · A8 블렌드 · A10 국내 규제 |
-| 대기 중 | A6 합금(공개 TDB 확인) · A9 공급(1단계 적재) · A5(3단계) |
-| 연결된 데이터·엔진 | Materials Project(API) · PubChem(CAMEO 반응성 그룹·CAS) · NASA 열역학(Cantera) · PHREEQC · pymatgen · data.go.kr(한국환경공단 화학물질·유독물 GHS, KOSHA MSDS) |
-| 레지스트리 | 라이선스 39 · 소스 102 · 엔진 117 · 시험 11 (`kb/`) |
-| 테스트 | 85개 통과 |
+| 단계 | 0단계 · v0 · **1단계(데이터 코어) 완료** — [적재 보고](docs/05-1단계-데이터-코어.md) |
+| 적재 데이터 | 12개 소스 · 262,644행 — MP 163k · COD 광물 구조 16k · IMA 광물 6,239종 · USGS 수급 · 가격 · NASA · PHREEQC · CAMEO |
+| 실제 계산 시험 | S0 안전 · A1 안정성 · A2 고상반응 · A3 기체 · A4 수용액 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
+| 대기 중 | A6 합금(공개 TDB 확인) · A5(3단계) |
+| 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·KE 번호 — 시험 목록 99.0% |
+| 레지스트리 | 라이선스 39 · 소스 102(적재 12) · 엔진 117 · 시험 11 (`kb/`) |
+| 테스트 | 177개 통과 |
 
 ### 실행
 
 ```bash
 uv sync                                               # 환경 설치 (Python 3.12)
+uv run msl db load all                                # 데이터 적재 (원본은 msl db fetch 로 받음)
+uv run msl db status                                  # 적재 현황
 uv run msl serve                                      # 웹 화면 → http://127.0.0.1:8000
 uv run msl run examples/recipes/mgo-alumina.yaml      # 터미널에서 레시피 하나 실행
-uv run msl registry check                             # 레지스트리·라이선스 정책 검사
+uv run msl resolve-check                              # 해석기 시험 목록 (기준 95%)
 uv run pytest                                         # 테스트
 ```
 
-`.env`에 `MP_API_KEY`가 있어야 A1·A2·A7이, `DATA_GO_KR_SERVICE_KEY`가 있어야 A10이 계산됩니다(없으면 '대기'로 표시). 조회·계산 결과는 `data/cache/`에 캐시됩니다.
+`.env`에 `MP_API_KEY`(A1·A2·A7)와 `DATA_GO_KR_SERVICE_KEY`(A10, 국문명 해석)가 필요합니다. 없으면 '대기'로 표시됩니다.
+IMA PDF 적재에는 시스템의 `pdftotext`(poppler)가 필요합니다. USGS MCS 원본은 브라우저로 받아 둡니다([D12](docs/03-결정-기록.md)).
 
 ### 데모 레시피 (`examples/recipes/`)
 
@@ -86,12 +90,14 @@ uv run pytest                                         # 테스트
 | [02 계획서](docs/02-계획서.md) | 목표·설계·DB 구축·아키텍처·로드맵·검증·리스크·결정 사항 |
 | [03 결정 기록](docs/03-결정-기록.md) | 확정된 결정 D1~D10과 파생 제약 |
 | [04 기관 문의 초안](docs/04-기관-문의-초안.md) | NOAA·KOSHA·국가소재연구데이터센터·KRISS 문의문 |
+| [05 1단계 적재 보고](docs/05-1단계-데이터-코어.md) | 소스별 적재, 완료 기준 점검, 확인된 사실 |
 | [화면 목업](prototype/virtual-lab-mockup.html) | 교육용 첫 화면 목업 (실제 화면은 `msl serve`) |
 
 ---
 
-## 다음
+## 다음 (2단계)
 
-1. 1단계 데이터 코어 — USGS MCS 적재(A9), IMA 광물명 ↔ 결정 구조 매칭, COD 적재 ([계획서 6장](docs/02-계획서.md))
-2. 공개 TDB 확인 → A6 합금 상평형
-3. A10 v1 — 혼합물 함량 기준(예: '10% 이상 함유')과 레시피 농도 비교
+1. IMA 광물 ↔ MP 계산 구조 매칭 — 광물 시험에서 실험 구조와 계산값 연결
+2. COD commonname 확장 — 광물 매칭률(현재 하한 59.7%) 향상
+3. A10 v1 — 혼합물 함량 기준과 레시피 농도 비교
+4. 공개 TDB 조사 → A6 합금 상평형

@@ -26,7 +26,7 @@
   python_client: mendeleev
   priority: 상
   mvp_rank: 1
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: INT
   uses: []
   caveats: 원자량이 CIAAW 2024 미반영(Gd·Lu·Zr), 구간값 원소도 단일값 → ciaaw 로 덮어쓴다. Z=104–118 대부분 결측(밀도만 118개 모두 채워진 추정값). 열전도·융해/증발열·격자상수는 인용키 없음
@@ -77,7 +77,7 @@
   size: Z=0–118
   python_client: periodictable
   priority: 중
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: []
   caveats: 중성자·X선 산란(SLD)·동위원소 정밀 질량 보강용. 표 export 기능 없음(객체 속성 조회). 밀도가 1999년 CRC 판 기준, 희토류 incoherent 산란 과소평가 이슈
@@ -121,7 +121,7 @@
   version: 컬렉션 최종 갱신 2026-09-25
   size: 118행 × 17열
   priority: 중
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: []
   caveats: 교차검증용. 일괄 CSV 원자량은 반올림·구버전 혼재(Gd 157.25, Ar 39.9). AtomicRadius 는 값 패턴상 vdW 반경으로 추정
@@ -285,7 +285,7 @@
   python_client: mp-api 0.46.5 (v2026.04.13 은 0.46.2 이상 필요)
   priority: 상
   mvp_rank: 2
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A1, A2, A5, A7]
   caveats: thermo 타입(GGA_GGA+U, GGA_GGA+U_R2SCAN, R2SCAN) 공존 — 같은 물질도 0.2 eV/atom 넘게 차이. MP2020 형성엔탈피 MAE 51 meV/atom, PBE 밴드갭 약 40% 과소. OPTIMADE 는 2023-03 에 멈춤 → S3 Delta/parquet 로 적재(--no-sign-request). API 키 없이 401
@@ -786,7 +786,7 @@
   python_client: pymatgen.ext.cod, optimade
   priority: 상
   mvp_rank: 3
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: INT
   uses: [A1]
   caveats: 9000000번대 약 1.79만 건이 AMCSD 유래. 품질 편차·중복(_cod_duplicateof) → 무기·광물 필터와 중복 제거 필요. 압축 아카이브는 2025-02-09 이후 미갱신 → rsync 권장. 2025-12 서버 복구 흔적
@@ -908,7 +908,7 @@
   size: 6,239종
   priority: 상
   mvp_rank: 8
-  status: fetched  # data/raw/ima-cnmnc/2026-09/ (SHA256SUMS)
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: INT
   uses: []
   caveats: PDF 만 제공(xlsx 는 광물기호 목록뿐) → 파싱 후 COD·AMCSD 구조와 이름 매칭. 집계 차이 rruff.net 6,187·Wikipedia 6,226. RRUFF IMA DB(rruff.net/odr/ima) CSV 내보내기는 라이선스 미확인
@@ -1094,7 +1094,7 @@
   size: 데이터시트 약 5,094개, UN/NA 2,369개, 쌍별 문서 최대 2,346개, PubChem 경유 CID 매핑 5,093건
   priority: 상
   mvp_rank: 5
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [S0]
   caveats: 공식 벌크·API 없음, robots.txt 가 /reactivity·/search 수집 금지 → rest-api 는 PubChem PUG-View(heading=Reactive Group) 경유(요청 6회로 5,093건). 쌍별 매트릭스는 이 경로로 못 얻음 → NOAA(cameo@noaa.gov) 문의 후 적재. 전제는 거의 동량 혼합·1 atm·75–120°F, 3성분 반응·촉매 효과 예측 불가
@@ -1288,7 +1288,7 @@
   python_client: cea (pip install cea)
   priority: 상
   mvp_rank: 6
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A2, A3]
   caveats: 고온 반응 ΔG(T)·연소·기상 평형의 기본 DB. GitHub data/thermo.inp 파싱
@@ -1311,7 +1311,7 @@
   python_client: phreeqpy 0.6.0, phreeqcrm 0.0.20
   priority: 상
   mvp_rank: 7
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A4]
   caveats: MVP 적재 대상은 phreeqc.dat·llnl.dat·minteq.v4·pitzer·sit. llnl.dat 는 LLNL thermo.com.V8.R6 파생
@@ -1785,7 +1785,7 @@
   update: 연 1회
   priority: 상
   mvp_rank: 9
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A9]
   caveats: 데이터 릴리스 CSV MCS2026_ALLchapters_Reconcile.csv (DOI 10.5066/P1WKQ63T). ScienceBase 웹은 403 → USGS 데이터 카탈로그 경로 사용. 핵심광물 60종 목록(usgs-critical-minerals)과 연계
@@ -1808,7 +1808,7 @@
   update: 월간
   priority: 상
   mvp_rank: 9
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: INT
   uses: [A9]
   caveats: 조사 문서 비교표·4.5절은 우선순위 중이지만 MVP Top 10 9위에 USGS MCS 보조로 들어 있어 상으로 올림. 월간 xlsx
@@ -1829,7 +1829,7 @@
   version: 2025 목록 (연방관보 2025-11-07)
   size: 60종
   priority: 중
-  status: planned
+  status: loaded  # 2026-09-27 msl db load (1단계)
   country: US
   uses: [A9]
   caveats: 2022년 대비 10종 추가(구리·은·우라늄·규소·칼리 등)
