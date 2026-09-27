@@ -3,13 +3,66 @@
 원소·광물·화학물질을 **조합**하고, 그 조합을 **여러 각도로 가상 시험**하는 프레임워크.
 공공데이터로 통합 DB를 만들고, 검증된 오픈 계산 엔진을 연결한다.
 
+<details>
+<summary><b>English summary</b></summary>
+
+**materials-sim-lab** is a framework for combining elements, minerals and chemicals into a *recipe*
+and running that recipe through a battery of **virtual tests**. It builds an integrated database from
+public data sources and wraps proven open-source engines instead of re-implementing them.
+Documentation and UI are in Korean; code identifiers and CLI are in English.
+
+**Virtual tests (11)** — every result carries its fidelity level, sources and licenses:
+
+| Code | Test | Engine / data |
+|---|---|---|
+| S0 | Mixing safety gate (runs first) | Reactivity-group rules (CAMEO-style) |
+| A1 | Composition stability, polymorphs | pymatgen + Materials Project |
+| A2 | Solid-state / interface reactions | NASA thermo + MP hybrid |
+| A3 | Gas equilibrium, adiabatic flame | Cantera (NASA) |
+| A4 | Aqueous equilibrium (pH, saturation) | PHREEQC, cross-checked with Reaktoro |
+| A5 | Aqueous corrosion (Pourbaix) | Experimental ΔGf + MP |
+| A6 | Alloy phase equilibria | pycalphad + open TDBs (research use) |
+| A7 | Property estimates | MP, L1 model |
+| A8 | Blends / composites | Mixing rules, bounds |
+| A9 | Supply risk and price | USGS MCS, World Bank |
+| A10 | Korean chemical regulations | data.go.kr services |
+
+**Funnel beyond the database**
+
+- **L1** — composition-only surrogate (112 features, gradient boosting, conformal 80% intervals):
+  formation energy MAE 0.07 eV/atom on unseen chemical systems.
+- **L2** — universal ML interatomic potentials (MACE-MPA-0, ORB v3): candidate structures from Ewald-ranked
+  substitutions and cross-chemistry prototypes, relaxed and scored on a self-consistent convex hull.
+  Stability F1 **0.90** on a held-out set of 30 ternary oxides (`msl bench l2-f1`).
+- **Goal-based recommendation** — enumerate charge-balanced compositions and rank them (DFT where known, L1 otherwise).
+- **Next-experiment suggestion** — Bayesian optimization with BayBE over a candidate pool (`msl suggest`).
+
+**Interfaces** — CLI (`msl`), local web workbench (`msl serve`), and an MCP server (`msl mcp`, stdio, 15 tools)
+so AI assistants can search substances, validate and run recipes, and read reports.
+
+**Quick start**
+
+```bash
+uv sync                                        # Python 3.12
+cp .env.example .env                           # add your Materials Project API key
+uv run msl run examples/recipes/mgo-alumina.yaml
+uv run msl serve                               # http://127.0.0.1:8000
+uv sync --extra l2 --extra bo                  # optional: uMLIP (PyTorch) and BayBE
+```
+
+Status: stages 0–4 of the plan are complete; stage 5 (interfaces) is in progress.
+Raw data (`data/`) and API keys are not part of the repository; each source's license is recorded in
+`kb/sources.yaml`. Code is Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+</details>
+
 ---
 
 ## 현황
 
 | | |
 |---|---|
-| 단계 | 0~2단계 완료 · 3단계(평형 트랙) 완료 — [3단계 보고](docs/07-3단계-평형-트랙.md), Reaktoro 교차검증 포함(D22) |
+| 단계 | 0~4단계 완료 (4단계 완료 기준: L2 안정성 판정 F1 0.90, D24) · **5단계(인터페이스) 진행** — MCP 서버 완료, 사용성 테스트 남음 · [3단계 보고](docs/07-3단계-평형-트랙.md) |
 | 검증 | 검증 세트 40개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` · PHREEQC 공식 예제 28/28 재현 — `msl bench phreeqc` |
 | 실제 계산 시험 | **11종 모두** — S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A5 수계 부식(Pourbaix) · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
 | 조합 공간 | 혼합비 격자 · 양 스윕 · 부분집합 열거 → 표·곡선·쌍별 행렬 — `msl space`, 웹 `/spaces` |
