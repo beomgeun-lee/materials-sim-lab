@@ -11,6 +11,10 @@ Copyright 2026 이범근
 - tests/fixtures/phreeqc/
   USGS PHREEQC 3.8.6 공식 예제 입력 (tests/fixtures/phreeqc/NOTICE 참고), USGS 공공 소프트웨어 사용 고지.
 
+- src/msl/data/phreeqc/llnl.dat
+  USGS PHREEQC 배포본의 llnl.dat (LLNL thermo.com.V8.R6.230, G. Anderson·D. Parkhurst 변환), 수정 없이 포함.
+  USGS PHREEQC User Rights Notice 에 따라 사용·복제·배포한다.
+
 - kb/validation/*.json 의 참조값 일부는 Materials Project (CC BY 4.0) 데이터에서 계산했다.
   Materials Project: A. Jain et al., APL Materials 1, 011002 (2013).
 

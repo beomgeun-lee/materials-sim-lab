@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from functools import cache
 from importlib.metadata import version
@@ -59,12 +60,22 @@ def a3(ctx: Context) -> Outcome:
 # ── A4 수용액 평형 ────────────────────────────────────────────────────────
 
 
-@cache
-def _db() -> tuple[dict[str, Composition], dict[str, dict[int, str]]]:
-    """phreeqc.dat 의 광물(PHASES) 화학식과 원소별 마스터 화학종(산화수 → 이름)."""
+LLNL = Path(__file__).resolve().parents[1] / "data" / "phreeqc" / "llnl.dat"  # USGS PHREEQC 배포본 동봉 (LLNL thermo.com.V8.R6)
+
+
+def db_path(name: str = "phreeqc.dat") -> Path:
+    """A4 가 쓰는 DB 파일 — phreeqc.dat 은 phreeqpython 동봉본, llnl.dat 은 패키지에 넣은 PHREEQC 배포본 파일 (D27)."""
+    if name == "llnl.dat":
+        return LLNL
     import phreeqpython
 
-    txt = (Path(phreeqpython.__file__).parent / "database" / "phreeqc.dat").read_text(encoding="latin-1")
+    return Path(phreeqpython.__file__).parent / "database" / name
+
+
+@cache
+def _db(name: str = "phreeqc.dat") -> tuple[dict[str, Composition], dict[str, dict[int, str]]]:
+    """DB 의 광물(PHASES) 화학식과 원소별 마스터 화학종(산화수 → 이름)."""
+    txt = db_path(name).read_text(encoding="latin-1")
     phases_txt = txt.split("\nPHASES", 1)[1].split("\nEXCHANGE_MASTER_SPECIES", 1)[0]
     phases: dict[str, Composition] = {}
     for name, formula in re.findall(r"^([A-Z][A-Za-z0-9()_\-]*)\s*\n\s+([^=\n]+?)\s*=", phases_txt, re.M):
@@ -109,16 +120,31 @@ def _oxi_from_species(el: str, species: str) -> int | None:
     return round((charge - rest) / n)
 
 
-def a4(ctx: Context) -> Outcome:
-    comps = ctx.comps
-    water = [c for c in comps if c.is_water]
-    if not water and not any(c.state is State.AQUEOUS for c in comps):
-        return not_applicable("물이나 수용액 성분이 없음", "phreeqpython", Fidelity.T)
-    phases, masters = _db()
-    liters = 1.0
-    if water and water[0].amount is not None and water[0].amount.dimension is Dimension.VOLUME:
-        liters = water[0].amount.to_si() * 1000
+class _Unsupported:
+    """DB 가 모르는 산화 상태 — 다른 DB 로 다시 해 볼 수 있다."""
 
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
+def _oxi_guess(comp: Composition, masters: dict[str, dict[int, str]]) -> dict[str, float] | None:
+    """산화수 배정 — pymatgen 기본 추정이 DB 에 있는 상태면 그대로, 아니면 DB 가 아는 산화 상태 안에서 다시 찾는다
+    (NaClO: pymatgen 은 Cl⁺¹ 을 흔한 상태로 보지 않아 추정이 비지만, llnl.dat 에는 Cl(1)=ClO⁻ 가 있다)."""
+    els = [str(e) for e in comp.elements if str(e) not in ("H", "O")]
+    guesses = comp.oxi_state_guesses(max_sites=-1)
+    for g in guesses:
+        if all(round(g[el]) in masters.get(el, {}) for el in els):
+            return g
+    override = {el: sorted(masters[el]) for el in els if masters.get(el)}
+    if len(override) < len(els):
+        return None
+    guesses = comp.oxi_state_guesses(oxi_states_override=override, max_sites=-1)
+    return guesses[0] if guesses else None
+
+
+def _totals(comps, liters: float, db: str):
+    """성분 → (마스터 화학종별 mol/kgw, 평형 광물 {이름: 넣은 mol}). 못 하면 Outcome(해당 없음) 또는 _Unsupported."""
+    phases, masters = _db(db)
     totals: dict[str, float] = {}  # 마스터 화학종 → mol/kgw
     minerals: dict[str, float | None] = {}  # PHREEQC 광물 이름 → 넣은 양(mol)
     for c in comps:
@@ -138,27 +164,49 @@ def a4(ctx: Context) -> Outcome:
             n = c.amount.to_si() * liters  # mol/kg × kgw(≈ L)
         if n is None:
             return not_applicable(f"{c.formula}: 양을 mol·질량·몰농도로 적어야 함", "phreeqpython", Fidelity.T)
-        guesses = comp.oxi_state_guesses(max_sites=-1)
-        if not guesses:
+        guess = _oxi_guess(comp, masters)
+        if guess is None:
             have = {el: sorted(masters.get(str(el), {})) for el in comp.elements if str(el) not in ("H", "O")}
             states = "; ".join(f"{k} {', '.join(f'{x:+d}' for x in v) or '없음'}" for k, v in have.items())
-            return not_applicable(
-                f"{c.formula}: 수용액 계산 DB(phreeqc.dat)가 다루는 이온으로 바꿀 수 없어 수용액 평형은 계산하지 않음 "
-                f"— 이 DB 가 아는 산화 상태는 {states} 뿐 (예: 락스의 차아염소산 이온 ClO⁻ 은 없음)", "phreeqpython", Fidelity.T)
+            return _Unsupported(
+                f"{c.formula}: 수용액 계산 DB 가 다루는 이온으로 바꿀 수 없어 수용액 평형은 계산하지 않음 "
+                f"— DB 가 아는 산화 상태는 {states} 뿐")
         for el, amt in comp.get_el_amt_dict().items():
             if el in ("H", "O"):
                 continue
-            ox = round(guesses[0][el])
-            name = masters.get(el, {}).get(ox)
-            if name is None:
-                return not_applicable(f"{c.formula}: phreeqc.dat 에 {el}({ox:+d}) 화학종이 없음", "phreeqpython", Fidelity.T)
+            name = masters[el][round(guess[el])]
             totals[name] = totals.get(name, 0.0) + n * amt / liters
+    return totals, minerals
+
+
+def a4(ctx: Context) -> Outcome:
+    comps = ctx.comps
+    water = [c for c in comps if c.is_water]
+    if not water and not any(c.state is State.AQUEOUS for c in comps):
+        return not_applicable("물이나 수용액 성분이 없음", "phreeqpython", Fidelity.T)
+    liters = 1.0
+    if water and water[0].amount is not None and water[0].amount.dimension is Dimension.VOLUME:
+        liters = water[0].amount.to_si() * 1000
+
+    # phreeqc.dat 으로 먼저, 그 DB 가 모르는 산화 상태(락스의 Cl⁺¹ 등)가 있으면 llnl.dat 으로 전체를 계산한다 (D27)
+    db = "phreeqc.dat"
+    got = _totals(comps, liters, db)
+    if isinstance(got, _Unsupported) and LLNL.exists():
+        alt = _totals(comps, liters, "llnl.dat")
+        if not isinstance(alt, (_Unsupported, Outcome)):
+            db, got = "llnl.dat", alt
+    if isinstance(got, _Unsupported):
+        return not_applicable(got.reason, "phreeqpython", Fidelity.T)
+    if isinstance(got, Outcome):
+        return got
+    totals, minerals = got
+    phases, _ = _db(db)
 
     from phreeqpython import PhreeqPython
 
     T_c = (ctx.T or 298.15) - 273.15
     P_atm = ctx.P / 101_325
-    pp = PhreeqPython(database="phreeqc.dat")  # 기본값은 vitens.dat(Stimela 파생) — 출처 표기와 맞춘다
+    pp = PhreeqPython(database=db, database_directory=db_path(db).parent)  # 기본값은 vitens.dat(Stimela 파생) — 출처 표기와 맞춘다
     sol = pp.add_solution({"temp": round(T_c, 2), "pressure": f"{P_atm:.6g}", "units": "mol/kgw", "pH": "7 charge",
                            **{k: f"{v:.8g}" for k, v in totals.items()}})
     eq_phases, targets = list(minerals), [0.0] * len(minerals)
@@ -174,7 +222,17 @@ def a4(ctx: Context) -> Outcome:
     si = {k: v for k, v in sol.phases.items() if "(g)" not in k and k != "Fix_pH"}
     supersat = sorted(((k, v) for k, v in si.items() if v > 0.05), key=lambda p: -p[1])[:5]
     values = [val("pH", round(sol.pH, 2)), val("이온 세기", round(sol.I, 4), "mol/kgw")]
-    caveats = ["phreeqc.dat 기본 DB — 고농도(대략 1 mol/kgw 이상)는 Pitzer DB 가 필요", "평형 계산 — 용해·침전 속도는 모름"]
+    caveats = ["phreeqc.dat 기본 DB — 고농도(대략 1 mol/kgw 이상)는 Pitzer DB 가 필요" if db == "phreeqc.dat" else
+               "llnl.dat 사용 — phreeqc.dat 에 없는 산화 상태가 있어 전체를 LLNL DB(B-dot 활동도, 0–300 °C)로 계산. 대략 1 mol/kgw 이상은 부정확",
+               "평형 계산 — 용해·침전 속도는 모름"]
+    if db == "llnl.dat":
+        caveats.append("산화 상태는 섞은 그대로 둔다 — 차아염소산이 염화물·산소로 분해되는 느린 반응은 반영하지 않음")
+    cl2 = _chlorine(sol, totals, db, T_c + 273.15)
+    if cl2 is not None:
+        values.append(val("염소 기체 평형 분압 (Cl₂)", f"{10 ** cl2:.2e}", "atm"))  # 10⁻⁸ atm 도 0 으로 반올림되지 않게 지수 표기
+        values.append(val("염소 기체 평형 분압 log₁₀", round(cl2, 2), "log atm"))
+        if cl2 > 0:
+            caveats.append("염소 기체가 빠져나가며 용액 농도가 줄어드는 과정은 반영하지 않음 (평형 분압은 섞은 직후 기준)")
     for m, given in minerals.items():
         el = next(str(e) for e in phases[m].elements if str(e) not in ("C", "O", "H"))
         dissolved = sol.total_element(el, "mol") if hasattr(sol, "total_element") else None
@@ -186,7 +244,9 @@ def a4(ctx: Context) -> Outcome:
         values.append(val("과포화 광물 (SI>0, 침전 가능)", ", ".join(f"{k} {v:+.2f}" for k, v in supersat)))
     if T_c > 100 or P_atm > 1.5:
         caveats.append("phreeqc.dat 의 온도 의존성은 대략 0–100 °C 에서 검증됨 — 고온·고압은 경향만 볼 것 (D22)")
-    cross = _reaktoro_cross(totals, list(minerals), liters, ctx.T or 298.15, P_atm * 1.01325) if "CO2(g)" not in eq_phases else None
+    # Reaktoro 는 산화 상태까지 모두 평형으로 풀어(차아염소산 → 염화물+산소) 섞은 그대로 둔 llnl 계산과 비교할 수 없다
+    cross = (_reaktoro_cross(totals, list(minerals), liters, ctx.T or 298.15, P_atm * 1.01325)
+             if "CO2(g)" not in eq_phases and db == "phreeqc.dat" else None)
     if cross:
         if "pH" in cross:
             values.append(val("pH (Reaktoro 교차검증)", round(cross["pH"], 2)))
@@ -196,10 +256,15 @@ def a4(ctx: Context) -> Outcome:
             caveats.append(f"Reaktoro 교차검증 실패: {cross['error']}")
     summary = f"pH {sol.pH:.2f}" + (f", {', '.join(minerals)} 와 평형" if minerals else "") + (
         ", 대기 CO₂ 평형" if "CO2(g)" in eq_phases else "")
+    if cl2 is not None and cl2 > 0:
+        summary = f"염소(Cl₂) 기체 발생 — 평형 분압 {10 ** cl2:.2g} atm (대기압 초과) · " + summary
+    elif cl2 is not None and cl2 > -6:
+        summary += f" · 염소(Cl₂) 기체 조금 발생 — 평형 분압 {10 ** cl2:.2g} atm (약 {10 ** cl2 * 1e6:.3g} ppm)"
     return Outcome(
         status=Status.OK, fidelity=Fidelity.T, engine="phreeqpython", engine_version=version("phreeqpython"),
         conditions_basis=f"{T_c:.0f} °C, 물 {liters:g} L(≈kgw)" + (", pCO₂ 10^-3.4 atm" if "CO2(g)" in eq_phases else ""),
-        values=values, sources=[("phreeqc-db", "phreeqc.dat (phreeqpython 1.6.2 동봉)")], caveats=caveats,
+        values=values, caveats=caveats,
+        sources=[("phreeqc-db", "phreeqc.dat (phreeqpython 1.6.2 동봉)" if db == "phreeqc.dat" else "llnl.dat (PHREEQC 동봉, LLNL thermo.com.V8.R6)")],
         summary=summary,
         data={"table": {"columns": ["화학종", "몰랄농도 (mol/kgw)"], "rows": [[k, f"{v:.3e}"] for k, v in species]},
               "si": {k: round(v, 3) for k, v in sorted(si.items(), key=lambda p: -p[1])[:10]},
@@ -208,6 +273,51 @@ def a4(ctx: Context) -> Outcome:
 
 
 PH_CROSS_TOL = 0.1
+
+
+@cache
+def _thermo(db: str, block: str, name: str) -> tuple[float, float | None, list[float] | None]:
+    """DB 의 반응 상수 (log_k, delta_H kJ/mol, analytic 계수). block: 'species' = 반응 결과가 name 인 화학종, 'phase' = 상 이름."""
+    txt = db_path(db).read_text(encoding="latin-1")
+    if block == "species":
+        body = txt.split("\nSOLUTION_SPECIES", 1)[1].split("\nPHASES", 1)[0]
+        m = re.search(rf"^[^#\n]*= *{re.escape(name)}\s*\n(.*?)(?=^[^\s#]|^ *[^#\s-][^\n]*=)", body, re.M | re.S)
+    else:
+        body = txt.split("\nPHASES", 1)[1]
+        m = re.search(rf"^{re.escape(name)}\s*\n\s+[^\n]*=[^\n]*\n(.*?)(?=^[^\s#])", body, re.M | re.S)
+    if m is None:
+        raise KeyError(f"{db}: {name} 없음")
+    blk = m.group(1)
+    lk = float(re.search(r"log_k\s+(\S+)", blk).group(1))
+    dh = re.search(r"-delta_H\s+(\S+)\s+kJ", blk)
+    an = re.search(r"^\s*-analytic\s+([^\n#]+)", blk, re.M)
+    return lk, float(dh.group(1)) if dh else None, [float(x) for x in an.group(1).split()] if an else None
+
+
+def _logk(db: str, block: str, name: str, T: float) -> float:
+    """온도 T(K)의 log K — analytic 식이 있으면 그것, 없으면 van 't Hoff (PHREEQC 와 같은 우선순위)."""
+    lk, dh, an = _thermo(db, block, name)
+    if an:
+        a = an + [0.0] * (6 - len(an))
+        return a[0] + a[1] * T + a[2] / T + a[3] * math.log10(T) + a[4] / T ** 2 + a[5] * T ** 2
+    if dh is not None:
+        return lk - dh / (8.314462618e-3 * math.log(10)) * (1 / T - 1 / 298.15)
+    return lk
+
+
+def _chlorine(sol, totals: dict[str, float], db: str, T: float) -> float | None:
+    """차아염소산(Cl⁺¹)과 염화 이온이 함께 있으면 Cl₂(g) 평형 분압의 log (atm), 아니면 None (D27).
+
+    llnl.dat: Cl⁻ + ½O₂ = ClO⁻ (k1), Cl₂(g) + H₂O = ½O₂ + 2Cl⁻ + 2H⁺ (K2) → O₂ 를 소거하면
+    log P(Cl₂) = log a(ClO⁻) + log a(Cl⁻) + 2 log a(H⁺) − log a(H₂O) − k1 − K2.
+    25 °C 에서 HOCl + H⁺ + Cl⁻ ⇌ Cl₂(g) + H₂O 의 K = 10^4.53 (문헌 약 10^4.55). 물 활동도는 1 로 둔다 (묽은 용액)."""
+    if db != "llnl.dat" or "Cl(1)" not in totals or not any(k in totals for k in ("Cl", "Cl(-1)")):
+        return None
+    try:
+        la = {sp: math.log10(sol.activity(sp, "mol")) for sp in ("ClO-", "Cl-", "H+")}
+        return la["ClO-"] + la["Cl-"] + 2 * la["H+"] - _logk(db, "species", "ClO-", T) - _logk(db, "phase", "Cl2(g)", T)
+    except (ValueError, KeyError, AttributeError):
+        return None
 
 
 def _reaktoro_cross(totals: dict[str, float], minerals: list[str], liters: float, T_K: float, P_bar: float) -> dict | None:

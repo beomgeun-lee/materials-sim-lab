@@ -114,6 +114,16 @@
   assay: A4
   recipe: {id: rcp-v-a4-3, name: 소금물, components: [{ref: "cas:7647-14-5", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
   checks: [{value_between: {name: "pH", range: [6.5, 7.5]}}]
+# 락스(차아염소산나트륨) — phreeqc.dat 에 Cl(+1) 이 없어 llnl.dat (D27). 0.05 M NaOCl: pKa(HOCl) 7.5 → pH 약 10
+- id: a4-bleach
+  assay: A4
+  recipe: {id: rcp-v-a4-4, name: 락스 0.05 M, components: [{ref: "cas:7681-52-9", amount: 0.05 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "pH", range: [9.8, 10.4]}}]
+# 락스 + 염산 → HOCl + H⁺ + Cl⁻ ⇌ Cl₂(g), K ≈ 10^4.55 → 0.05 M 락스 + 0.1 M 염산이면 평형 분압 약 5 atm (대기압 초과 = 기체 발생)
+- id: a4-bleach-hcl-chlorine
+  assay: A4
+  recipe: {id: rcp-v-a4-5, name: 락스 + 염산, components: [{ref: "cas:7681-52-9", amount: 0.05 mol, state: aqueous}, {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous}, {ref: "cas:7732-18-5", amount: 1 L, state: liquid}], conditions: {T: 25 °C}}
+  checks: [{value_between: {name: "염소 기체 평형 분압 log₁₀", range: [0.3, 1.2]}}]
 
 # ── A5 수계 안정성·부식 (Pourbaix, 25 °C, 이온 10⁻⁶ mol/kg — Pourbaix 도감 관례) ─────────
 # 판정 기준값: Pourbaix, Atlas of Electrochemical Equilibria (1974) 의 영역 구분

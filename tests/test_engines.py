@@ -131,11 +131,11 @@ def test_reaktoro_input_is_charge_balanced() -> None:
 
 
 def test_a4_refuses_unknown_oxidation_state() -> None:
-    """차아염소산(Cl +1)은 phreeqc.dat 에 없음 — 조용히 염화물로 계산하지 않고 거부해야 한다."""
-    c = ctx([comp("cas:7681-52-9", "NaClO", "0.05 mol", State.AQUEOUS), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
+    """과망간산(Mn +7)은 phreeqc.dat·llnl.dat 어디에도 없음 — 조용히 다른 산화수로 계산하지 않고 거부해야 한다."""
+    c = ctx([comp("cas:7722-64-7", "KMnO4", "0.01 mol", State.AQUEOUS), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
     out = equilibrium.a4(c)
     assert out.status is Status.NOT_APPLICABLE
-    assert "NaClO" in out.summary
+    assert "KMnO4" in out.summary
 
 
 def test_a8_blend_bounds() -> None:
@@ -214,8 +214,40 @@ def test_a10_pending_without_key(monkeypatch: pytest.MonkeyPatch) -> None:
     assert regulation.a10(c).status is Status.PENDING
 
 
-def test_a4_hypochlorite_message_is_plain() -> None:
-    """차아염소산나트륨은 phreeqc.dat 에 Cl(+1) 이 없어 계산하지 않는다 — 이유를 알기 쉬운 말로 (웹 사용 점검 3번)."""
+def test_a4_unsupported_message_is_plain() -> None:
+    """계산하지 못하는 이유를 내부 표현이 아닌 말로 (웹 사용 점검 3번)."""
+    c = ctx([comp("cas:7722-64-7", "KMnO4", "0.01 mol", State.AQUEOUS), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
+    out = equilibrium.a4(c)
+    assert "수용액 계산 DB" in out.summary and "phreeqc.dat 의 산화수" not in out.summary
+
+
+def test_a4_bleach_alone_uses_llnl() -> None:
+    """락스(NaClO)는 phreeqc.dat 에 Cl(+1) 이 없어 llnl.dat 으로 계산한다 — 0.05 M 차아염소산나트륨 pH ≈ 10 (pKa 7.5, D27)."""
     c = ctx([comp("cas:7681-52-9", "NaClO", "0.05 mol", State.AQUEOUS), comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
     out = equilibrium.a4(c)
-    assert out.status is Status.NOT_APPLICABLE and "수용액 계산 DB" in out.summary and "phreeqc.dat 의 산화수" not in out.summary
+    v = {x.name: x.value for x in out.values}
+    assert out.status is Status.OK and "llnl" in out.sources[0][1]
+    assert v["pH"] == pytest.approx(10.05, abs=0.1)
+    assert "염소 기체 평형 분압 (Cl₂)" not in v  # 염화 이온이 없으면 염소 기체는 계산하지 않음
+
+
+@pytest.mark.parametrize("hcl, gas", [("0.1 mol", True), ("0.01 mol", False)])
+def test_a4_bleach_plus_acid_chlorine(hcl: str, gas: bool) -> None:
+    """락스 + 염산 → HOCl + H⁺ + Cl⁻ ⇌ Cl₂(g). 0.05 M 락스 + 0.1 M 염산이면 평형 분압이 대기압을 넘는다 (손계산 약 5 atm)."""
+    c = ctx([comp("cas:7681-52-9", "NaClO", "0.05 mol", State.AQUEOUS), comp("cas:7647-01-0", "HCl", hcl, State.AQUEOUS),
+             comp("cas:7732-18-5", "H2O", "1 L", State.LIQUID)])
+    out = equilibrium.a4(c)
+    v = {x.name: x.value for x in out.values}
+    logp = v["염소 기체 평형 분압 log₁₀"]
+    if gas:
+        assert logp == pytest.approx(0.74, abs=0.1) and out.summary.startswith("염소(Cl₂) 기체 발생")
+    else:
+        assert logp < -5
+    assert "reaktoro" not in out.data  # llnl 계산은 Reaktoro 와 비교하지 않는다
+
+
+def test_llnl_thermo_constants() -> None:
+    assert equilibrium._logk("llnl.dat", "phase", "Cl2(g)", 298.15) == pytest.approx(3.0, abs=0.01)
+    # HOCl + H⁺ + Cl⁻ ⇌ Cl₂(g) + H₂O 의 log K ≈ 4.5 (문헌 4.55)
+    k = -equilibrium._logk("llnl.dat", "species", "ClO-", 298.15) - 7.5692 - equilibrium._logk("llnl.dat", "phase", "Cl2(g)", 298.15)
+    assert k == pytest.approx(4.55, abs=0.05)

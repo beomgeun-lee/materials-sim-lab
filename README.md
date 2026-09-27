@@ -63,7 +63,7 @@ Raw data (`data/`) and API keys are not part of the repository; each source's li
 | | |
 |---|---|
 | 단계 | 0~4단계 완료 (4단계 완료 기준: L2 안정성 판정 F1 0.88 · 재현율 1.00, D24·D26) · **5단계(인터페이스) 진행** — MCP 서버 완료, 사용성 테스트 남음 · [3단계 보고](docs/07-3단계-평형-트랙.md) |
-| 검증 | 검증 세트 40개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` · PHREEQC 공식 예제 28/28 재현 — `msl bench phreeqc` |
+| 검증 | 검증 세트 42개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` · PHREEQC 공식 예제 28/28 재현 — `msl bench phreeqc` |
 | 실제 계산 시험 | **11종 모두** — S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A5 수계 부식(Pourbaix) · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
 | 조합 공간 | 혼합비 격자 · 양 스윕 · 부분집합 열거 → 표·곡선·쌍별 행렬 — `msl space`, 웹 `/spaces` |
 | 웹 작업대 | 성분 검색(국문 관용명 포함)·시약 선반·양/조건/시험 편집·YAML 편집 → 실행·저장, 조합 공간 편집기 — [사용 안내](docs/08-사용-안내.md) |
@@ -74,7 +74,7 @@ Raw data (`data/`) and API keys are not part of the repository; each source's li
 | L2 안정성 확인 | uMLIP(MACE-MPA-0·ORB v3) — Ewald 배치·구조 원형으로 후보 구조 생성 → 이완 → 자기일관 hull, 두 모델 평균·차이. 재발견 시험 7/7 — `msl l2`, 웹 [L2 확인] |
 | 적재 데이터 | 15개 소스 · 277,479행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 · 수용액 이온 362 |
 | 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·국문 관용명·KE 번호 — 99.5% |
-| 테스트 | 413개 통과 |
+| 테스트 | 417개 통과 |
 
 ### 실행
 

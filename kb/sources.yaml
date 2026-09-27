@@ -1328,7 +1328,7 @@
   access: [bulk]
   auth: none
   license: USGS-public
-  license_note: User Rights Notice — 무상 사용·복제·수정·배포, 유상 배포도 허용, 수정본에는 수정 사실 고지. 동봉 PHREEQC_ThermoddemV1.10 은 BRGM 약관과 충돌 가능 → 제외
+  license_note: User Rights Notice — 무상 사용·복제·수정·배포, 유상 배포도 허용, 수정본에는 수정 사실 고지. 동봉 PHREEQC_ThermoddemV1.10 은 BRGM 약관과 충돌 가능 → 제외. llnl.dat 은 A4 보조 DB 로 패키지에 수정 없이 포함 (D27)
   version: PHREEQC 3.8.6 (USGS, 2025-01) / 3.9.0 (GitHub, 2026-05-14)
   size: 20여 파일
   python_client: phreeqpy 0.6.0, phreeqcrm 0.0.20
