@@ -70,13 +70,26 @@ def materials() -> dict[str, dict[str, Any]]:
     return {m["id"]: m for m in data}
 
 
+def molecular_formula(comp: Composition) -> str:
+    """약분하면 분자가 바뀌는 화학식은 그대로 둔다 (C₂H₄O₂ ≠ CH₂O — '1 mol' 의 원소 양이 달라진다).
+
+    약분 배수가 1 이면 pymatgen 표기(reduced_formula)를 쓴다 (예: ClH → HCl, HNaO → NaHO).
+    금속이 없는 C·H 화합물(유기물)은 힐 표기로 쓴다 (C₂H₆O, CH₄ — pymatgen 기본은 H₆C₂O).
+    """
+    els = {str(e) for e in comp.elements}
+    if {"C", "H"} <= els and not any(e.is_metal for e in comp.elements):
+        return comp.hill_formula.replace(" ", "")
+    _, factor = comp.get_reduced_composition_and_factor()
+    return comp.reduced_formula if factor == 1 else comp.formula.replace(" ", "")
+
+
 def _from_pubchem(props: dict[str, Any] | None) -> tuple[int | None, str | None, str | None]:
     if not props:
         return None, None, None
     cid = int(props["CID"])
     formula = props.get("MolecularFormula")
     try:
-        formula = Composition(formula).reduced_formula if formula else None
+        formula = molecular_formula(Composition(formula)) if formula else None
     except Exception:  # 유기 복합 화학식 등 pymatgen 이 못 읽는 경우
         pass
     return cid, formula, props.get("Title")
@@ -97,12 +110,14 @@ def resolve(component: Component) -> Resolved:
             cid, _, _ = _from_pubchem(pubchem.lookup(name))
             return _with_groups(Resolved(**base, name=name, formula=key, cid=cid, via="원소 기호"))
         if ns is Namespace.FORMULA:
-            formula = Composition(to_pymatgen_formula(key)).reduced_formula
+            formula = molecular_formula(Composition(to_pymatgen_formula(key)))
             cid, _, title = _from_pubchem(pubchem.lookup(key))
             return _with_groups(Resolved(**base, name=title or formula, formula=formula, cid=cid, via="화학식"))
         if ns is Namespace.MINERAL and (hit := mineral_db().get(_mineral_key(key))) and \
                 (hit["formula"] or hit["best_formula"]):
             return _from_mineral_db(base, key, hit)
+        if ns is Namespace.NAME and (alias := korean_aliases().get(key.replace(" ", ""))):
+            return _via_alias(base, key, alias)
         if ns is Namespace.KE or (ns is Namespace.NAME and HANGUL.search(key)):
             return _via_korean_registry(base, ns, key)
         if ns is Namespace.CID:
@@ -175,6 +190,30 @@ def _from_mineral_db(base: dict[str, Any], key: str, hit: dict[str, Any]) -> Res
         return _with_groups(r)
     except Exception:
         return r
+
+
+@cache
+def korean_aliases() -> dict[str, dict[str, Any]]:
+    """kb/aliases_ko.yaml — 국문 관용명(띄어쓰기 없이) → {cas, formula, note}."""
+    import yaml
+
+    from msl.registry.load import KB_DIR
+
+    out: dict[str, dict[str, Any]] = {}
+    for row in yaml.safe_load((KB_DIR / "aliases_ko.yaml").read_text(encoding="utf-8")):
+        for n in row["names"]:
+            out[n.replace(" ", "")] = row
+    return out
+
+
+def _via_alias(base: dict[str, Any], key: str, alias: dict[str, Any]) -> Resolved:
+    cas = alias["cas"]
+    cid, formula, title = _from_pubchem(pubchem.lookup(cas))
+    if cid is None:
+        return Resolved(**base, name=key, formula=None, cas=cas, error=f"CAS {cas} 를 PubChem 에서 찾지 못함")
+    r = Resolved(**base, name=f"{key} ({title})" if title else key, formula=formula, cid=cid, cas=cas,
+                 via=f"국문 관용명 → CAS {cas}" + (f" ({alias['note']})" if alias.get("note") else "") + " → PubChem")
+    return _with_groups(r)
 
 
 def _via_korean_registry(base: dict[str, Any], ns: Namespace, key: str) -> Resolved:

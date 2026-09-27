@@ -1,0 +1,136 @@
+<h2 class="sec">편집기 — 새 조합 공간 만들기·고치기</h2>
+<section class="sp-editor">
+  <div class="run-row">
+    <span class="sub">틀에서 시작:</span>
+    <button class="btn" type="button" data-tpl="ratio">혼합비 격자</button>
+    <button class="btn" type="button" data-tpl="amount">양 스윕</button>
+    <button class="btn" type="button" data-tpl="subsets">조합 열거</button>
+    <span class="sub">또는 위 목록의 [편집기로]</span>
+  </div>
+  <textarea id="sp-yaml" spellcheck="false" aria-label="조합 공간 YAML"></textarea>
+  <div class="run-row">
+    <button class="btn" type="button" id="sp-check">확인 (만들 레시피 보기)</button>
+    <button class="run" type="button" id="sp-run">실행</button>
+    <button class="btn" type="button" id="sp-save">저장</button>
+    <label class="sub"><input type="checkbox" id="sp-nocache"> 캐시 없이</label>
+    <span class="busy" id="sp-busy" aria-live="polite"></span>
+  </div>
+  <div class="errbox" id="sp-errors" hidden></div>
+  <div class="msg" id="sp-msg" aria-live="polite"></div>
+  <div id="sp-variants" class="sub"></div>
+  <iframe id="sp-result" title="조합 공간 결과" hidden></iframe>
+</section>
+<style>
+.sp-editor { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+#sp-yaml { width: 100%; min-height: 320px; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; white-space: pre; }
+#sp-result { width: 100%; border: 1px solid var(--line); border-radius: 8px; min-height: 200px; background: var(--bg); }
+#sp-variants ol { margin: 4px 0 0; padding-left: 22px; columns: 2; font-family: var(--font-mono); font-size: 12px; }
+h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin-top: 6px; }
+</style>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const TPL = {
+    ratio: `# 혼합비 격자 — 두 성분의 비율을 바꿔 가며 (A6 합금 예)
+id: spc-my-ratio
+name: 내 혼합비 스윕
+base:
+  conditions: {P: 1 atm}
+  assays: [A6]
+generator:
+  kind: ratio
+  components: [{ref: "element:Cu", state: solid}, {ref: "element:Ni", state: solid}]
+  step: 0.1
+  unit: at%
+collect:
+  - {assay: A6, value: 고상선, unit: °C, label: 고상선 (°C), chart: 녹는 구간}
+  - {assay: A6, value: 액상선, unit: °C, label: 액상선 (°C), chart: 녹는 구간}
+`,
+    amount: `# 양 스윕 — 한 성분의 양만 바꿔 가며 (적정 곡선 예)
+id: spc-my-amount
+name: 내 양 스윕
+base:
+  components:
+    - {ref: "cas:7647-01-0", amount: 0.1 mol, state: aqueous, label: 염산}
+    - {ref: "cas:7732-18-5", amount: 1 L, state: liquid, label: 물}
+  conditions: {T: 25 °C}
+  assays: [A4]
+generator:
+  kind: amount
+  component: {ref: "cas:1310-73-2", state: aqueous, label: NaOH}
+  start: 0 mol
+  stop: 0.2 mol
+  steps: 21
+collect:
+  - {assay: A4, value: pH, label: pH}
+`,
+    subsets: `# 조합 열거 — 풀에서 k개씩 뽑아 (금속 × 물, A5 부식 예)
+id: spc-my-subsets
+name: 내 조합 열거
+base:
+  components:
+    - {ref: "cas:7732-18-5", amount: 1 L, state: liquid}
+  conditions: {pH: 7, atmosphere: air}
+  assays: [A5]
+generator:
+  kind: subsets
+  size: 1
+  pool:
+    - {ref: "element:Fe", amount: 1 g, state: solid}
+    - {ref: "element:Cu", amount: 1 g, state: solid}
+    - {ref: "element:Zn", amount: 1 g, state: solid}
+collect:
+  - {assay: A5, field: verdict, label: 판정}
+`,
+  };
+  const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const errors = (list) => { $("sp-errors").innerHTML = "<b>고쳐야 할 곳</b>" + list.map(e => `<span>${esc(e)}</span>`).join("<br>"); $("sp-errors").hidden = false; };
+  const clear = () => { $("sp-errors").hidden = true; $("sp-msg").textContent = ""; $("sp-msg").className = "msg"; };
+  const load = (text) => { $("sp-yaml").value = text; clear(); $("sp-variants").innerHTML = ""; $("sp-yaml").scrollIntoView({ block: "center" }); };
+
+  document.querySelectorAll("[data-tpl]").forEach(b => b.addEventListener("click", () => load(TPL[b.dataset.tpl])));
+  document.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", async () => load(await (await fetch(`/api/space/${b.dataset.edit}/yaml`)).text())));
+
+  $("sp-check").addEventListener("click", async () => {
+    clear();
+    const r = await (await post("/api/space/check", { yaml: $("sp-yaml").value })).json();
+    if (!r.ok) { errors(r.errors); $("sp-variants").innerHTML = ""; return; }
+    $("sp-variants").innerHTML = `<b>${esc(r.name)}</b> · ${esc(r.describe)} · 레시피 ${r.n}개${r.n > r.variants.length ? ` (앞 ${r.variants.length}개 표시)` : ""}<ol>${r.variants.map(v => `<li>${esc(v.label)}</li>`).join("")}</ol>`;
+  });
+
+  $("sp-run").addEventListener("click", async () => {
+    clear();
+    const t0 = Date.now(), tick = setInterval(() => { $("sp-busy").textContent = `계산 중… ${((Date.now() - t0) / 1000).toFixed(0)}초`; }, 500);
+    $("sp-run").disabled = true;
+    try {
+      const res = await post("/api/space/run", { yaml: $("sp-yaml").value, no_cache: $("sp-nocache").checked });
+      const body = await res.json();
+      if (!res.ok) { errors(body.detail.errors || [JSON.stringify(body.detail)]); $("sp-busy").textContent = ""; return; }
+      const f = $("sp-result");
+      f.hidden = false; f.srcdoc = body.html;
+      f.onload = () => { f.style.height = (f.contentDocument.documentElement.scrollHeight + 20) + "px"; };
+      $("sp-busy").textContent = `완료 · 레시피 ${body.rows}개 · ${body.elapsed}초`;
+    } catch (e) { errors([e.message]); $("sp-busy").textContent = ""; }
+    finally { clearInterval(tick); $("sp-run").disabled = false; }
+  });
+
+  const save = async (overwrite) => {
+    clear();
+    const res = await post("/api/space/save", { yaml: $("sp-yaml").value, overwrite });
+    const body = await res.json();
+    if (res.status === 422) return errors(body.detail.errors);
+    if (res.status === 409) {
+      $("sp-msg").className = "msg bad";
+      $("sp-msg").innerHTML = esc(body.detail) + (String(body.detail).includes("이미 있는 파일") ? ' <button class="btn" type="button" id="sp-overwrite">덮어쓰기</button>' : "");
+      const ow = $("sp-overwrite"); if (ow) ow.addEventListener("click", () => save(true));
+      return;
+    }
+    if (!res.ok) { errors([JSON.stringify(body)]); return; }
+    $("sp-msg").className = "msg ok";
+    $("sp-msg").innerHTML = `저장: ${esc(body.path)} — <a href="/spaces">목록 새로 보기</a>`;
+  };
+  $("sp-save").addEventListener("click", () => save(false));
+  if (!$("sp-yaml").value) $("sp-yaml").value = TPL.ratio;
+})();
+</script>

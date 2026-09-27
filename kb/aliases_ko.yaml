@@ -1,0 +1,40 @@
+# 국문 관용명 → CAS — 해석기 name: 참조가 KOSHA 목록(정식 이름)보다 먼저 본다.
+#
+# KOSHA MSDS 목록은 정식 이름만 있어 '염산'(정식: 염화수소), '가성소다'(수산화나트륨) 같은 흔한 이름을 찾지 못한다.
+# 여기에는 뜻이 하나로 정해지는 관용명만 적는다. formula 는 PubChem 이 돌려주는 화학식과 같은지 테스트로 확인한다.
+# 용액 이름(염산·암모니아수)은 용질의 CAS 를 가리킨다 — 농도는 레시피의 양·물로 정한다.
+# state 는 웹 작업대에서 성분을 추가할 때의 기본 상태다 (레시피에서 바꿀 수 있다).
+
+- {names: [염산, 염화수소산], cas: 7647-01-0, state: aqueous, formula: HCl, note: 염화수소 수용액}
+- {names: [황산], cas: 7664-93-9, state: aqueous, formula: H2SO4}
+- {names: [질산], cas: 7697-37-2, state: aqueous, formula: HNO3}
+- {names: [인산], cas: 7664-38-2, state: aqueous, formula: H3PO4}
+- {names: [초산, 아세트산, 빙초산], cas: 64-19-7, state: liquid, formula: C2H4O2}
+- {names: [구연산], cas: 77-92-9, formula: C6H8O7}
+- {names: [붕산], cas: 10043-35-3, formula: BH3O3}
+- {names: [가성소다, 양잿물], cas: 1310-73-2, formula: HNaO, note: 수산화나트륨}
+- {names: [가성칼리], cas: 1310-58-3, formula: HKO, note: 수산화칼륨}
+- {names: [락스, 표백제, 차아염소산소다], cas: 7681-52-9, state: aqueous, formula: ClNaO, note: 차아염소산나트륨}
+- {names: [암모니아수], cas: 1336-21-6, state: aqueous, formula: H5NO, note: 수산화암모늄}
+- {names: [소금, 식염], cas: 7647-14-5, formula: ClNa, note: 염화나트륨}
+- {names: [베이킹소다, 중조, 중탄산소다], cas: 144-55-8, formula: CHNaO3, note: 탄산수소나트륨}
+- {names: [소다회, 탄산소다], cas: 497-19-8, formula: CNa2O3, note: 탄산나트륨}
+- {names: [생석회], cas: 1305-78-8, formula: CaO, note: 산화칼슘}
+- {names: [소석회], cas: 1305-62-0, formula: CaH2O2, note: 수산화칼슘}
+- {names: [석회석, 탄산칼슘], cas: 471-34-1, formula: CCaO3}
+- {names: [염화칼슘], cas: 10043-52-4, formula: CaCl2}
+- {names: [과산화수소], cas: 7722-84-1, state: aqueous, formula: H2O2}
+- {names: [과망간산칼륨], cas: 7722-64-7, formula: KMnO4}
+- {names: [황산구리], cas: 7758-98-7, formula: CuO4S}
+- {names: [에탄올, 에틸알코올, 알코올, 주정], cas: 64-17-5, state: liquid, formula: C2H6O}
+- {names: [메탄올, 메틸알코올], cas: 67-56-1, state: liquid, formula: CH4O}
+- {names: [아세톤], cas: 67-64-1, state: liquid, formula: C3H6O}
+- {names: [물, 증류수, 정제수], cas: 7732-18-5, state: liquid, formula: H2O}
+- {names: [이산화탄소, 탄산가스, 드라이아이스], cas: 124-38-9, state: gas, formula: CO2}
+- {names: [산소], cas: 7782-44-7, state: gas, formula: O2}
+- {names: [질소], cas: 7727-37-9, state: gas, formula: N2}
+- {names: [수소], cas: 1333-74-0, state: gas, formula: H2}
+- {names: [메탄], cas: 74-82-8, state: gas, formula: CH4}
+- {names: [설탕, 자당], cas: 57-50-1, formula: C12H22O11}
+- {names: [포도당], cas: 50-99-7, formula: C6H12O6}
+- {names: [요소], cas: 57-13-6, formula: CH4N2O}

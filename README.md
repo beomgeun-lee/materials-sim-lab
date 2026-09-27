@@ -13,9 +13,10 @@
 | 검증 | 검증 세트 40개 사례 모두 통과 (S0 위험 재현율 100%) — `msl validate` · PHREEQC 공식 예제 28/28 재현 — `msl bench phreeqc` |
 | 실제 계산 시험 | **11종 모두** — S0 안전 · A1 안정성(광물 다형) · A2 고상반응(고온 하이브리드) · A3 기체 · A4 수용액 · A5 수계 부식(Pourbaix) · A6 합금 · A7 물성 · A8 블렌드 · A9 공급 · A10 국내 규제 |
 | 조합 공간 | 혼합비 격자 · 양 스윕 · 부분집합 열거 → 표·곡선·쌍별 행렬 — `msl space`, 웹 `/spaces` |
+| 웹 작업대 | 성분 검색(국문 관용명 포함)·시약 선반·양/조건/시험 편집·YAML 편집 → 실행·저장, 조합 공간 편집기 — [사용 안내](docs/08-사용-안내.md) |
 | 적재 데이터 | 15개 소스 · 277,479행 — MP 163k · COD 21k · IMA 6,239종(MP 다형 매칭) · USGS · 가격 · NASA · PHREEQC · CAMEO · 합금 TDB 2,774 · 수용액 이온 362 |
-| 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·KE 번호 — 99.0% |
-| 테스트 | 306개 통과 |
+| 해석기 | 원소·화학식·IMA 광물명·CAS·영문/국문 이름·국문 관용명·KE 번호 — 99.5% |
+| 테스트 | 341개 통과 |
 
 ### 실행
 
@@ -23,7 +24,7 @@
 uv sync                                               # 환경 설치 (Python 3.12)
 uv run msl db load all                                # 데이터 적재 (원본은 msl db fetch 로 받음)
 uv run msl db status                                  # 적재 현황
-uv run msl serve                                      # 웹 화면 → http://127.0.0.1:8000
+uv run msl serve                                      # 웹 작업대 → http://127.0.0.1:8000 (레시피 만들기·고치기·실행·저장)
 uv run msl run examples/recipes/mgo-alumina.yaml      # 터미널에서 레시피 하나 실행
 uv run msl run examples/recipes/cu-ni-alloy.yaml --report out.html   # 리포트 파일 (.html/.md)
 uv run msl validate                                   # 검증 세트 채점
