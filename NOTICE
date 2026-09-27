@@ -1,0 +1,17 @@
+materials-sim-lab
+Copyright 2026 이범근
+
+이 저장소의 코드는 Apache License 2.0 (LICENSE) 으로 배포한다.
+다음 제3자 자료는 각자의 라이선스를 따른다.
+
+- tests/fixtures/ima_cnmnc_excerpt.tsv
+  IMA-CNMNC List of Minerals (2026-09) 발췌, https://cnmnc.units.it/
+  CC BY-SA 3.0 — 이 파일(과 그 수정본)은 CC BY-SA 3.0 으로 배포된다.
+
+- tests/fixtures/phreeqc/
+  USGS PHREEQC 3.8.6 공식 예제 입력 (tests/fixtures/phreeqc/NOTICE 참고), USGS 공공 소프트웨어 사용 고지.
+
+- kb/validation/*.json 의 참조값 일부는 Materials Project (CC BY 4.0) 데이터에서 계산했다.
+  Materials Project: A. Jain et al., APL Materials 1, 011002 (2013).
+
+데이터 원본(data/)과 API 키(.env)는 저장소에 포함하지 않는다. 각 데이터 소스의 라이선스는 kb/sources.yaml 에 적혀 있다.
