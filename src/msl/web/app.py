@@ -327,9 +327,13 @@ def _formula_of(text: str) -> str:
     """화학식이면 그대로, 아니면 해석기로 화학식을 찾는다 (이름·CAS·광물명)."""
     from pymatgen.core import Composition
 
+    from msl.schema.refs import ELEMENTS
+
     t = text.strip()
     if wb.FORMULA_RE.match(t):
-        Composition(t)
+        bad = [str(e) for e in Composition(t).elements if str(e) not in ELEMENTS]  # pymatgen 은 Xx 같은 가상 원소도 받아들인다
+        if bad:
+            raise ValueError(f"원소 기호가 아님: {', '.join(bad)}")
         return t
     from msl.resolve import resolve
     from msl.schema.recipe import Component
