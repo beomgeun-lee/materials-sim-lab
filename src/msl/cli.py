@@ -314,6 +314,25 @@ def bench_l2(
         typer.echo(f"저장: {save}")
 
 
+@bench_app.command("props")
+def bench_props(
+    models: Annotated[str, typer.Option("--models")] = "mace-mpa-0,orb-v3",
+    save: Annotated[Path | None, typer.Option("--save")] = None,
+) -> None:
+    """uMLIP 물성 검증 — 탄성률(MP DFT 대비)과 포논 안정성(알려진 안정·불안정 물질)."""
+    import json
+
+    from msl.bench.props import bench
+
+    res = bench(models.split(","), log=typer.echo)
+    for m, r in res["models"].items():
+        s = r["summary"]
+        typer.echo(f"{m}: 체적탄성률 MAE {s['K_mae']:.1f} GPa ({s['K_mape']:.0%}) · 전단 MAE {s['G_mae']:.1f} GPa · 포논 판정 {s['phonon_correct']}/{s['n']}")
+    if save:
+        save.write_text(json.dumps(res, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+        typer.echo(f"저장: {save}")
+
+
 @bench_app.command("phreeqc")
 def bench_phreeqc(
     dist: Annotated[Path, typer.Option("--dist", help="USGS PHREEQC 배포본 폴더 (phreeqc-3.8.6-17100)")],
@@ -482,6 +501,13 @@ def l2_cmd(
     for m, r in res["models"].items():
         dec = " + ".join(f"{k} {v:.0%}" for k, v in r["decomposition"].items())
         typer.echo(f"  {m:10} {r['ehull']:+.3f} · 최저 구조 {r['best']} ({r['space_group']}) · 경쟁 상 {r['n_references']}개 · 분해 {dec}")
+    ph = res.get("phonon")
+    if ph and not ph.get("error"):
+        typer.echo(f"  포논 (MACE): 최소 {ph['min_freq_THz']:+.2f} THz → {'동역학적 안정' if ph['dynamically_stable'] else '허수 모드 — 불안정'}")
+    if res.get("l3"):
+        typer.secho(f"  L3(DFT) 승격: {res['l3']['verdict']}", bold=True)
+        for r in res["l3"]["reasons"]:
+            typer.echo(f"    - {r}")
     typer.echo(f"  후보 구조 {res['n_structures']}개 · {res['seconds']:.0f}초")
     if json_out:
         json_out.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")

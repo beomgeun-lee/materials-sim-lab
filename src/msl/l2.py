@@ -29,6 +29,30 @@ from msl.env import CACHE_DIR
 CACHE = CACHE_DIR / "umlip"
 REF_MAX_EHULL = 0.05  # eV/atom — 경쟁 상으로 다시 계산할 MP 상의 범위 (uMLIP 이 순서를 바꿀 여지)
 REF_MAX_SITES = 40
+L3_WINDOW = 0.05  # eV/atom — L2 hull 거리가 이 안이면 DFT(L3)로 확정할 가치가 있다
+L3_SPREAD = 0.03  # eV/atom — 두 모델 차이가 이보다 크면 L2 를 믿기 어렵다
+
+
+def l3_rule(ehull: float, spread: float, phonon: dict | None, known: bool) -> dict[str, Any]:
+    """L2 → L3(DFT) 승격 규칙 (계획서 4단계). 새 조성이고 hull 경계 근처(|ehull| ≤ 0.05)면 승격 후보,
+    두 모델이 크게 어긋나거나 포논이 불안정하면 그 이유를 붙인다. 명확히 불안정(> 0.1)하면 승격하지 않는다."""
+    reasons, verdict = [], "불필요"
+    if known:
+        return {"verdict": "불필요", "reasons": ["DB 에 DFT 계산이 이미 있음"]}
+    if ehull <= L3_WINDOW:
+        verdict = "권장"
+        reasons.append(f"hull 거리 {ehull:+.3f} eV/atom — 안정·준안정 경계 안 (uMLIP 오차보다 작은 차이는 DFT 로 확정)")
+    elif ehull <= 2 * L3_WINDOW:
+        verdict = "선택"
+        reasons.append(f"hull 거리 {ehull:+.3f} — 준안정 바깥이지만 uMLIP 오차(수십 meV) 안")
+    else:
+        reasons.append(f"hull 거리 {ehull:+.3f} — 명확히 불안정, DFT 계산 가치 낮음")
+    if spread > L3_SPREAD:
+        reasons.append(f"두 모델 차이 {spread:.3f} > {L3_SPREAD} — L2 결과 불확실")
+        verdict = "권장" if verdict != "불필요" else "선택"
+    if phonon and not phonon.get("error") and not phonon.get("dynamically_stable", True):
+        reasons.append(f"포논 허수 모드 (최소 {phonon['min_freq_THz']:+.2f} THz) — 구조가 더 낮은 대칭으로 뒤틀릴 수 있음, DFT 로 재이완 필요")
+    return {"verdict": verdict, "reasons": reasons}
 
 
 def _cached_relax(structure: Structure, key: str, model: str) -> dict[str, Any]:
@@ -295,7 +319,8 @@ def candidates(target: Composition, n_ewald: int = 4, n_random: int = 2, max_ato
 
 
 def evaluate(formula: str, models: tuple[str, ...] = ("mace-mpa-0", "orb-v3"), n_orderings: int = 4, max_atoms: int = 40,
-             screen_model: str = "orb-v3", final_top: int = 3, log: Callable[[str], None] = print) -> dict[str, Any]:
+             screen_model: str = "orb-v3", final_top: int = 3, phonon_check: bool = True,
+             log: Callable[[str], None] = print) -> dict[str, Any]:
     """조성 하나의 L2 hull 거리 (두 모델). DB 에 있는 조성은 그 구조를, 없는 조성은 후보 구조를 쓴다.
 
     후보가 여럿이면 빠른 모델(screen_model)로 모두 이완해 상위 final_top 개만 나머지 모델로 계산한다.
@@ -348,7 +373,19 @@ def evaluate(formula: str, models: tuple[str, ...] = ("mace-mpa-0", "orb-v3"), n
                             "n_references": len(pd.all_entries), "notes": notes, "engine": umlip.engine_version(model)}
         log(f"  {model}: hull 거리 {best['ehull']:+.3f} eV/atom · 최저 구조 {best['label']} ({sg})")
     vals = [m["ehull"] for m in per_model.values()]
+    phon = None
+    if phonon_check and "mace-mpa-0" in per_model and float(np.mean(vals)) <= L3_WINDOW * 2:
+        try:  # 포논은 float64 인 MACE 로 (ORB float32 는 NaCl 에서 −0.4 THz 잡음)
+            from msl import props
+
+            best_s = next(Structure.from_dict(json.loads((CACHE / "mace-mpa-0" / f"{_key(lb, s)}.json").read_text())["structure"])
+                          for lb, s in structs if lb == per_model["mace-mpa-0"]["best"]) if not known else known.structure
+            phon = props.phonon(best_s, "mace-mpa-0", relax=False)
+            log(f"  포논 (MACE): 최소 {phon['min_freq_THz']:+.2f} THz → {'안정' if phon['dynamically_stable'] else '불안정'}")
+        except Exception as exc:
+            phon = {"error": str(exc)}
     return {"formula": target.reduced_formula, "known": None if known is None else str(known.entry_id),
+            "phonon": phon, "l3": l3_rule(float(np.mean(vals)), float(max(vals) - min(vals)), phon, known is not None),
             "mp_ehull": None if mp_ehull is None else round(float(mp_ehull), 4), "n_structures": len(structs) if not screen else len(screen["ranking"]),
             "screen": screen, "models": per_model, "ehull_mean": round(float(np.mean(vals)), 4),
             "ehull_spread": round(float(max(vals) - min(vals)), 4), "seconds": round(time.time() - t0, 1), "method": "v2 Ewald+원형"}

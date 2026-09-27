@@ -35,6 +35,7 @@ msl = "msl.cli:app"
 l2 = [
     "mace-torch>=0.3.16",
     "orb-models>=0.7.0",
+    "phonopy>=4.7.1",
 ]
 
 [dependency-groups]

@@ -112,3 +112,25 @@ def test_prototypes_spinel() -> None:
     got = l2.prototypes(Composition("LiMn2O4"), exclude_chemsys="Li-Mn-O")
     assert got and all(s.composition.reduced_composition.almost_equals(Composition("LiMn2O4").reduced_composition) for _, s in got)
     assert all("Li-Mn-O" not in lb for lb, _ in got)
+
+
+def test_l3_rule() -> None:
+    assert l2.l3_rule(0.02, 0.01, None, known=False)["verdict"] == "권장"
+    assert l2.l3_rule(0.08, 0.01, None, known=False)["verdict"] == "선택"
+    assert l2.l3_rule(0.20, 0.01, None, known=False)["verdict"] == "불필요"
+    assert l2.l3_rule(0.20, 0.05, None, known=False)["verdict"] == "선택"  # 모델 불일치
+    assert l2.l3_rule(0.00, 0.00, None, known=True)["verdict"] == "불필요"
+    r = l2.l3_rule(0.03, 0.01, {"dynamically_stable": False, "min_freq_THz": -2.0}, known=False)
+    assert r["verdict"] == "권장" and any("포논" in x for x in r["reasons"])
+
+
+@needs_l2
+def test_phonon_mgo_stable() -> None:
+    from msl import props
+
+    s = Structure(Lattice.cubic(4.25), ["Mg"] * 4 + ["O"] * 4,
+                  [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5], [0.5, 0, 0], [0, 0.5, 0], [0, 0, 0.5], [0.5, 0.5, 0.5]])
+    p = props.phonon(s.get_primitive_structure(), "mace-mpa-0")
+    assert p["dynamically_stable"]
+    e = props.elastic(s.get_primitive_structure(), "mace-mpa-0")
+    assert 130 < e["K_vrh"] < 170 and e["mechanically_stable"]  # MP DFT 151 GPa

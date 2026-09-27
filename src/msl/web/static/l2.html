@@ -9,7 +9,9 @@ window.L2 = (() => {
     const cls = res.ehull_mean <= 0 ? "ok" : res.ehull_mean <= 0.05 ? "warn" : "bad";
     return `<span class="l2res ${cls}"><b>${label(res.ehull_mean)}</b> hull ${sgn(res.ehull_mean)} eV/atom</span>`
       + ` <span class="iv">(${names.map(n => `${n} ${sgn(m[n].ehull)}`).join(" · ")} · 두 모델 차이 ${res.ehull_spread.toFixed(3)}${res.known ? " · DB 구조" : ` · 후보 구조 ${res.n_structures}개`})</span>`
-      + (res.ehull_mean > 0 && dec ? `<br><span class="iv">분해되면 ${dec}</span>` : "");
+      + (res.ehull_mean > 0 && dec ? `<br><span class="iv">분해되면 ${dec}</span>` : "")
+      + (res.phonon && res.phonon.min_freq_THz !== undefined ? `<br><span class="iv">포논: 최소 ${res.phonon.min_freq_THz.toFixed(2)} THz — ${res.phonon.dynamically_stable ? "동역학적 안정" : "허수 모드(불안정)"}</span>` : "")
+      + (res.l3 ? `<br><span class="iv"><b>L3(DFT) 승격 ${esc(res.l3.verdict)}</b> — ${esc(res.l3.reasons.join(" · "))}</span>` : "");
   }
   async function check(formula, el, force = false) {
     el.innerHTML = `<span class="iv">L2 시작 중…</span>`;
